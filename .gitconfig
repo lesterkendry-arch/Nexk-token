@@ -1,3 +1,5 @@
 [user]
 	name = kendry lester larrabiro vega
 	email = lesterkendry@gmail.com
+[credential]
+	helper = store
