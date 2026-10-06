@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXK Token - Ecosistema Descentralizado</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --card-bg: #111827;
+            --border-color: #1f2937;
+            --primary-cyan: #38bdf8;
+            --green-up: #10b981;
+            --red-down: #ef4444;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --main-font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --container-max-width: 1200px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--main-font);
+            min-height: 100vh;
+            padding: 16px;
+            padding-top: 70px;
+        }
+
+        /* CONTENEDOR DE MARQUESINAS DE TEXTO */
+        #marqueeListContainer {
+            position: fixed;
+            top: 55px;
+            left: 0;
+            width: 100%;
+            z-index: 998;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .marquee-bar {
+            width: 100%;
+            padding: 6px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .marquee-inner {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marqueeAnim 14s linear infinite;
+        }
+
+        @keyframes marqueeAnim {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
+        }
+
+        /* BARRA SUPERIOR NAV */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 55px;
+            background-color: rgba(17, 24, 39, 0.98);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 1000;
+        }
+
+        .menu-btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 4px 14px;
+            line-height: 1;
+        }
+
+        .menu-btn:active {
+            background: rgba(56, 189, 248, 0.3);
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: fixed;
+            top: 60px;
+            left: 16px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            overflow: hidden;
+            z-index: 1001;
+            min-width: 220px;
+        }
+
+        .dropdown-menu.show {
+            display: block !important;
+        }
+
+        .dropdown-item {
+            padding: 14px 20px;
+            color: var(--text-main);
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--border-color);
+        }
+
+        /* ESTRUCTURA Y TARJETAS */
+        .container {
+            max-width: var(--container-max-width);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            transition: max-width 0.3s ease;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                grid-template-columns: 2fr 1fr;
+            }
+            .full-width {
+                grid-column: span 2;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        /* BANNER Y HERO DE LA PÁGINA */
+        .hero-banner {
+            width: 100%;
+            min-height: 200px;
+            border-radius: 16px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .hero-overlay-item {
+            position: absolute;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 800;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+            max-width: 90%;
+            word-wrap: break-word;
+        }
+
+        .price-badge {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-cyan);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .api-indicator {
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background-color: rgba(56, 189, 248, 0.2);
+            color: var(--primary-cyan);
+            border: 1px solid var(--primary-cyan);
+            display: none;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            background-color: rgba(31, 41, 55, 0.5);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #38bdf8, #2563eb);
+            color: white;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .btn-action:active {
+            transform: scale(0.98);
+        }
+
+        .btn-sell {
+            background: linear-gradient(135deg, #ef4444, #991b1b) !important;
+        }
+
+        .btn-delete {
+            background: var(--red-down) !important;
+        }
+
+        /* MODALES */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.85);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex !important;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 520px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .input-field, .select-field {
+            width: 100%;
+            padding: 10px;
+            margin: 6px 0 14px 0;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-dark);
+            color: white;
+            font-size: 14px;
+        }
+
+        .admin-section {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+        }
+
+        .admin-section h4 {
+            margin-bottom: 8px;
+            color: var(--primary-cyan);
+            font-size: 0.95rem;
+        }
+
+        .flex-btns {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .flex-btns .btn-action {
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .bank-details-box {
+            background-color: rgba(31, 41, 55, 0.8);
+            border: 1px solid var(--primary-cyan);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CONTENEDOR DE MARQUESINAS -->
+    <div id="marqueeListContainer"></div>
+
+    <!-- BARRA SUPERIOR -->
+    <div class="top-bar">
+        <button class="menu-btn" id="menuToggleBtn" onclick="toggleMainDropdown(event)">⋮</button>
+        <span style="font-weight: 700; color: var(--primary-cyan);">NEXK NETWORKS</span>
+        <div style="width: 24px;"></div>
+    </div>
+
+    <!-- MENÚ DESPLEGABLE DE 3 PUNTOS -->
+    <div class="dropdown-menu" id="dropdownMenu">
+        <div class="dropdown-item" onclick="handleOpenAdminLogin()">
+            🔐 Panel de Administrador
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL DE LA PÁGINA -->
+    <div class="container" id="mainContainer">
+
+        <!-- BANNER DE ENCABEZADO -->
+        <div class="full-width">
+            <div class="hero-banner" id="heroBanner" style="background-image: linear-gradient(135deg, #1e293b, #0f172a);">
+                <div id="bannerTextOverlaysContainer"></div>
+            </div>
+        </div>
+
+        <!-- GRÁFICO Y PRECIO -->
+        <div class="card" id="mainHeaderCard">
+            <div>
+                <h1 style="font-size: 1.8rem; margin-bottom: 8px;" id="pageTitle">Token NEXK ($NEXK)</h1>
+                <p style="color: var(--text-muted); font-size: 0.9rem;" id="pageSubtitle">Ecosistema de alta velocidad y bajas comisiones</p>
+            </div>
+
+            <div style="margin-top: 20px;" class="price-badge">
+                <span id="priceDisplay">$1.45</span>
+                <span id="changeBadge" style="font-size: 0.9rem; padding: 4px 8px; border-radius: 6px; background-color: rgba(16,185,129,0.2); color: var(--green-up);">+3.2%</span>
+                <span class="api-indicator" id="apiIndicator">MERCADO REAL</span>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="cryptoChart"></canvas>
+            </div>
+        </div>
+
+        <!-- MÉTRICAS Y BOTONES DE OPERACIÓN -->
+        <div class="card" id="statsCard">
+            <h3>Métricas del Token</h3>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-label">Cap. de Mercado</div>
+                    <div class="stat-value" id="statMarketCap">$14.5M</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Volumen 24h</div>
+                    <div class="stat-value" id="statVolume">$2.1M</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Suministro Máx.</div>
+                    <div class="stat-value">100M NEXK</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Red</div>
+                    <div class="stat-value" id="statNetworkName">Mainnet v1</div>
+                </div>
+            </div>
+
+            <!-- BOTONES DE COMPRA Y VENTA -->
+            <button class="btn-action" id="btnBuyToken" onclick="handleBuyClick()" style="display: block;">Comprar $NEXK</button>
+            <button class="btn-action btn-sell" id="btnSellToken" onclick="handleSellClick()" style="display: block;">Vender $NEXK</button>
+        </div>
+
+        <!-- SECCIÓN ACERCA DE NEXK -->
+        <div class="card full-width" id="infoCard">
+            <h3>Acerca de NEXK</h3>
+            <p style="color: var(--text-muted); margin-top: 10px; line-height: 1.6;">
+                NEXK es una criptomoneda diseñada para facilitar transacciones instantáneas y descentralizadas. Su arquitectura modular permite integrarse fácilmente con aplicaciones DeFi de nueva generación.
+            </p>
+        </div>
+
+        <!-- BLOQUES DINÁMICOS CREADOS DESDE EL PANEL ADMIN -->
+        <div id="dynamicSections" class="full-width" style="display: flex; flex-direction: column; gap: 20px;"></div>
+
+    </div>
+
+    <!-- MODAL COMPRAR TOKEN -->
+    <div class="modal" id="buyModal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 15px; color: var(--primary-cyan);">🛒 Comprar Token $NEXK</h3>
+            
+            <label class="stat-label">Selecciona Método de Pago</label>
+            <select id="buyMethodSelect" class="select-field" onchange="togglePaymentMethodUI(this.value)">
+                <option value="bank">Transferencia Bancaria Directa</option>
+                <option value="web3">Billetera Crypto / DEX Swap</option>
+            </select>
+
+            <div id="bankPaymentArea">
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Realiza la transferencia a los siguientes datos bancarios:</p>
+                <div class="bank-details-box" id="bankDetailsDisplay">
+                    Cargando datos de pago...
+                </div>
+
+                <label class="stat-label" style="margin-top: 12px;">Monto a Invertir ($ USD / Moneda Local)</label>
+                <input type="number" id="bankBuyAmount" class="input-field" placeholder="Ej: 100" oninput="calculateTokensToReceive(this.value)">
+
+                <p style="font-size: 0.9rem; color: var(--primary-cyan); font-weight: bold; margin-bottom: 10px;">
+                    Recibirás aproximadamente: <span id="tokensEstimated">0</span> NEXK
+                </p>
+
+                <button class="btn-action" onclick="confirmBankPurchase()">Confirmar Orden de Compra</button>
+            </div>
+
+            <div id="web3PaymentArea" style="display: none;">
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Conecta tu billetera Web3 o ejecuta la compra directa en DEX.</p>
+                <button class="btn-action" onclick="executeWeb3Buy()">Conectar Billetera / DEX</button>
+            </div>
+
+            <button class="btn-action" style="background: var(--border-color); margin-top: 10px;" onclick="closeModal('buyModal')">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL VENDER TOKEN -->
+    <div class="modal" id="sellModal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 15px; color: var(--red-down);">🔻 Vender Token $NEXK</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Ingresa la cantidad de tokens NEXK que deseas vender.</p>
+
+            <label class="stat-label">Cantidad de $NEXK a vender</label>
+            <input type="number" id="sellTokenAmount" class="input-field" placeholder="Ej: 50">
+
+            <button class="btn-action btn-sell" onclick="executeTokenSell()">Ejecutar Venta</button>
+            <button class="btn-action" style="background: var(--border-color); margin-top: 10px;" onclick="closeModal('sellModal')">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE LOGIN ADMIN -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 15px;">Acceso Administrador</h3>
+            <label class="stat-label">Usuario</label>
+            <input type="text" id="adminUser" class="input-field" placeholder="Usuario">
+
+            <label class="stat-label">Contraseña</label>
+            <input type="password" id="adminPass" class="input-field" placeholder="Contraseña">
+
+            <div class="flex-btns">
+                <button class="btn-action" onclick="attemptLogin()">Ingresar</button>
+                <button class="btn-action" style="background: var(--border-color);" onclick="closeModal('loginModal')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PANEL DE ADMINISTRACIÓN PRIVADO -->
+    <div class="modal" id="adminPanelModal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 15px; color: var(--primary-cyan);">🛠️ Panel de Control Privado</h3>
+
+            <!-- CONFIGURACIÓN DE CUENTA BANCARIA -->
+            <div class="admin-section">
+                <h4>🏦 Datos de Cuenta Bancaria</h4>
+                <label class="stat-label">Nombre del Banco / Entidad</label>
+                <input type="text" id="adminBankName" class="input-field" placeholder="Ej: Banco Inter, Santander, BBVA">
+
+                <label class="stat-label">Titular de la Cuenta</label>
+                <input type="text" id="adminBankHolder" class="input-field" placeholder="Ej: Juan Pérez">
+
+                <label class="stat-label">Número de Cuenta / IBAN / CLABE / PIX</label>
+                <input type="text" id="adminBankAccountNumber" class="input-field" placeholder="Ej: 0123 4567 8901 2345 o Llave PIX">
+
+                <label class="stat-label">Instrucciones o Notas de Pago</label>
+                <textarea id="adminBankNotes" class="input-field" rows="2" placeholder="Ej: Enviar comprobante al WhatsApp..."></textarea>
+
+                <div class="flex-btns">
+                    <button class="btn-action" onclick="saveBankConfig()">Guardar Datos Bancarios</button>
+                </div>
+            </div>
+
+            <!-- ACTIVACIÓN DE BOTONES -->
+            <div class="admin-section">
+                <h4>🔘 Control de Botones de Compra y Venta</h4>
+                <div class="flex-btns">
+                    <button class="btn-action" id="toggleBuyBtnUI" onclick="toggleButtonVisibility('buy')">Desactivar Compra</button>
+                    <button class="btn-action btn-sell" id="toggleSellBtnUI" onclick="toggleButtonVisibility('sell')">Desactivar Venta</button>
+                </div>
+            </div>
+
+            <!-- CONEXIÓN A MERCADO REAL / API / DEX -->
+            <div class="admin-section">
+                <h4>🔌 Conexión de Mercado Real (API / Web3 / Swap)</h4>
+                <label class="stat-label">Modo de Operación</label>
+                <select id="apiModeSelect" class="select-field" onchange="toggleApiMode(this.value)">
+                    <option value="simulated">Simulación Interna</option>
+                    <option value="real">Mercado Real (API Externa / DEX)</option>
+                </select>
+
+                <label class="stat-label">URL de la API o Contrato Inteligente</label>
+                <input type="text" id="apiUrlInput" class="input-field" placeholder="https://api.dexscreener.com/latest/dex/tokens/0x...">
+
+                <label class="stat-label">URL para Comprar en DEX (Swap Link)</label>
+                <input type="text" id="dexSwapUrlInput" class="input-field" placeholder="https://pancakeswap.finance/swap?outputCurrency=0x...">
+
+                <div class="flex-btns">
+                    <button class="btn-action" onclick="saveApiConfig()">Guardar Conexión Real</button>
+                </div>
+            </div>
+
+            <!-- BANNERS Y LETREROS -->
+            <div class="admin-section">
+                <h4>🖼️ Imagen de Fondo y Letreros Bonitos</h4>
+                <label class="stat-label">URL de Imagen para el Banner Principal</label>
+                <input type="text" id="heroBgUrlInput" class="input-field" placeholder="https://ejemplo.com/imagen.jpg">
+                <button class="btn-action" onclick="setHeroBackgroundImage()" style="margin-bottom: 12px;">Fijar Imagen de Banner</button>
+
+                <label class="stat-label">Texto del Letrero Estilizado</label>
+                <input type="text" id="overlayTextInput" class="input-field" placeholder="Ej: ¡PREVENTA OFICIAL $NEXK!">
+
+                <label class="stat-label">Estilo / Tipografía del Letrero</label>
+                <select id="overlayTextStyleSelect" class="select-field">
+                    <option value="style-neon">Cyber Neón Azul</option>
+                    <option value="style-gold">Oro Metalizado Imperial</option>
+                    <option value="style-arcade">Retro Cyberpunk Arcade</option>
+                    <option value="style-gradient">Gradiente Rosa/Violeta Pop</option>
+                </select>
+
+                <label class="stat-label">Posición sobre la Imagen</label>
+                <select id="overlayTextPosSelect" class="select-field">
+                    <option value="top-left">Arriba - Izquierda</option>
+                    <option value="center">Centro Destacado</option>
+                    <option value="bottom-right">Abajo - Derecha</option>
+                </select>
+
+                <div class="flex-btns">
+                    <button class="btn-action" onclick="addBannerOverlayText()">Agregar Letrero Bonito</button>
+                    <button class="btn-action btn-delete" onclick="clearBannerOverlayTexts()">Borrar Letreros</button>
+                </div>
+            </div>
+
+            <!-- MARQUESINAS MÚLTIPLES EN MOVIMIENTO -->
+            <div class="admin-section">
+                <h4>📢 Carteles en Movimiento (Marquesinas)</h4>
+                <input type="text" id="newMarqueeText" class="input-field" placeholder="Texto del cartel en movimiento...">
+                <label class="stat-label">Color de Fondo del Cartel</label>
+                <select id="marqueeBgColorSelect" class="select-field">
+                    <option value="linear-gradient(90deg, #1e3a8a, #0284c7)">Azul Eléctrico</option>
+                    <option value="linear-gradient(90deg, #166534, #15803d)">Verde Cripto</option>
+                    <option value="linear-gradient(90deg, #831843, #be185d)">Fucsia Neón</option>
+                    <option value="linear-gradient(90deg, #78350f, #b45309)">Dorado</option>
+                </select>
+                <div class="flex-btns">
+                    <button class="btn-action" onclick="addNewMarquee()">Agregar Cartel</button>
+                    <button class="btn-action btn-delete" onclick="removeAllMarquees()">Quitar Carteles</button>
+                </div>
+            </div>
+
+            <!-- ANCHO Y TAMAÑO DE LA PÁGINA -->
+            <div class="admin-section">
+                <h4>📐 Tamaño y Ancho de la Página</h4>
+                <div class="flex-btns">
+                    <button class="btn-action" style="background: var(--border-color);" onclick="setPageWidth('900px')">Normal</button>
+                    <button class="btn-action" style="background: var(--border-color);" onclick="setPageWidth('1400px')">Ancho</button>
+                    <button class="btn-action" style="background: var(--border-color);" onclick="setPageWidth('100%')">100% Pantalla</button>
+                </div>
+            </div>
+
+            <!-- BLOQUES Y SECCIONES ADICIONALES -->
+            <div class="admin-section">
+                <h4>➕ Agregar Secciones / Bloques de Contenido</h4>
+                <input type="text" id="newCardTitle" class="input-field" placeholder="Título del bloque">
+                <textarea id="newCardBody" class="input-field" rows="3" placeholder="Contenido o descripción..."></textarea>
+                <div class="flex-btns">
+                    <button class="btn-action" onclick="addCustomCard()">Agregar Bloque</button>
+                    <button class="btn-action btn-delete" onclick="clearAllDynamicCards()">Borrar Todos</button>
+                </div>
+            </div>
+
+            <!-- CONTROL DE PRECIO SIMULADO -->
+            <div class="admin-section">
+                <h4>📈 Fijar Precio Simulado</h4>
+                <input type="number" step="0.01" id="manualPriceInput" class="input-field" placeholder="Precio ($)">
+                <div class="flex-btns">
+                    <button class="btn-action" onclick="setManualPrice()">Fijar Precio</button>
+                </div>
+            </div>
+
+            <button class="btn-action" style="background: var(--border-color); margin-top: 10px;" onclick="closeModal('adminPanelModal')">Cerrar Panel</button>
+        </div>
+    </div>
+
+    <script>
+        let appConfig = {
+            buyActive: true,
+            sellActive: true,
+            isRealApiMode: false,
+            apiEndpoint: '',
+            dexSwapUrl: '',
+            bankName: '',
+            bankHolder: '',
+            bankAccountNumber: '',
+            bankNotes: '',
+            overlayTexts: [],
+            marquees: [],
+            customCards: []
+        };
+
+        function toggleMainDropdown(e) {
+            if (e) e.stopPropagation();
+            const dropdown = document.getElementById('dropdownMenu');
+            dropdown.classList.toggle('show');
+        }
+
+        function handleOpenAdminLogin() {
+            document.getElementById('dropdownMenu').classList.remove('show');
+            openModal('loginModal');
+        }
+
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('dropdownMenu');
+            const menuBtn = document.getElementById('menuToggleBtn');
+            if (dropdown && !dropdown.contains(e.target) && !menuBtn.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function attemptLogin() {
+            const user = document.getElementById('adminUser').value;
+            const pass = document.getElementById('adminPass').value;
+
+            if (user === 'admin' && pass === '200832') {
+                closeModal('loginModal');
+                document.getElementById('adminUser').value = '';
+                document.getElementById('adminPass').value = '';
+                openModal('adminPanelModal');
+            } else {
+                alert('Usuario o contraseña incorrectos');
+            }
+        }
+
+        function toggleButtonVisibility(type) {
+            if (type === 'buy') {
+                appConfig.buyActive = !appConfig.buyActive;
+                document.getElementById('btnBuyToken').style.display = appConfig.buyActive ? 'block' : 'none';
+                document.getElementById('toggleBuyBtnUI').innerText = appConfig.buyActive ? 'Desactivar Compra' : 'Activar Compra';
+            } else if (type === 'sell') {
+                appConfig.sellActive = !appConfig.sellActive;
+                document.getElementById('btnSellToken').style.display = appConfig.sellActive ? 'block' : 'none';
+                document.getElementById('toggleSellBtnUI').innerText = appConfig.sellActive ? 'Desactivar Venta' : 'Activar Venta';
+            }
+        }
+
+        function handleBuyClick() {
+            updateBankUI();
+            openModal('buyModal');
+        }
+
+        function handleSellClick() {
+            openModal('sellModal');
+        }
+
+        function saveBankConfig() {
+            appConfig.bankName = document.getElementById('adminBankName').value.trim();
+            appConfig.bankHolder = document.getElementById('adminBankHolder').value.trim();
+            appConfig.bankAccountNumber = document.getElementById('adminBankAccountNumber').value.trim();
+            appConfig.bankNotes = document.getElementById('adminBankNotes').value.trim();
+
+            updateBankUI();
+            alert('Datos bancarios guardados correctamente.');
+        }
+
+        function updateBankUI() {
+            const container = document.getElementById('bankDetailsDisplay');
+            if (appConfig.bankName || appConfig.bankAccountNumber) {
+                container.innerHTML = `
+                    <strong>Banco:</strong> ${appConfig.bankName || 'N/A'}<br>
+                    <strong>Titular:</strong> ${appConfig.bankHolder || 'N/A'}<br>
+                    <strong>Cuenta / IBAN / PIX:</strong> ${appConfig.bankAccountNumber || 'N/A'}<br>
+                    ${appConfig.bankNotes ? `<strong>Notas:</strong> ${appConfig.bankNotes}` : ''}
+                `;
+            } else {
+                container.innerHTML = 'Consulta los detalles de pago directamente con el administrador.';
+            }
+        }
+
+        function togglePaymentMethodUI(method) {
+            document.getElementById('bankPaymentArea').style.display = (method === 'bank') ? 'block' : 'none';
+            document.getElementById('web3PaymentArea').style.display = (method === 'web3') ? 'block' : 'none';
+        }
+
+        function calculateTokensToReceive(amount) {
+            const currentPrice = chart.data.datasets[0].data.slice(-1)[0] || 1.45;
+            const val = parseFloat(amount);
+            if (!isNaN(val) && val > 0) {
+                const tokens = (val / currentPrice).toFixed(2);
+                document.getElementById('tokensEstimated').innerText = tokens;
+            } else {
+                document.getElementById('tokensEstimated').innerText = '0';
+            }
+        }
+
+        function confirmBankPurchase() {
+            const amount = document.getElementById('bankBuyAmount').value;
+            if (!amount || amount <= 0) {
+                alert('Por favor ingresa un monto válido.');
+                return;
+            }
+            alert(`¡Orden registrada! Procede con el pago según los datos bancarios mostrados.`);
+            closeModal('buyModal');
+        }
+
+        function executeWeb3Buy() {
+            if (appConfig.dexSwapUrl) {
+                window.open(appConfig.dexSwapUrl, '_blank');
+            } else {
+                alert('Conectando a billetera Web3...');
+            }
+        }
+
+        function executeTokenSell() {
+            const amount = document.getElementById('sellTokenAmount').value;
+            if (!amount || amount <= 0) {
+                alert('Ingresa una cantidad válida a vender.');
+                return;
+            }
+            alert(`Solicitud de venta enviada por ${amount} NEXK.`);
+            closeModal('sellModal');
+        }
+
+        function setHeroBackgroundImage() {
+            const url = document.getElementById('heroBgUrlInput').value.trim();
+            const banner = document.getElementById('heroBanner');
+            if (url) {
+                banner.style.backgroundImage = `url('${url}')`;
+            } else {
+                banner.style.backgroundImage = 'linear-gradient(135deg, #1e293b, #0f172a)';
+            }
+        }
+
+        function addBannerOverlayText() {
+            const text = document.getElementById('overlayTextInput').value.trim();
+            const style = document.getElementById('overlayTextStyleSelect').value;
+            const pos = document.getElementById('overlayTextPosSelect').value;
+
+            if (!text) {
+                alert('Escribe el texto del letrero.');
+                return;
+            }
+
+            appConfig.overlayTexts.push({ text, style, pos });
+            renderBannerOverlays();
+            document.getElementById('overlayTextInput').value = '';
+        }
+
+        function clearBannerOverlayTexts() {
+            appConfig.overlayTexts = [];
+            renderBannerOverlays();
+        }
+
+        function renderBannerOverlays() {
+            const container = document.getElementById('bannerTextOverlaysContainer');
+            container.innerHTML = '';
+
+            appConfig.overlayTexts.forEach(item => {
+                const div = document.createElement('div');
+                div.className = `hero-overlay-item`;
+                div.innerText = item.text;
+
+                if (item.pos === 'top-left') {
+                    div.style.top = '15px'; div.style.left = '15px';
+                } else if (item.pos === 'center') {
+                    div.style.top = '50%'; div.style.left = '50%';
+                    div.style.transform = 'translate(-50%, -50%)';
+                } else if (item.pos === 'bottom-right') {
+                    div.style.bottom = '15px'; div.style.right = '15px';
+                }
+
+                if (item.style === 'style-neon') {
+                    div.style.background = 'rgba(15, 23, 42, 0.85)';
+                    div.style.color = '#38bdf8';
+                    div.style.border = '2px solid #38bdf8';
+                    div.style.boxShadow = '0 0 15px #38bdf8';
+                } else if (item.style === 'style-gold') {
+                    div.style.background = 'linear-gradient(135deg, #b45309, #f59e0b)';
+                    div.style.color = '#ffffff';
+                    div.style.border = '2px solid #fef08a';
+                } else if (item.style === 'style-arcade') {
+                    div.style.background = '#000000';
+                    div.style.color = '#10b981';
+                    div.style.fontFamily = 'Courier New, monospace';
+                    div.style.border = '1px solid #10b981';
+                } else if (item.style === 'style-gradient') {
+                    div.style.background = 'linear-gradient(135deg, #ec4899, #8b5cf6)';
+                    div.style.color = '#ffffff';
+                }
+
+                container.appendChild(div);
+            });
+        }
+
+        function addNewMarquee() {
+            const text = document.getElementById('newMarqueeText').value.trim();
+            const bg = document.getElementById('marqueeBgColorSelect').value;
+
+            if (!text) {
+                alert('Escribe el texto de la marquesina.');
+                return;
+            }
+
+            appConfig.marquees.push({ text, bg });
+            renderMarquees();
+            document.getElementById('newMarqueeText').value = '';
+        }
+
+        function removeAllMarquees() {
+            appConfig.marquees = [];
+            renderMarquees();
+        }
+
+        function renderMarquees() {
+            const container = document.getElementById('marqueeListContainer');
+            container.innerHTML = '';
+
+            appConfig.marquees.forEach(m => {
+                const bar = document.createElement('div');
+                bar.className = 'marquee-bar';
+                bar.style.background = m.bg;
+                bar.innerHTML = `<div class="marquee-inner">${m.text}</div>`;
+                container.appendChild(bar);
+            });
+        }
+
+        function setPageWidth(width) {
+            document.documentElement.style.setProperty('--container-max-width', width);
+        }
+
+        function toggleApiMode(mode) {
+            appConfig.isRealApiMode = (mode === 'real');
+            document.getElementById('apiIndicator').style.display = appConfig.isRealApiMode ? 'inline-block' : 'none';
+        }
+
+        function saveApiConfig() {
+            appConfig.apiEndpoint = document.getElementById('apiUrlInput').value.trim();
+            appConfig.dexSwapUrl = document.getElementById('dexSwapUrlInput').value.trim();
+            const mode = document.getElementById('apiModeSelect').value;
+
+            toggleApiMode(mode);
+            alert('Configuración de mercado guardada.');
+        }
+
+        let cardCounter = 0;
+        function addCustomCard() {
+            const title = document.getElementById('newCardTitle').value.trim();
+            const body = document.getElementById('newCardBody').value.trim();
+
+            if (!title) return;
+
+            cardCounter++;
+            const cardId = `customCard_${cardCounter}`;
+
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'card full-width';
+            cardDiv.id = cardId;
+            cardDiv.innerHTML = `
+                <h3>${title}</h3>
+                <p style="color: var(--text-muted); margin-top: 10px; line-height: 1.6;">${body}</p>
+            `;
+
+            document.getElementById('dynamicSections').appendChild(cardDiv);
+            document.getElementById('newCardTitle').value = '';
+            document.getElementById('newCardBody').value = '';
+        }
+
+        function clearAllDynamicCards() {
+            document.getElementById('dynamicSections').innerHTML = '';
+        }
+
+        const ctx = document.getElementById('cryptoChart').getContext('2d');
+        const labels = ['12:00', '12:05', '12:10', '12:15', '12:20', '12:25', '12:30'];
+        let prices = [1.40, 1.42, 1.41, 1.44, 1.43, 1.45, 1.45];
+
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'NEXK / USD',
+                    data: prices,
+                    borderColor: '#38bdf8',
+                    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: '#1f2937' }, ticks: { color: '#9ca3af' } },
+                    y: { grid: { color: '#1f2937' }, ticks: { color: '#9ca3af' } }
+                }
+            }
+        });
+
+        setInterval(() => {
+            if (appConfig.isRealApiMode) return;
+            const lastPrice = chart.data.datasets[0].data.slice(-1)[0];
+            const change = (Math.random() - 0.48) * 0.03;
+            const newPrice = Math.max(0.1, parseFloat((lastPrice + change).toFixed(2)));
+            updatePriceUI(newPrice);
+        }, 3000);
+
+        function updatePriceUI(newPrice) {
+            const lastPrice = chart.data.datasets[0].data.slice(-1)[0];
+            chart.data.datasets[0].data.shift();
+            chart.data.datasets[0].data.push(newPrice);
+
+            const isUp = newPrice >= lastPrice;
+            const color = isUp ? '#10b981' : '#ef4444';
+            chart.data.datasets[0].borderColor = color;
+            chart.update();
+
+            document.getElementById('priceDisplay').innerText = `$${newPrice.toFixed(2)}`;
+            const badge = document.getElementById('changeBadge');
+            badge.innerText = `${isUp ? '+' : ''}${((newPrice - lastPrice) / lastPrice * 100).toFixed(1)}%`;
+            badge.style.color = color;
+            badge.style.backgroundColor = isUp ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)';
+
+            document.getElementById('statMarketCap').innerText = `$${(newPrice * 10).toFixed(1)}M`;
+        }
+
+        function setManualPrice() {
+            const val = parseFloat(document.getElementById('manualPriceInput').value);
+            if (!isNaN(val) && val > 0) {
+                updatePriceUI(val);
+            }
+        }
+    </script>
+</body>
+</html>
+```
