@@ -31,3 +31,9 @@ git remote add origin https://github.com/lesterkendry-arch/Nexk-token.git
 git push -u origin main
 git push -u origin master
 git push -u origin master
+git push origin master
+git pull origin master
+git metge --abort
+git merge --abort
+git reset --hard HEAD
+git pull origin master
