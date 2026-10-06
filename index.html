@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXK Token - Ecosistema Descentralizado</title>
+    <!-- Chart.js CDN para el gráfico de mercado -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -74,6 +75,16 @@
             font-size: 12px;
             font-weight: bold;
             cursor: pointer;
+        }
+
+        .btn-dots {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 22px;
+            cursor: pointer;
+            padding: 0 8px;
+            line-height: 1;
         }
 
         .btn-auth {
@@ -271,28 +282,37 @@
             color: white;
             border-radius: 6px;
         }
+
+        /* CHART CONTAINER */
+        .chart-container {
+            position: relative;
+            margin-top: 15px;
+            height: 220px;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
 
-    <!-- BARRA NAVEGACIÓN SUPERIOR CON SOPORTE EN VIVO -->
+    <!-- BARRA NAVEGACIÓN SUPERIOR CON TRES PUNTOS -->
     <div class="top-bar">
         <div id="userDisplay" class="user-info-bar">Invitado</div>
         <div class="top-actions">
-            <button class="btn-top" id="helpBtn" onclick="abrirHelpModal()" style="display: none;">💬 Soporte en Vivo</button>
+            <button class="btn-top" id="helpBtn" onclick="abrirHelpModal()" style="display: none;">💬 Soporte</button>
             <button id="authBtn" class="btn-auth" onclick="abrirAuthModal()">Ingresar</button>
+            <button class="btn-dots" onclick="abrirLoginAdminModal()" title="Acceso Admin">⋮</button>
         </div>
     </div>
 
-    <!-- PANTALLA LIMPIA DE INICIO DE SESIÓN PARA VISITANTES -->
+    <!-- PANTALLA DE INICIO PARA VISITANTES -->
     <div id="welcomeSection" class="card welcome-card">
         <h2>Bienvenido al token NEXK</h2>
         <p>Inicia sesión para acceder a tu portafolio y operar dentro del ecosistema.</p>
         
-        <button class="btn-provider btn-google" onclick="ejecutarGoogleLogin()">
+        <button class="btn-provider btn-google" id="btnGoogleWelcome">
             <span>Continuar con Google</span>
         </button>
-        <button class="btn-provider btn-apple" onclick="ejecutarAppleLogin()">
+        <button class="btn-provider btn-apple" id="btnAppleWelcome">
             <span>Continuar con Apple</span>
         </button>
         
@@ -300,15 +320,14 @@
         <button class="btn-auth" style="width: 100%; padding: 10px;" onclick="abrirAuthModal()">Iniciar con Correo</button>
     </div>
 
-    <!-- CONTENEDORES PRINCIPALES DE LA APP (OCULTOS HASTA AUTENTICARSE) -->
+    <!-- CONTENEDOR PRINCIPAL DE LA APP -->
     <div id="appContent" style="display: none;">
-        <!-- CONTENEDOR DE BANNER POSICIÓN ARRIBA -->
         <div id="bannerTopContainer" class="dynamic-banner">
             <img id="bannerTopImg" src="" alt="Promoción / Anuncio NEXK">
         </div>
 
         <div class="container">
-            <!-- PORTAFOLIO PRIVADO DEL USUARIO (EN TOKENS) -->
+            <!-- PORTAFOLIO DEL USUARIO -->
             <div class="card" id="userDashboard">
                 <h3>Mi Portafolio NEXK</h3>
                 <div class="stat-grid">
@@ -339,41 +358,98 @@
                         <label>Método de Pago / Moneda</label>
                         <select id="paymentCurrency">
                             <option value="USD">Tarjeta de Crédito / Débito (USD $)</option>
-                            <option value="BRL">Tarjeta / Pix Brasil (BRL R$)</option>
+                            <option value="BRL">Pix / Transferencia Brasil (BRL R$)</option>
                         </select>
                     </div>
-                    <button class="btn-action btn-buy" onclick="comprarCrypto()">Comprar $NEXK</button>
-                    <button class="btn-action btn-sell" onclick="venderCrypto()">Vender $NEXK</button>
+                    <button class="btn-action btn-buy" onclick="iniciarProcesoCompra()">Comprar $NEXK</button>
+                    <button class="btn-action btn-sell" onclick="iniciarProcesoVenta()">Vender $NEXK</button>
                 </div>
             </div>
 
+            <!-- MERCADO Y GRÁFICO DE PRECIOS -->
             <div class="card">
                 <h2>Mercado NEXK Token ($NEXK)</h2>
                 <h1 id="tokenPrice" style="font-size: 2.2rem; margin-top: 10px;">$1.45 USD</h1>
                 <span id="tokenChange" style="color: var(--green-up); font-weight: bold;">+3.2%</span>
                 <p style="margin-top: 10px; font-size: 13px; color: var(--text-muted);">Cap. de Mercado: <strong id="tokenCap" style="color: #fff;">$14.5M</strong></p>
-                <p style="font-size: 13px; color: var(--text-muted);">Red: <strong id="tokenNet" style="color: #fff;">Mainnet v1</strong></p>
+                <p style="font-size: 13px; color: var(--text-muted);">Red: <strong id="tokenNet" style="color: #fff;">BNB Smart Chain (BEP-20)</strong></p>
+                
+                <!-- GRÁFICO DEL TOKEN -->
+                <div class="chart-container">
+                    <canvas id="priceChart"></canvas>
+                </div>
             </div>
         </div>
 
-        <!-- CONTENEDOR DE BANNER POSICIÓN DEBAJO DEL MERCADO -->
         <div id="bannerMiddleContainer" class="dynamic-banner">
             <img id="bannerMiddleImg" src="" alt="Promoción / Anuncio NEXK">
         </div>
 
-        <!-- CONTENEDOR DE BANNER POSICIÓN AL FINAL -->
         <div id="bannerBottomContainer" class="dynamic-banner">
             <img id="bannerBottomImg" src="" alt="Promoción / Anuncio NEXK">
         </div>
     </div>
 
-    <!-- MODAL REGISTRO / LOGIN CORREO Y PROVEEDORES -->
+    <!-- MODAL ACCESO ADMINISTRADOR (TRES PUNTOS) -->
+    <div id="adminAuthModal" class="modal">
+        <div class="modal-content">
+            <h3>Acceso Administrativo</h3>
+            <div class="field">
+                <label>Usuario Administrador</label>
+                <input type="text" id="adminUserInput" placeholder="Usuario">
+            </div>
+            <div class="field">
+                <label>Contraseña</label>
+                <input type="password" id="adminPassInput" placeholder="Contraseña">
+            </div>
+            <button class="btn-auth" style="width:100%; margin-top:10px;" onclick="validarCredencialesAdmin()">Ingresar a Panel Admin</button>
+            <button class="btn-gen" style="width: 100%; margin-top: 10px; background: transparent; border: none; color: var(--text-muted);" onclick="cerrarModal('adminAuthModal')">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL PASARELA DE PAGO (COMPRA) -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <h3>Pasarela de Pago Segura</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Confirma el pago para procesar tus tokens NEXK.</p>
+            <div class="field">
+                <label>Total a Pagar</label>
+                <input type="text" id="payTotalText" readonly style="font-weight: bold; color: var(--primary-cyan);">
+            </div>
+            <div class="field">
+                <label>Número de Tarjeta / Clave Pix</label>
+                <input type="text" id="payDetailsInput" placeholder="4532 **** **** 8891 o Chave Pix">
+            </div>
+            <button class="btn-auth" style="width:100%; margin-top:10px; background: var(--green-up); color: white;" onclick="confirmarPagoCompra()">Confirmar Pago y Acreditar</button>
+            <button class="btn-gen" style="width: 100%; margin-top: 10px; background: transparent; border: none; color: var(--text-muted);" onclick="cerrarModal('paymentModal')">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL RETIRO/DEBIDO (VENTA) -->
+    <div id="payoutModal" class="modal">
+        <div class="modal-content">
+            <h3>Procesar Retiro de Fondos</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Ingresa tus datos para recibir la transferencia.</p>
+            <div class="field">
+                <label>Monto a Recibir</label>
+                <input type="text" id="payoutTotalText" readonly style="font-weight: bold; color: var(--green-up);">
+            </div>
+            <div class="field">
+                <label>Cuenta Bancaria / Clave Pix para depósito</label>
+                <input type="text" id="payoutDetailsInput" placeholder="Correo Pix / IBAN / N° de Cuenta">
+            </div>
+            <button class="btn-auth" style="width:100%; margin-top:10px; background: var(--red-down); color: white;" onclick="confirmarVentaTokens()">Confirmar Venta y Enviar Fondos</button>
+            <button class="btn-gen" style="width: 100%; margin-top: 10px; background: transparent; border: none; color: var(--text-muted);" onclick="cerrarModal('payoutModal')">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL AUTENTICACIÓN USUARIOS -->
     <div id="authModal" class="modal">
         <div class="modal-content">
             <h3 id="modalTitle">Acceso de Usuario</h3>
             
-            <button class="btn-provider btn-google" onclick="ejecutarGoogleLogin()">Continuar con Google</button>
-            <button class="btn-provider btn-apple" onclick="ejecutarAppleLogin()">Continuar con Apple</button>
+            <button class="btn-provider btn-google" id="btnGoogleModal">Continuar con Google</button>
+            <button class="btn-provider btn-apple" id="btnAppleModal">Continuar con Apple</button>
 
             <div style="margin: 15px 0; color: var(--text-muted); font-size: 12px; text-align: center;">- O CORREO ELECTRÓNICO -</div>
 
@@ -383,7 +459,7 @@
             </div>
             <div class="field">
                 <label>Contraseña</label>
-                <input type="text" id="authPassword" placeholder="Contraseña">
+                <input type="password" id="authPassword" placeholder="Contraseña">
                 <button class="btn-gen" onclick="generarPasswordAzar()">Generar Contraseña Aleatoria</button>
             </div>
             <div style="display: flex; gap: 10px; margin-top: 15px;">
@@ -394,14 +470,12 @@
         </div>
     </div>
 
-    <!-- MODAL DE AYUDA / CHAT SOPORTE EN VIVO -->
+    <!-- MODAL SOPORTE -->
     <div id="helpModal" class="modal">
         <div class="modal-content">
             <h3>Centro de Ayuda / Soporte en Vivo</h3>
-            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Escribe tus dudas y el soporte técnico te responderá aquí en tiempo real.</p>
-            
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Escribe tus dudas y el soporte técnico te responderá en tiempo real.</p>
             <div id="userChatBox" class="chat-box"></div>
-
             <div class="chat-input-container">
                 <input type="text" id="userChatMessage" placeholder="Escribe tu mensaje aquí...">
                 <button class="btn-auth" onclick="enviarMensajeSoporte()">Enviar</button>
@@ -410,13 +484,13 @@
         </div>
     </div>
 
-    <!-- MODAL DE ADMINISTRADOR (AJUSTES, IMAGEN Y CHATS) -->
+    <!-- MODAL ADMINISTRADOR -->
     <div id="adminModal" class="modal">
         <div class="modal-content">
             <h3>Panel de Administrador</h3>
             
             <div class="field">
-                <label>Seleccionar Chat de Usuario para Responder</label>
+                <label>Seleccionar Chat de Usuario</label>
                 <select id="adminChatSelect" onchange="cargarChatSeleccionadoAdmin()"></select>
             </div>
 
@@ -433,33 +507,33 @@
             <div class="field"><label>Precio del Token ($ USD)</label><input type="text" id="adminPrice" value="1.45"></div>
             <div class="field"><label>Variación (%)</label><input type="text" id="adminChange" value="+3.2%"></div>
             <div class="field"><label>Capitalización de Mercado</label><input type="text" id="adminCap" value="$14.5M"></div>
-            <div class="field"><label>Red</label><input type="text" id="adminNet" value="Mainnet v1"></div>
+            <div class="field"><label>Red</label><input type="text" id="adminNet" value="BNB Smart Chain (BEP-20)"></div>
 
             <hr style="border-color: var(--border-color); margin: 15px 0;">
 
-            <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Ajustes de Imagen / Banner</h4>
+            <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Ajustes de Banner</h4>
             <div class="field">
-                <label>URL de la Imagen Banner</label>
+                <label>URL de Imagen</label>
                 <input type="text" id="adminImageUrl" placeholder="https://ejemplo.com/imagen.jpg">
             </div>
             <div class="field">
-                <label>Posición de la Imagen</label>
+                <label>Posición</label>
                 <select id="adminImagePosition">
                     <option value="none">Oculta / Ninguna</option>
-                    <option value="top">Parte Superior (Antes de Todo)</option>
+                    <option value="top">Parte Superior</option>
                     <option value="middle">Debajo del Mercado</option>
-                    <option value="bottom">Al Final de la Página</option>
+                    <option value="bottom">Al Final</option>
                 </select>
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button class="btn-auth" style="flex:1; background: var(--green-up); color: white;" onclick="guardarAjustesAdmin()">Guardar Ajustes en Firebase</button>
+                <button class="btn-auth" style="flex:1; background: var(--green-up); color: white;" onclick="guardarAjustesAdmin()">Guardar Ajustes</button>
                 <button class="btn-gen" style="flex:1; background: var(--border-color); color: white;" onclick="cerrarAdminModal()">Cerrar</button>
             </div>
         </div>
     </div>
 
-    <!-- INTEGRACIÓN FIREBASE AUTH Y FIRESTORE -->
+    <!-- FIREBASE SERVICES Y CONTROL DE APLICACIÓN -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
       import { 
@@ -505,28 +579,57 @@
       const appleProvider = new OAuthProvider('apple.com');
 
       let usuarioActual = null;
+      let tokensActualesUsuario = 0;
       let PRECIO_TOKEN_USD = 1.45;
-      let unsubscribeUserChat = null;
-      let unsubscribeAdminChat = null;
+      let tempCantidadTokens = 0;
+      let myChart = null;
 
-      // Escuchar configuración global e imagen dinámica en tiempo real
+      function inicializarGrafico() {
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        if (myChart) myChart.destroy();
+
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['12:00', '13:00', '14:00', '15:00', '16:00', '17:00', 'Ahora'],
+                datasets: [{
+                    label: 'Precio $NEXK (USD)',
+                    data: [1.38, 1.40, 1.39, 1.42, 1.41, 1.44, PRECIO_TOKEN_USD],
+                    borderColor: '#38bdf8',
+                    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: '#1f2937' }, ticks: { color: '#9ca3af' } },
+                    y: { grid: { color: '#1f2937' }, ticks: { color: '#9ca3af' } }
+                }
+            }
+        });
+      }
+
       const docRefConfig = doc(db, "configuracion", "general");
-      
       onSnapshot(docRefConfig, (snap) => {
         if (snap.exists()) {
           const d = snap.data();
           if (d.precio) {
             PRECIO_TOKEN_USD = parseFloat(d.precio) || 1.45;
-            const tokenPriceElem = document.getElementById('tokenPrice');
-            if (tokenPriceElem) tokenPriceElem.innerText = '$' + d.precio + ' USD';
+            document.getElementById('tokenPrice').innerText = '$' + d.precio + ' USD';
             if (usuarioActual) recalcularBalanceUsuario();
+            if (myChart) {
+                myChart.data.datasets[0].data[6] = PRECIO_TOKEN_USD;
+                myChart.update();
+            }
           }
-          const tokenChangeElem = document.getElementById('tokenChange');
-          if (d.variacion && tokenChangeElem) tokenChangeElem.innerText = d.variacion;
-          const tokenCapElem = document.getElementById('tokenCap');
-          if (d.cap && tokenCapElem) tokenCapElem.innerText = d.cap;
-          const tokenNetElem = document.getElementById('tokenNet');
-          if (d.red && tokenNetElem) tokenNetElem.innerText = d.red;
+          if (d.variacion) document.getElementById('tokenChange').innerText = d.variacion;
+          if (d.cap) document.getElementById('tokenCap').innerText = d.cap;
+          if (d.red) document.getElementById('tokenNet').innerText = d.red;
 
           renderizarImagenDinamica(d.imageUrl || '', d.imagePos || 'none');
         }
@@ -544,21 +647,17 @@
         if (!url || !posicion || posicion === 'none') return;
 
         if (posicion === 'top') {
-          const img = document.getElementById('bannerTopImg');
-          if (img) img.src = url;
+          document.getElementById('bannerTopImg').src = url;
           if (topCont) topCont.style.display = 'flex';
         } else if (posicion === 'middle') {
-          const img = document.getElementById('bannerMiddleImg');
-          if (img) img.src = url;
+          document.getElementById('bannerMiddleImg').src = url;
           if (midCont) midCont.style.display = 'flex';
         } else if (posicion === 'bottom') {
-          const img = document.getElementById('bannerBottomImg');
-          if (img) img.src = url;
+          document.getElementById('bannerBottomImg').src = url;
           if (botCont) botCont.style.display = 'flex';
         }
       }
 
-      // Escuchar estado de sesión del usuario
       onAuthStateChanged(auth, async (user) => {
         const userDisplayElem = document.getElementById('userDisplay');
         const authBtnElem = document.getElementById('authBtn');
@@ -568,35 +667,29 @@
 
         if (user) {
           usuarioActual = user;
-          if (userDisplayElem) userDisplayElem.innerText = user.email || user.displayName || "Usuario NEXK";
-          if (authBtnElem) {
-            authBtnElem.innerText = "Salir";
-            authBtnElem.onclick = () => signOut(auth);
-          }
+          userDisplayElem.innerText = user.email || user.displayName || "Usuario NEXK";
+          authBtnElem.innerText = "Salir";
+          authBtnElem.onclick = () => signOut(auth);
           
-          if (welcomeElem) welcomeElem.style.display = 'none';
-          if (appElem) appElem.style.display = 'block';
-          if (helpBtnElem) helpBtnElem.style.display = 'inline-block';
+          welcomeElem.style.display = 'none';
+          appElem.style.display = 'block';
+          helpBtnElem.style.display = 'inline-block';
+
+          inicializarGrafico();
 
           const userDocRef = doc(db, "usuarios", user.uid);
-          
           onSnapshot(userDocRef, (snapshot) => {
             if (snapshot.exists()) {
               const data = snapshot.data();
-              const tokens = data.tokensNEXK || 0;
-              const userTokensElem = document.getElementById('userTokens');
-              const userBalanceElem = document.getElementById('userBalanceUSD');
-              const userProfitElem = document.getElementById('userProfit');
-              const userOpsElem = document.getElementById('userOps');
-
-              if (userTokensElem) userTokensElem.innerText = tokens.toFixed(2) + ' NEXK';
-              if (userBalanceElem) userBalanceElem.innerText = '$' + (tokens * PRECIO_TOKEN_USD).toFixed(2) + ' USD';
-              if (userProfitElem) userProfitElem.innerText = (data.gananciaTokens || 0).toFixed(2) + ' NEXK';
-              if (userOpsElem) userOpsElem.innerText = (data.totalOperaciones || 0).toString();
+              tokensActualesUsuario = data.tokensNEXK || 0;
+              document.getElementById('userTokens').innerText = tokensActualesUsuario.toFixed(2) + ' NEXK';
+              document.getElementById('userBalanceUSD').innerText = '$' + (tokensActualesUsuario * PRECIO_TOKEN_USD).toFixed(2) + ' USD';
+              document.getElementById('userProfit').innerText = (data.gananciaTokens || 0).toFixed(2) + ' NEXK';
+              document.getElementById('userOps').innerText = (data.totalOperaciones || 0).toString();
             } else {
               setDoc(userDocRef, {
                 email: user.email || user.displayName || "Sin Correo",
-                tokensNEXK: 100,
+                tokensNEXK: 0,
                 gananciaTokens: 0,
                 totalOperaciones: 0,
                 creado: serverTimestamp()
@@ -608,32 +701,22 @@
 
         } else {
           usuarioActual = null;
-          if (userDisplayElem) userDisplayElem.innerText = "Invitado";
-          if (authBtnElem) {
-            authBtnElem.innerText = "Ingresar";
-            authBtnElem.onclick = window.abrirAuthModal;
-          }
+          tokensActualesUsuario = 0;
+          userDisplayElem.innerText = "Invitado";
+          authBtnElem.innerText = "Ingresar";
+          authBtnElem.onclick = window.abrirAuthModal;
           
-          if (welcomeElem) welcomeElem.style.display = 'block';
-          if (appElem) appElem.style.display = 'none';
-          if (helpBtnElem) helpBtnElem.style.display = 'none';
-
-          if (unsubscribeUserChat) unsubscribeUserChat();
+          welcomeElem.style.display = 'block';
+          appElem.style.display = 'none';
+          helpBtnElem.style.display = 'none';
         }
       });
 
       function recalcularBalanceUsuario() {
-        const userTokensElem = document.getElementById('userTokens');
-        const userBalanceElem = document.getElementById('userBalanceUSD');
-        if (!userTokensElem || !userBalanceElem) return;
-
-        const textTokens = userTokensElem.innerText;
-        const tokens = parseFloat(textTokens) || 0;
-        userBalanceElem.innerText = '$' + (tokens * PRECIO_TOKEN_USD).toFixed(2) + ' USD';
+        document.getElementById('userBalanceUSD').innerText = '$' + (tokensActualesUsuario * PRECIO_TOKEN_USD).toFixed(2) + ' USD';
       }
 
-      // Autenticación Multi-proveedor
-      window.ejecutarGoogleLogin = async function() {
+      const loginGoogle = async () => {
         try {
           await signInWithPopup(auth, googleProvider);
           window.cerrarAuthModal();
@@ -642,7 +725,7 @@
         }
       };
 
-      window.ejecutarAppleLogin = async function() {
+      const loginApple = async () => {
         try {
           await signInWithPopup(auth, appleProvider);
           window.cerrarAuthModal();
@@ -651,97 +734,96 @@
         }
       };
 
+      document.getElementById('btnGoogleWelcome').addEventListener('click', loginGoogle);
+      document.getElementById('btnAppleWelcome').addEventListener('click', loginApple);
+      document.getElementById('btnGoogleModal').addEventListener('click', loginGoogle);
+      document.getElementById('btnAppleModal').addEventListener('click', loginApple);
+
       window.ejecutarRegistro = async function() {
-        const emailInput = document.getElementById('authEmail');
-        const passInput = document.getElementById('authPassword');
-        const email = emailInput ? emailInput.value : '';
-        const pass = passInput ? passInput.value : '';
-
+        const email = document.getElementById('authEmail').value;
+        const pass = document.getElementById('authPassword').value;
         if (!email || !pass) return alert("Completa correo y contraseña");
-
         try {
           await createUserWithEmailAndPassword(auth, email, pass);
-          alert("Cuenta creada con éxito.");
           window.cerrarAuthModal();
-        } catch (e) {
-          alert("Error: " + e.message);
-        }
+        } catch (e) { alert("Error: " + e.message); }
       };
 
       window.ejecutarLogin = async function() {
-        const emailInput = document.getElementById('authEmail');
-        const passInput = document.getElementById('authPassword');
-        const email = emailInput ? emailInput.value : '';
-        const pass = passInput ? passInput.value : '';
-
+        const email = document.getElementById('authEmail').value;
+        const pass = document.getElementById('authPassword').value;
         if (!email || !pass) return alert("Completa correo y contraseña");
-
         try {
           await signInWithEmailAndPassword(auth, email, pass);
           window.cerrarAuthModal();
-        } catch (e) {
-          alert("Error: " + e.message);
-        }
+        } catch (e) { alert("Error: " + e.message); }
       };
 
-      // Compras y Ventas operadas en TOKENS
-      window.comprarCrypto = async function() {
+      window.iniciarProcesoCompra = function() {
         if (!usuarioActual) return alert("Inicia sesión primero");
-        const tradeAmountInput = document.getElementById('tradeAmount');
-        const paymentCurrencySelect = document.getElementById('paymentCurrency');
+        const cantidad = parseFloat(document.getElementById('tradeAmount').value);
+        if (isNaN(cantidad) || cantidad <= 0) return alert("Ingresa una cantidad válida de tokens");
 
-        const cantidadTokens = parseFloat(tradeAmountInput ? tradeAmountInput.value : '0');
-        const moneda = paymentCurrencySelect ? paymentCurrencySelect.value : 'USD';
+        tempCantidadTokens = cantidad;
+        const moneda = document.getElementById('paymentCurrency').value;
+        const costoUSD = cantidad * PRECIO_TOKEN_USD;
 
-        if (isNaN(cantidadTokens) || cantidadTokens <= 0) return alert("Cantidad de tokens inválida");
-
-        const costoUSD = cantidadTokens * PRECIO_TOKEN_USD;
-        const userRef = doc(db, "usuarios", usuarioActual.uid);
-
-        try {
-          await updateDoc(userRef, {
-            tokensNEXK: increment(cantidadTokens),
-            totalOperaciones: increment(1)
-          });
-          alert(`Compra exitosa: ${cantidadTokens.toFixed(2)} NEXK. Pago procesado en ${moneda} ($${costoUSD.toFixed(2)} USD eq.).`);
-        } catch (e) {
-          alert("Error al procesar compra: " + e.message);
-        }
+        document.getElementById('payTotalText').value = `${costoUSD.toFixed(2)} USD (${moneda})`;
+        document.getElementById('paymentModal').classList.add('show');
       };
 
-      window.venderCrypto = async function() {
-        if (!usuarioActual) return alert("Inicia sesión primero");
-        const tradeAmountInput = document.getElementById('tradeAmount');
-        const cantidadTokens = parseFloat(tradeAmountInput ? tradeAmountInput.value : '0');
-
-        if (isNaN(cantidadTokens) || cantidadTokens <= 0) return alert("Cantidad de tokens inválida");
+      window.confirmarPagoCompra = async function() {
+        const det = document.getElementById('payDetailsInput').value;
+        if (!det) return alert("Por favor ingresa los datos de pago para procesar");
 
         const userRef = doc(db, "usuarios", usuarioActual.uid);
-
         try {
           await updateDoc(userRef, {
-            tokensNEXK: increment(-cantidadTokens),
-            gananciaTokens: increment(cantidadTokens * 0.05),
+            tokensNEXK: increment(tempCantidadTokens),
             totalOperaciones: increment(1)
           });
-          alert(`Venta exitosa: ${cantidadTokens.toFixed(2)} NEXK transferidos.`);
-        } catch (e) {
-          alert("Error al procesar venta: " + e.message);
+          alert("¡Pago procesado exitosamente! Tokens acreditados.");
+          window.cerrarModal('paymentModal');
+        } catch (e) { alert("Error al procesar compra: " + e.message); }
+      };
+
+      window.iniciarProcesoVenta = function() {
+        if (!usuarioActual) return alert("Inicia sesión primero");
+        const cantidad = parseFloat(document.getElementById('tradeAmount').value);
+        if (isNaN(cantidad) || cantidad <= 0) return alert("Ingresa una cantidad válida de tokens");
+
+        if (cantidad > tokensActualesUsuario) {
+          return alert(`Saldo insuficiente. Tienes ${tokensActualesUsuario.toFixed(2)} NEXK y deseas vender ${cantidad} NEXK.`);
         }
+
+        tempCantidadTokens = cantidad;
+        const valorRetiroUSD = cantidad * PRECIO_TOKEN_USD;
+        document.getElementById('payoutTotalText').value = `$${valorRetiroUSD.toFixed(2)} USD`;
+        document.getElementById('payoutModal').classList.add('show');
+      };
+
+      window.confirmarVentaTokens = async function() {
+        const det = document.getElementById('payoutDetailsInput').value;
+        if (!det) return alert("Ingresa tu cuenta bancaria o clave Pix para recibir el pago");
+
+        const userRef = doc(db, "usuarios", usuarioActual.uid);
+        try {
+          await updateDoc(userRef, {
+            tokensNEXK: increment(-tempCantidadTokens),
+            gananciaTokens: increment(tempCantidadTokens * 0.05),
+            totalOperaciones: increment(1)
+          });
+          alert("¡Venta completada! Transferencia enviada a tu cuenta.");
+          window.cerrarModal('payoutModal');
+        } catch (e) { alert("Error al procesar la venta: " + e.message); }
       };
 
       function conectarChatUsuario(uid) {
-        const chatRef = collection(db, "soporte", uid, "mensajes");
-        const q = query(chatRef, orderBy("fecha", "asc"));
-
-        if (unsubscribeUserChat) unsubscribeUserChat();
-
-        unsubscribeUserChat = onSnapshot(q, (snapshot) => {
+        const q = query(collection(db, "soporte", uid, "mensajes"), orderBy("fecha", "asc"));
+        onSnapshot(q, (snapshot) => {
           const chatBox = document.getElementById('userChatBox');
           if (!chatBox) return;
-
           chatBox.innerHTML = '';
-          
           snapshot.forEach((docSnap) => {
             const data = docSnap.data();
             const msgDiv = document.createElement('div');
@@ -754,81 +836,54 @@
       }
 
       window.enviarMensajeSoporte = async function() {
-        if (!usuarioActual) return alert("Debes ingresar para enviar un mensaje");
+        if (!usuarioActual) return;
         const txtInput = document.getElementById('userChatMessage');
-        const txt = txtInput ? txtInput.value.trim() : '';
+        const txt = txtInput.value.trim();
         if (!txt) return;
 
-        try {
-          await addDoc(collection(db, "soporte", usuarioActual.uid, "mensajes"), {
-            texto: txt,
-            remitente: 'usuario',
-            email: usuarioActual.email || "Usuario sin email",
-            fecha: serverTimestamp()
-          });
-          if (txtInput) txtInput.value = '';
-        } catch (e) { console.error(e); }
+        await addDoc(collection(db, "soporte", usuarioActual.uid, "mensajes"), {
+          texto: txt, remitente: 'usuario', fecha: serverTimestamp()
+        });
+        txtInput.value = '';
       };
 
-      // Panel de Administrador
       window.abrirAdminPanelModal = async function() {
-        const adminModalElem = document.getElementById('adminModal');
-        if (adminModalElem) adminModalElem.classList.add('show');
-        
+        document.getElementById('adminModal').classList.add('show');
         const snapConfig = await getDoc(docRefConfig);
         if (snapConfig.exists()) {
           const d = snapConfig.data();
-          const priceInput = document.getElementById('adminPrice');
-          const changeInput = document.getElementById('adminChange');
-          const capInput = document.getElementById('adminCap');
-          const netInput = document.getElementById('adminNet');
-          const imageUrlInput = document.getElementById('adminImageUrl');
-          const imagePosSelect = document.getElementById('adminImagePosition');
-
-          if (d.precio && priceInput) priceInput.value = d.precio;
-          if (d.variacion && changeInput) changeInput.value = d.variacion;
-          if (d.cap && capInput) capInput.value = d.cap;
-          if (d.red && netInput) netInput.value = d.red;
-          if (d.imageUrl && imageUrlInput) imageUrlInput.value = d.imageUrl;
-          if (d.imagePos && imagePosSelect) imagePosSelect.value = d.imagePos;
+          if (d.precio) document.getElementById('adminPrice').value = d.precio;
+          if (d.variacion) document.getElementById('adminChange').value = d.variacion;
+          if (d.cap) document.getElementById('adminCap').value = d.cap;
+          if (d.red) document.getElementById('adminNet').value = d.red;
+          if (d.imageUrl) document.getElementById('adminImageUrl').value = d.imageUrl;
+          if (d.imagePos) document.getElementById('adminImagePosition').value = d.imagePos;
         }
 
         const select = document.getElementById('adminChatSelect');
-        if (select) {
-          select.innerHTML = '<option value="">-- Seleccionar usuario para responder --</option>';
-          
-          const usersSnap = await getDocs(collection(db, "usuarios"));
-          
-          usersSnap.forEach((uDoc) => {
-            const opt = document.createElement('option');
-            opt.value = uDoc.id;
-            opt.innerText = uDoc.data().email || uDoc.id;
-            select.appendChild(opt);
-          });
-        }
+        select.innerHTML = '<option value="">-- Seleccionar usuario --</option>';
+        const usersSnap = await getDocs(collection(db, "usuarios"));
+        usersSnap.forEach((uDoc) => {
+          const opt = document.createElement('option');
+          opt.value = uDoc.id;
+          opt.innerText = uDoc.data().email || uDoc.id;
+          select.appendChild(opt);
+        });
       };
 
       window.cargarChatSeleccionadoAdmin = function() {
-        const select = document.getElementById('adminChatSelect');
-        const uidSelected = select ? select.value : '';
+        const uidSelected = document.getElementById('adminChatSelect').value;
         if (!uidSelected) return;
 
-        const chatRef = collection(db, "soporte", uidSelected, "mensajes");
-        const q = query(chatRef, orderBy("fecha", "asc"));
-
-        if (unsubscribeAdminChat) unsubscribeAdminChat();
-
-        unsubscribeAdminChat = onSnapshot(q, (snapshot) => {
+        const q = query(collection(db, "soporte", uidSelected, "mensajes"), orderBy("fecha", "asc"));
+        onSnapshot(q, (snapshot) => {
           const chatBox = document.getElementById('adminChatBox');
-          if (!chatBox) return;
-
           chatBox.innerHTML = '';
-          
           snapshot.forEach((docSnap) => {
             const data = docSnap.data();
             const msgDiv = document.createElement('div');
             msgDiv.className = `chat-msg ${data.remitente === 'admin' ? 'msg-user' : 'msg-admin'}`;
-            msgDiv.innerText = `${data.remitente === 'admin' ? 'Tú (Admin)' : 'Usuario'}: ${data.texto}`;
+            msgDiv.innerText = `${data.remitente === 'admin' ? 'Admin' : 'Usuario'}: ${data.texto}`;
             chatBox.appendChild(msgDiv);
           });
           chatBox.scrollTop = chatBox.scrollHeight;
@@ -836,93 +891,66 @@
       };
 
       window.enviarRespuestaAdmin = async function() {
-        const select = document.getElementById('adminChatSelect');
-        const uidSelected = select ? select.value : '';
-        if (!uidSelected) return alert("Selecciona un usuario primero");
-
+        const uidSelected = document.getElementById('adminChatSelect').value;
         const txtInput = document.getElementById('adminReplyMessage');
-        const txt = txtInput ? txtInput.value.trim() : '';
-        if (!txt) return;
+        const txt = txtInput.value.trim();
+        if (!uidSelected || !txt) return;
 
-        try {
-          await addDoc(collection(db, "soporte", uidSelected, "mensajes"), {
-            texto: txt,
-            remitente: 'admin',
-            fecha: serverTimestamp()
-          });
-          if (txtInput) txtInput.value = '';
-        } catch (e) {
-          alert("Error: " + e.message);
-        }
+        await addDoc(collection(db, "soporte", uidSelected, "mensajes"), {
+          texto: txt, remitente: 'admin', fecha: serverTimestamp()
+        });
+        txtInput.value = '';
       };
 
       window.guardarAjustesAdmin = async function() {
-        const priceInput = document.getElementById('adminPrice');
-        const changeInput = document.getElementById('adminChange');
-        const capInput = document.getElementById('adminCap');
-        const netInput = document.getElementById('adminNet');
-        const imageUrlInput = document.getElementById('adminImageUrl');
-        const imagePosSelect = document.getElementById('adminImagePosition');
-
         try {
           await setDoc(docRefConfig, {
-            precio: priceInput ? priceInput.value : '1.45',
-            variacion: changeInput ? changeInput.value : '+3.2%',
-            cap: capInput ? capInput.value : '$14.5M',
-            red: netInput ? netInput.value : 'Mainnet v1',
-            imageUrl: imageUrlInput ? imageUrlInput.value.trim() : '',
-            imagePos: imagePosSelect ? imagePosSelect.value : 'none',
+            precio: document.getElementById('adminPrice').value,
+            variacion: document.getElementById('adminChange').value,
+            cap: document.getElementById('adminCap').value,
+            red: document.getElementById('adminNet').value,
+            imageUrl: document.getElementById('adminImageUrl').value.trim(),
+            imagePos: document.getElementById('adminImagePosition').value,
             ultimaActualizacion: serverTimestamp()
           }, { merge: true });
-          alert("¡Ajustes guardados con éxito en Firebase y sincronizados!");
+          alert("¡Ajustes guardados con éxito!");
           window.cerrarAdminModal();
-        } catch (e) {
-          alert("Error al guardar: " + e.message);
-        }
+        } catch (e) { alert("Error al guardar: " + e.message); }
       };
     </script>
 
     <script>
-      window.abrirAuthModal = function() {
-        const elem = document.getElementById('authModal');
-        if (elem) elem.classList.add('show');
-      };
-      
-      window.cerrarAuthModal = function() {
-        const elem = document.getElementById('authModal');
-        if (elem) elem.classList.remove('show');
-      };
-      
-      window.abrirHelpModal = function() {
-        const elem = document.getElementById('helpModal');
-        if (elem) elem.classList.add('show');
-      };
-      
-      window.cerrarHelpModal = function() {
-        const elem = document.getElementById('helpModal');
-        if (elem) elem.classList.remove('show');
+      window.abrirAuthModal = function() { document.getElementById('authModal').classList.add('show'); };
+      window.cerrarAuthModal = function() { document.getElementById('authModal').classList.remove('show'); };
+      window.abrirHelpModal = function() { document.getElementById('helpModal').classList.add('show'); };
+      window.cerrarHelpModal = function() { document.getElementById('helpModal').classList.remove('show'); };
+      window.cerrarAdminModal = function() { document.getElementById('adminModal').classList.remove('show'); };
+      window.cerrarModal = function(id) { document.getElementById(id).classList.remove('show'); };
+
+      window.abrirLoginAdminModal = function() {
+        document.getElementById('adminAuthModal').classList.add('show');
       };
 
-      window.cerrarAdminModal = function() {
-        const elem = document.getElementById('adminModal');
-        if (elem) elem.classList.remove('show');
+      window.validarCredencialesAdmin = function() {
+        const u = document.getElementById('adminUserInput').value.trim();
+        const p = document.getElementById('adminPassInput').value.trim();
+
+        if (u === 'admin' && p === '200832') {
+          cerrarModal('adminAuthModal');
+          document.getElementById('adminUserInput').value = '';
+          document.getElementById('adminPassInput').value = '';
+          if (window.abrirAdminPanelModal) window.abrirAdminPanelModal();
+        } else {
+          alert("Credenciales administrativas incorrectas");
+        }
       };
 
       window.generarPasswordAzar = function() {
         const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%";
         let pass = "";
-        for (let i = 0; i < 10; i++) {
-          pass += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        const passInput = document.getElementById('authPassword');
-        if (passInput) passInput.value = pass;
+        for (let i = 0; i < 10; i++) pass += chars.charAt(Math.floor(Math.random() * chars.length));
+        document.getElementById('authPassword').value = pass;
         alert("Contraseña generada: " + pass);
-      };
-
-      window.abrirAdmin = function() {
-        if (window.abrirAdminPanelModal) {
-          window.abrirAdminPanelModal();
-        }
       };
     </script>
 </body>
