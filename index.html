@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXK Token - Ecosistema Descentralizado</title>
-    <!-- Chart.js CDN para el gráfico de mercado -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-dark: #090d16;
             --card-bg: #111827;
             --border-color: #1f2937;
-            --primary-cyan: #38bdf8;
+            --primary-cyan: #38bdf8; /* Este color ahora se editará desde el admin */
+            --primary-gold: #f59e0b;
             --green-up: #10b981;
             --red-down: #ef4444;
             --text-main: #f9fafb;
@@ -20,281 +20,103 @@
             --container-max-width: 1200px;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            font-family: var(--main-font);
-            min-height: 100vh;
-            padding: 16px;
-            padding-top: 70px;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: var(--bg-dark); color: var(--text-main); font-family: var(--main-font); min-height: 100vh; padding: 16px; padding-top: 70px; }
 
         /* BARRA SUPERIOR NAV */
-        .top-bar {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            height: 55px;
-            background-color: rgba(17, 24, 39, 0.98);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            z-index: 1000;
-        }
-
-        .user-info-bar {
-            font-size: 13px;
-            color: var(--primary-cyan);
-            font-weight: bold;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 180px;
-        }
-
-        .top-actions {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .btn-top {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .btn-dots {
-            background: transparent;
-            border: none;
-            color: var(--text-main);
-            font-size: 22px;
-            cursor: pointer;
-            padding: 0 8px;
-            line-height: 1;
-        }
-
-        .btn-auth {
-            background: var(--primary-cyan);
-            color: #000;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 12px;
-            cursor: pointer;
-        }
-
-        .btn-provider {
-            width: 100%;
-            padding: 10px;
-            margin-top: 8px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            font-weight: bold;
-            font-size: 13px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
+        .top-bar { position: fixed; top: 0; left: 0; right: 0; height: 55px; background-color: rgba(17, 24, 39, 0.98); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 1000; }
+        .user-info-bar { font-size: 13px; color: var(--primary-cyan); font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+        .top-actions { display: flex; gap: 8px; align-items: center; }
+        .btn-top { background: rgba(255, 255, 255, 0.08); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .btn-dots { background: transparent; border: none; color: var(--text-main); font-size: 22px; cursor: pointer; padding: 0 8px; line-height: 1; }
+        .btn-auth { background: var(--primary-cyan); color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; transition: background 0.3s; }
+        .btn-provider { width: 100%; padding: 10px; margin-top: 8px; border-radius: 6px; border: 1px solid var(--border-color); font-weight: bold; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-google { background: #ffffff; color: #000000; }
         .btn-apple { background: #000000; color: #ffffff; border-color: #333; }
 
-        .container {
-            max-width: var(--container-max-width);
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
+        .container { max-width: var(--container-max-width); margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 768px) { .container { grid-template-columns: 2fr 1fr; } }
 
-        @media (min-width: 768px) {
-            .container { grid-template-columns: 2fr 1fr; }
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            margin-bottom: 20px;
-        }
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); margin-bottom: 20px; }
 
         /* LANDING INICIO SESION */
-        .welcome-card {
-            max-width: 450px;
-            margin: 40px auto;
-            text-align: center;
-        }
-        .welcome-card h2 {
-            color: var(--primary-cyan);
-            margin-bottom: 10px;
-        }
-        .welcome-card p {
-            color: var(--text-muted);
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
+        .welcome-card { max-width: 450px; margin: 40px auto; text-align: center; }
+        .welcome-card h2 { color: var(--primary-cyan); margin-bottom: 10px; }
+        .welcome-card p { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
 
-        .stat-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .stat-box {
-            background: var(--bg-dark);
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .stat-box { background: var(--bg-dark); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); }
         .stat-box span { font-size: 12px; color: var(--text-muted); }
         .stat-box h4 { font-size: 18px; color: var(--text-main); margin-top: 4px; }
 
-        .btn-action {
-            width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 15px;
-            cursor: pointer;
-        }
+        .btn-action { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; }
         .btn-buy { background-color: var(--primary-cyan); color: #000; }
         .btn-sell { background-color: var(--red-down); color: #fff; }
 
-        /* BANNER DINÁMICO RECONFIGURABLE */
-        .dynamic-banner {
-            width: 100%;
-            max-width: var(--container-max-width);
-            margin: 0 auto 20px auto;
-            display: none;
-            justify-content: center;
-        }
-        .dynamic-banner img {
-            max-width: 100%;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            object-fit: cover;
-        }
+        /* PANTALLA BANEO */
+        #bannedScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; color: var(--red-down); text-align: center; padding: 20px; }
+        #bannedScreen h1 { font-size: 3rem; margin-bottom: 10px; }
+        
+        /* MODO REAL WEB3 */
+        .real-mode-alert { display: none; background: var(--primary-gold); color: #000; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; margin-bottom: 15px; }
+        .web3-btn { background: #f3ba2f; color: #000; display: none; margin-top: 10px; }
+
+        /* BANNERS DINÁMICOS */
+        .dynamic-banner { position: relative; width: 100%; max-width: var(--container-max-width); margin: 0 auto 20px auto; display: none; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); }
+        .dynamic-banner img { width: 100%; display: block; max-height: 250px; object-fit: cover; }
+        .banner-overlay-text { position: absolute; top: 50%; left: 0; width: 100%; transform: translateY(-50%); text-align: center; font-size: 24px; font-weight: 900; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); pointer-events: none; white-space: nowrap; }
+        .moving-text { animation: slideText 10s linear infinite; }
+        @keyframes slideText { 0% { transform: translate(100%, -50%); } 100% { transform: translate(-100%, -50%); } }
 
         /* MODALES GENERALES */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; }
         .modal.show { display: flex !important; }
-        .modal-content {
-            background: var(--card-bg);
-            padding: 24px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 450px;
-            border: 1px solid var(--border-color);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
+        .modal-content { background: var(--card-bg); padding: 24px; border-radius: 12px; width: 90%; max-width: 500px; border: 1px solid var(--border-color); max-height: 90vh; overflow-y: auto; }
         .modal-content h3 { color: var(--primary-cyan); margin-bottom: 15px; }
         .field { margin-bottom: 12px; }
         .field label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-        .field input, .field select {
-            width: 100%; padding: 10px;
-            background: var(--bg-dark);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            border-radius: 6px;
-        }
-        .btn-gen {
-            background: var(--border-color);
-            color: var(--primary-cyan);
-            border: 1px solid var(--primary-cyan);
-            padding: 6px;
-            font-size: 11px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 4px;
-        }
+        .field input, .field select { width: 100%; padding: 10px; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 6px; }
+        .btn-gen { background: var(--border-color); color: var(--primary-cyan); border: 1px solid var(--primary-cyan); padding: 6px; font-size: 11px; border-radius: 4px; cursor: pointer; margin-top: 4px; }
+
+        /* HISTORIAL CSS */
+        .historial-item { background: var(--bg-dark); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .historial-tipo { font-weight: bold; font-size: 12px; }
+        .tipo-compra { color: var(--green-up); }
+        .tipo-venta { color: var(--red-down); }
 
         /* CHAT SYSTEM CSS */
-        .chat-box {
-            background: var(--bg-dark);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            height: 250px;
-            overflow-y: auto;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-        .chat-msg {
-            max-width: 80%;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            line-height: 1.4;
-        }
-        .msg-user {
-            align-self: flex-end;
-            background: var(--primary-cyan);
-            color: #000;
-            font-weight: 500;
-        }
-        .msg-admin {
-            align-self: flex-start;
-            background: var(--border-color);
-            color: #fff;
-        }
-        .chat-input-container {
-            display: flex;
-            gap: 8px;
-        }
-        .chat-input-container input {
-            flex: 1;
-            padding: 8px;
-            background: var(--bg-dark);
-            border: 1px solid var(--border-color);
-            color: white;
-            border-radius: 6px;
-        }
+        .chat-box { background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 8px; height: 250px; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+        .chat-msg { max-width: 80%; padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 1.4; }
+        .msg-user { align-self: flex-end; background: var(--primary-cyan); color: #000; font-weight: 500; }
+        .msg-admin { align-self: flex-start; background: var(--border-color); color: #fff; }
+        .chat-input-container { display: flex; gap: 8px; }
+        .chat-input-container input { flex: 1; padding: 8px; background: var(--bg-dark); border: 1px solid var(--border-color); color: white; border-radius: 6px; }
 
-        /* CHART CONTAINER */
-        .chart-container {
-            position: relative;
-            margin-top: 15px;
-            height: 220px;
-            width: 100%;
-        }
+        /* ADMIN TABS CSS */
+        .admin-tabs { display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { background: var(--bg-dark); color: var(--text-muted); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; white-space: nowrap; }
+        .tab-btn.active { background: var(--primary-cyan); color: #000; border-color: var(--primary-cyan); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* USERS LIST ADMIN */
+        .admin-user-card { background: var(--bg-dark); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .fraud-alert { color: var(--red-down); font-weight: bold; font-size: 12px; animation: blink 1s infinite; cursor: pointer; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .chart-container { position: relative; margin-top: 15px; height: 220px; width: 100%; }
     </style>
 </head>
 <body>
 
-    <!-- BARRA NAVEGACIÓN SUPERIOR CON TRES PUNTOS -->
+    <!-- PANTALLA DE BLOQUEO -->
+    <div id="bannedScreen">
+        <h1>⛔ CUENTA SUSPENDIDA ⛔</h1>
+        <p>Has violado los términos de seguridad de NEXK Token.</p>
+        <p>El acceso a este ecosistema ha sido revocado.</p>
+    </div>
+
+    <!-- BARRA NAVEGACIÓN SUPERIOR -->
     <div class="top-bar">
         <div id="userDisplay" class="user-info-bar">Invitado</div>
         <div class="top-actions">
@@ -304,17 +126,13 @@
         </div>
     </div>
 
-    <!-- PANTALLA DE INICIO PARA VISITANTES -->
+    <!-- PANTALLA DE INICIO (VISITANTES) -->
     <div id="welcomeSection" class="card welcome-card">
         <h2>Bienvenido al token NEXK</h2>
         <p>Inicia sesión para acceder a tu portafolio y operar dentro del ecosistema.</p>
         
-        <button class="btn-provider btn-google" id="btnGoogleWelcome">
-            <span>Continuar con Google</span>
-        </button>
-        <button class="btn-provider btn-apple" id="btnAppleWelcome">
-            <span>Continuar con Apple</span>
-        </button>
+        <button class="btn-provider btn-google" id="btnGoogleWelcome">Continuar con Google</button>
+        <button class="btn-provider btn-apple" id="btnAppleWelcome">Continuar con Apple</button>
         
         <div style="margin: 15px 0; color: var(--text-muted); font-size: 12px;">o usa tu correo electrónico</div>
         <button class="btn-auth" style="width: 100%; padding: 10px;" onclick="abrirAuthModal()">Iniciar con Correo</button>
@@ -322,37 +140,30 @@
 
     <!-- CONTENEDOR PRINCIPAL DE LA APP -->
     <div id="appContent" style="display: none;">
+        
         <div id="bannerTopContainer" class="dynamic-banner">
-            <img id="bannerTopImg" src="" alt="Promoción / Anuncio NEXK">
+            <img id="bannerTopImg" src="" alt="Promoción NEXK">
+            <div id="bannerTopText" class="banner-overlay-text"></div>
         </div>
 
         <div class="container">
-            <!-- PORTAFOLIO DEL USUARIO -->
             <div class="card" id="userDashboard">
+                <div id="realModeAlert" class="real-mode-alert">⚠️ CONTRATO REAL (BNB CHAIN) ACTIVO</div>
+                <div id="tradingDisabledAlert" style="display:none; color: var(--red-down); font-weight:bold; font-size: 12px; margin-bottom: 10px;">⛔ EL COMERCIO ESTÁ PAUSADO TEMPORALMENTE ⛔</div>
+                
                 <h3>Mi Portafolio NEXK</h3>
                 <div class="stat-grid">
-                    <div class="stat-box">
-                        <span>Balance en Tokens</span>
-                        <h4 id="userTokens">0.00 NEXK</h4>
-                    </div>
-                    <div class="stat-box">
-                        <span>Valor Estimado ($)</span>
-                        <h4 id="userBalanceUSD">$0.00 USD</h4>
-                    </div>
-                    <div class="stat-box">
-                        <span>Ganancia Estimada</span>
-                        <h4 id="userProfit" style="color: var(--green-up);">0.00 NEXK</h4>
-                    </div>
-                    <div class="stat-box">
-                        <span>Operaciones</span>
-                        <h4 id="userOps">0</h4>
-                    </div>
+                    <div class="stat-box"><span>Balance Tokens</span><h4 id="userTokens">0.00 NEXK</h4></div>
+                    <div class="stat-box"><span>Valor Estimado</span><h4 id="userBalanceUSD">$0.00 USD</h4></div>
+                    <div class="stat-box"><span>Ganancia</span><h4 id="userProfit" style="color: var(--green-up);">0.00 NEXK</h4></div>
+                    <div class="stat-box"><span>Operaciones</span><h4 id="userOps">0</h4></div>
                 </div>
 
-                <div style="margin-top: 15px;">
+                <!-- SIMULADOR COMPRA/VENTA -->
+                <div id="simulatedTradeSection" style="margin-top: 15px;">
                     <div class="field">
                         <label>Monto a Operar (Tokens NEXK)</label>
-                        <input type="number" id="tradeAmount" value="100" placeholder="Ingresa cantidad de Tokens NEXK">
+                        <input type="number" id="tradeAmount" value="100">
                     </div>
                     <div class="field">
                         <label>Método de Pago / Moneda</label>
@@ -361,220 +172,206 @@
                             <option value="BRL">Pix / Transferencia Brasil (BRL R$)</option>
                         </select>
                     </div>
-                    <button class="btn-action btn-buy" onclick="iniciarProcesoCompra()">Comprar $NEXK</button>
-                    <button class="btn-action btn-sell" onclick="iniciarProcesoVenta()">Vender $NEXK</button>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button class="btn-action btn-buy" style="margin:0; flex:1;" onclick="iniciarProcesoCompra()">Comprar</button>
+                        <button class="btn-action btn-sell" style="margin:0; flex:1;" onclick="iniciarProcesoVenta()">Vender</button>
+                    </div>
+                </div>
+
+                <!-- MODO REAL WEB3 -->
+                <div id="realTradeSection" style="margin-top: 15px; display: none;">
+                    <button class="btn-action web3-btn" onclick="alert('Conectando a MetaMask / TrustWallet...')">Conectar Wallet Web3</button>
+                    <button class="btn-action web3-btn" onclick="alert('Redirigiendo a PancakeSwap...')">Comprar en PancakeSwap</button>
+                </div>
+
+                <!-- HISTORIAL -->
+                <div style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="color: var(--text-main); font-size: 14px;">Historial de Movimientos</h4>
+                        <button class="btn-gen" style="padding: 4px 8px;" onclick="toggleHistorial()">Mostrar / Ocultar</button>
+                    </div>
+                    <div id="historialLista" style="display: none; margin-top: 10px; font-size: 13px; max-height: 200px; overflow-y: auto;">
+                        <p style="color: var(--text-muted); text-align: center;">No hay transacciones aún.</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- MERCADO Y GRÁFICO DE PRECIOS -->
             <div class="card">
                 <h2>Mercado NEXK Token ($NEXK)</h2>
                 <h1 id="tokenPrice" style="font-size: 2.2rem; margin-top: 10px;">$1.45 USD</h1>
                 <span id="tokenChange" style="color: var(--green-up); font-weight: bold;">+3.2%</span>
                 <p style="margin-top: 10px; font-size: 13px; color: var(--text-muted);">Cap. de Mercado: <strong id="tokenCap" style="color: #fff;">$14.5M</strong></p>
-                <p style="font-size: 13px; color: var(--text-muted);">Red: <strong id="tokenNet" style="color: #fff;">BNB Smart Chain (BEP-20)</strong></p>
-                
-                <!-- GRÁFICO DEL TOKEN -->
-                <div class="chart-container">
-                    <canvas id="priceChart"></canvas>
-                </div>
+                <p style="font-size: 13px; color: var(--text-muted);">Red: <strong id="tokenNet" style="color: #fff;">Simulación Interna</strong></p>
+                <div class="chart-container"><canvas id="priceChart"></canvas></div>
             </div>
         </div>
 
-        <div id="bannerMiddleContainer" class="dynamic-banner">
-            <img id="bannerMiddleImg" src="" alt="Promoción / Anuncio NEXK">
-        </div>
-
-        <div id="bannerBottomContainer" class="dynamic-banner">
-            <img id="bannerBottomImg" src="" alt="Promoción / Anuncio NEXK">
-        </div>
+        <div id="bannerMiddleContainer" class="dynamic-banner"><img id="bannerMiddleImg" src=""></div>
+        <div id="bannerBottomContainer" class="dynamic-banner"><img id="bannerBottomImg" src=""></div>
     </div>
 
-    <!-- MODAL ACCESO ADMINISTRADOR (TRES PUNTOS) -->
+    <!-- MODAL ACCESO ADMINISTRADOR -->
     <div id="adminAuthModal" class="modal">
         <div class="modal-content">
             <h3>Acceso Administrativo</h3>
-            <div class="field">
-                <label>Usuario Administrador</label>
-                <input type="text" id="adminUserInput" placeholder="Usuario">
-            </div>
-            <div class="field">
-                <label>Contraseña</label>
-                <input type="password" id="adminPassInput" placeholder="Contraseña">
-            </div>
-            <button class="btn-auth" style="width:100%; margin-top:10px;" onclick="validarCredencialesAdmin()">Ingresar a Panel Admin</button>
-            <button class="btn-gen" style="width: 100%; margin-top: 10px; background: transparent; border: none; color: var(--text-muted);" onclick="cerrarModal('adminAuthModal')">Cancelar</button>
+            <div class="field"><label>Usuario Admin</label><input type="text" id="adminUserInput" placeholder="admin"></div>
+            <div class="field"><label>Contraseña</label><input type="password" id="adminPassInput" placeholder="200832"></div>
+            <button class="btn-auth" style="width:100%; margin-top:10px;" onclick="validarCredencialesAdmin()">Ingresar a Panel</button>
+            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('adminAuthModal')">Cancelar</button>
         </div>
     </div>
 
-    <!-- MODAL PASARELA DE PAGO (COMPRA) -->
+    <!-- MODAL PASARELAS -->
     <div id="paymentModal" class="modal">
         <div class="modal-content">
             <h3>Pasarela de Pago Segura</h3>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Confirma el pago para procesar tus tokens NEXK.</p>
-            <div class="field">
-                <label>Total a Pagar</label>
-                <input type="text" id="payTotalText" readonly style="font-weight: bold; color: var(--primary-cyan);">
-            </div>
-            <div class="field">
-                <label>Número de Tarjeta / Clave Pix</label>
-                <input type="text" id="payDetailsInput" placeholder="4532 **** **** 8891 o Chave Pix">
-            </div>
-            <button class="btn-auth" style="width:100%; margin-top:10px; background: var(--green-up); color: white;" onclick="confirmarPagoCompra()">Confirmar Pago y Acreditar</button>
-            <button class="btn-gen" style="width: 100%; margin-top: 10px; background: transparent; border: none; color: var(--text-muted);" onclick="cerrarModal('paymentModal')">Cancelar</button>
+            <div class="field"><label>Total a Pagar</label><input type="text" id="payTotalText" readonly style="font-weight: bold; color: var(--primary-cyan);"></div>
+            <div class="field"><label>Número de Tarjeta / Clave Pix</label><input type="text" id="payDetailsInput" placeholder="4532 **** **** 8891 o Chave Pix"></div>
+            <button class="btn-auth" style="width:100%; margin-top:10px; background: var(--green-up); color: white;" onclick="confirmarPagoCompra()">Confirmar Pago</button>
+            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('paymentModal')">Cancelar</button>
         </div>
     </div>
 
-    <!-- MODAL RETIRO/DEBIDO (VENTA) -->
     <div id="payoutModal" class="modal">
         <div class="modal-content">
-            <h3>Procesar Retiro de Fondos</h3>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Ingresa tus datos para recibir la transferencia.</p>
-            <div class="field">
-                <label>Monto a Recibir</label>
-                <input type="text" id="payoutTotalText" readonly style="font-weight: bold; color: var(--green-up);">
-            </div>
-            <div class="field">
-                <label>Cuenta Bancaria / Clave Pix para depósito</label>
-                <input type="text" id="payoutDetailsInput" placeholder="Correo Pix / IBAN / N° de Cuenta">
-            </div>
-            <button class="btn-auth" style="width:100%; margin-top:10px; background: var(--red-down); color: white;" onclick="confirmarVentaTokens()">Confirmar Venta y Enviar Fondos</button>
-            <button class="btn-gen" style="width: 100%; margin-top: 10px; background: transparent; border: none; color: var(--text-muted);" onclick="cerrarModal('payoutModal')">Cancelar</button>
+            <h3>Procesar Retiro</h3>
+            <div class="field"><label>Monto a Recibir</label><input type="text" id="payoutTotalText" readonly style="font-weight: bold; color: var(--green-up);"></div>
+            <div class="field"><label>Cuenta Bancaria / Clave Pix</label><input type="text" id="payoutDetailsInput" placeholder="IBAN / Chave Pix"></div>
+            <button class="btn-auth" style="width:100%; margin-top:10px; background: var(--red-down); color: white;" onclick="confirmarVentaTokens()">Confirmar Venta</button>
+            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('payoutModal')">Cancelar</button>
         </div>
     </div>
 
-    <!-- MODAL AUTENTICACIÓN USUARIOS -->
+    <!-- MODAL AUTH -->
     <div id="authModal" class="modal">
         <div class="modal-content">
             <h3 id="modalTitle">Acceso de Usuario</h3>
-            
             <button class="btn-provider btn-google" id="btnGoogleModal">Continuar con Google</button>
             <button class="btn-provider btn-apple" id="btnAppleModal">Continuar con Apple</button>
-
-            <div style="margin: 15px 0; color: var(--text-muted); font-size: 12px; text-align: center;">- O CORREO ELECTRÓNICO -</div>
-
-            <div class="field">
-                <label>Correo Electrónico</label>
-                <input type="email" id="authEmail" placeholder="tu@correo.com">
-            </div>
-            <div class="field">
-                <label>Contraseña</label>
-                <input type="password" id="authPassword" placeholder="Contraseña">
-                <button class="btn-gen" onclick="generarPasswordAzar()">Generar Contraseña Aleatoria</button>
-            </div>
+            <div style="margin: 15px 0; color: var(--text-muted); font-size: 12px; text-align: center;">- O CORREO -</div>
+            <div class="field"><label>Correo</label><input type="email" id="authEmail" placeholder="tu@correo.com"></div>
+            <div class="field"><label>Contraseña</label><input type="password" id="authPassword"><button class="btn-gen" onclick="generarPasswordAzar()">Generar Azar</button></div>
             <div style="display: flex; gap: 10px; margin-top: 15px;">
                 <button class="btn-auth" style="flex:1;" onclick="ejecutarRegistro()">Registrarse</button>
                 <button class="btn-auth" style="flex:1; background: var(--border-color); color: white;" onclick="ejecutarLogin()">Iniciar Sesión</button>
             </div>
-            <button class="btn-gen" style="width: 100%; margin-top: 10px; background: transparent; border: none; color: var(--text-muted);" onclick="cerrarAuthModal()">Cancelar</button>
+            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarAuthModal()">Cancelar</button>
         </div>
     </div>
 
     <!-- MODAL SOPORTE -->
     <div id="helpModal" class="modal">
         <div class="modal-content">
-            <h3>Centro de Ayuda / Soporte en Vivo</h3>
-            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Escribe tus dudas y el soporte técnico te responderá en tiempo real.</p>
+            <h3>Soporte en Vivo</h3>
             <div id="userChatBox" class="chat-box"></div>
             <div class="chat-input-container">
-                <input type="text" id="userChatMessage" placeholder="Escribe tu mensaje aquí...">
+                <input type="text" id="userChatMessage" placeholder="Escribe aquí...">
                 <button class="btn-auth" onclick="enviarMensajeSoporte()">Enviar</button>
             </div>
-            <button class="btn-gen" style="width: 100%; margin-top: 10px; background: transparent; border: none; color: var(--text-muted);" onclick="cerrarHelpModal()">Cerrar</button>
+            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarHelpModal()">Cerrar</button>
         </div>
     </div>
 
-    <!-- MODAL ADMINISTRADOR -->
+    <!-- MODAL ADMINISTRADOR REFORZADO CON PESTAÑAS -->
     <div id="adminModal" class="modal">
-        <div class="modal-content">
-            <h3>Panel de Administrador</h3>
+        <div class="modal-content" style="max-width: 600px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3>Centro de Comando NEXK</h3>
+                <span style="font-size: 12px; color: var(--primary-cyan);">Visitas Totales: <b id="adminVisitasCount">0</b></span>
+            </div>
             
-            <div class="field">
-                <label>Seleccionar Chat de Usuario</label>
-                <select id="adminChatSelect" onchange="cargarChatSeleccionadoAdmin()"></select>
+            <div class="admin-tabs">
+                <button class="tab-btn active" onclick="cambiarPestañaAdmin('tabMercado', this)">💰 Mercado</button>
+                <button class="tab-btn" onclick="cambiarPestañaAdmin('tabDiseno', this)">🎨 Diseño</button>
+                <button class="tab-btn" onclick="cambiarPestañaAdmin('tabUsuarios', this)">👥 Usuarios & Seguridad</button>
+                <button class="tab-btn" onclick="cambiarPestañaAdmin('tabChat', this)">💬 Chat</button>
             </div>
 
-            <div id="adminChatBox" class="chat-box"></div>
-
-            <div class="chat-input-container" style="margin-bottom: 15px;">
-                <input type="text" id="adminReplyMessage" placeholder="Escribir respuesta al usuario...">
-                <button class="btn-auth" onclick="enviarRespuestaAdmin()">Responder</button>
+            <!-- PESTAÑA: MERCADO -->
+            <div id="tabMercado" class="tab-content active">
+                <h4 style="color: var(--primary-gold); margin-bottom: 10px;">Estado del Proyecto</h4>
+                <div class="field">
+                    <label>Modo Web3 vs Simulación</label>
+                    <select id="adminRealMode">
+                        <option value="false">Modo Simulación (Pruebas Internas)</option>
+                        <option value="true">MODO REAL (Conexión PancakeSwap / BNB)</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Habilitar Comercio (Activar Compra/Venta)</label>
+                    <select id="adminTradingMode">
+                        <option value="yes">Activado (Los usuarios pueden operar)</option>
+                        <option value="no">Desactivado (Botones ocultos)</option>
+                    </select>
+                </div>
+                <hr style="border-color: var(--border-color); margin: 15px 0;">
+                <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Valores del Token</h4>
+                <div class="field"><label>Precio ($ USD)</label><input type="text" id="adminPrice" value="1.45"></div>
+                <div class="field"><label>Variación (%)</label><input type="text" id="adminChange" value="+3.2%"></div>
+                <div class="field"><label>Cap. de Mercado</label><input type="text" id="adminCap" value="$14.5M"></div>
             </div>
 
-            <hr style="border-color: var(--border-color); margin: 15px 0;">
-
-            <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Ajustes de Mercado</h4>
-            <div class="field"><label>Precio del Token ($ USD)</label><input type="text" id="adminPrice" value="1.45"></div>
-            <div class="field"><label>Variación (%)</label><input type="text" id="adminChange" value="+3.2%"></div>
-            <div class="field"><label>Capitalización de Mercado</label><input type="text" id="adminCap" value="$14.5M"></div>
-            <div class="field"><label>Red</label><input type="text" id="adminNet" value="BNB Smart Chain (BEP-20)"></div>
-
-            <hr style="border-color: var(--border-color); margin: 15px 0;">
-
-            <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Ajustes de Banner</h4>
-            <div class="field">
-                <label>URL de Imagen</label>
-                <input type="text" id="adminImageUrl" placeholder="https://ejemplo.com/imagen.jpg">
+            <!-- PESTAÑA: DISEÑO -->
+            <div id="tabDiseno" class="tab-content">
+                <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Colores de la Web</h4>
+                <div class="field">
+                    <label>Color Principal de Botones / Acentos</label>
+                    <input type="color" id="adminColorMain" value="#38bdf8" style="height: 40px;">
+                </div>
+                <hr style="border-color: var(--border-color); margin: 15px 0;">
+                <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Banner Publicitario</h4>
+                <div class="field"><label>URL de Foto</label><input type="text" id="adminImageUrl" placeholder="https://..."></div>
+                <div class="field"><label>Texto Encima de Foto</label><input type="text" id="adminBannerText"></div>
+                <div class="field"><label>Color de Letras</label><input type="color" id="adminBannerColor" value="#ffffff" style="height: 40px;"></div>
+                <div class="field"><label>Mover Texto (Marquesina)</label>
+                    <select id="adminBannerMove"><option value="no">Fijo</option><option value="yes">Animado</option></select>
+                </div>
+                <div class="field"><label>Posición</label>
+                    <select id="adminImagePosition">
+                        <option value="none">Oculto</option>
+                        <option value="top">Arriba</option>
+                        <option value="middle">Medio</option>
+                        <option value="bottom">Abajo</option>
+                    </select>
+                </div>
             </div>
-            <div class="field">
-                <label>Posición</label>
-                <select id="adminImagePosition">
-                    <option value="none">Oculta / Ninguna</option>
-                    <option value="top">Parte Superior</option>
-                    <option value="middle">Debajo del Mercado</option>
-                    <option value="bottom">Al Final</option>
-                </select>
+
+            <!-- PESTAÑA: USUARIOS -->
+            <div id="tabUsuarios" class="tab-content">
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Gestiona las cuentas y vigila intentos de hackeo (inyección de saldo).</p>
+                <div id="listaUsuariosAdmin" style="max-height: 250px; overflow-y: auto;">
+                    <!-- Se llena via JS -->
+                </div>
             </div>
 
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button class="btn-auth" style="flex:1; background: var(--green-up); color: white;" onclick="guardarAjustesAdmin()">Guardar Ajustes</button>
+            <!-- PESTAÑA: CHAT -->
+            <div id="tabChat" class="tab-content">
+                <div class="field"><label>Seleccionar Cliente</label><select id="adminChatSelect" onchange="cargarChatSeleccionadoAdmin()"></select></div>
+                <div id="adminChatBox" class="chat-box"></div>
+                <div class="chat-input-container">
+                    <input type="text" id="adminReplyMessage" placeholder="Escribir respuesta...">
+                    <button class="btn-auth" onclick="enviarRespuestaAdmin()">Responder</button>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn-auth" style="flex:1; background: var(--green-up); color: white;" onclick="guardarAjustesAdmin()">💾 Guardar Ajustes</button>
                 <button class="btn-gen" style="flex:1; background: var(--border-color); color: white;" onclick="cerrarAdminModal()">Cerrar</button>
             </div>
         </div>
     </div>
 
-    <!-- FIREBASE SERVICES Y CONTROL DE APLICACIÓN -->
+    <!-- FIREBASE & LÓGICA -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-      import { 
-        getAuth, 
-        createUserWithEmailAndPassword, 
-        signInWithEmailAndPassword, 
-        signOut, 
-        onAuthStateChanged,
-        GoogleAuthProvider,
-        OAuthProvider,
-        signInWithPopup
-      } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-      import { 
-        getFirestore, 
-        doc, 
-        setDoc, 
-        getDoc, 
-        onSnapshot, 
-        updateDoc, 
-        increment, 
-        collection,
-        addDoc,
-        query,
-        orderBy,
-        serverTimestamp,
-        getDocs
-      } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+      import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+      import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, addDoc, query, orderBy, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyBJoAAzTcWn_K7gXydwwbesG_gERwBq8Us",
-        authDomain: "nexk-131a4.firebaseapp.com",
-        projectId: "nexk-131a4",
-        storageBucket: "nexk-131a4.firebasestorage.app",
-        messagingSenderId: "346256202124",
-        appId: "1:346256202124:web:0989c34083095659451ea9"
-      };
-
+      const firebaseConfig = { apiKey: "AIzaSyBJoAAzTcWn_K7gXydwwbesG_gERwBq8Us", authDomain: "nexk-131a4.firebaseapp.com", projectId: "nexk-131a4" };
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const db = getFirestore(app);
-
+      
       const googleProvider = new GoogleAuthProvider();
       const appleProvider = new OAuthProvider('apple.com');
 
@@ -583,97 +380,85 @@
       let PRECIO_TOKEN_USD = 1.45;
       let tempCantidadTokens = 0;
       let myChart = null;
+      let adminChatUnsubscribe = null;
+      let historialUnsubscribe = null;
+
+      // 1. REGISTRO DE VISITAS
+      window.onload = async () => {
+          const statsRef = doc(db, "configuracion", "estadisticas");
+          try {
+              await updateDoc(statsRef, { visitas: increment(1) });
+          } catch(e) {
+              await setDoc(statsRef, { visitas: 1 });
+          }
+      };
 
       function inicializarGrafico() {
         const ctx = document.getElementById('priceChart').getContext('2d');
         if (myChart) myChart.destroy();
-
         myChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['12:00', '13:00', '14:00', '15:00', '16:00', '17:00', 'Ahora'],
-                datasets: [{
-                    label: 'Precio $NEXK (USD)',
-                    data: [1.38, 1.40, 1.39, 1.42, 1.41, 1.44, PRECIO_TOKEN_USD],
-                    borderColor: '#38bdf8',
-                    backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { color: '#1f2937' }, ticks: { color: '#9ca3af' } },
-                    y: { grid: { color: '#1f2937' }, ticks: { color: '#9ca3af' } }
-                }
-            }
+            type: 'line', data: { labels: ['12:00','13:00','14:00','15:00','16:00','17:00','Ahora'], datasets: [{ label: 'Precio (USD)', data: [1.38,1.40,1.39,1.42,1.41,1.44,PRECIO_TOKEN_USD], borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.1)', borderWidth: 2, fill: true, tension: 0.3 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: '#1f2937' }, ticks: { color: '#9ca3af' } }, y: { grid: { color: '#1f2937' }, ticks: { color: '#9ca3af' } } } }
         });
       }
 
+      // ESCUCHADOR GLOBAL
       const docRefConfig = doc(db, "configuracion", "general");
       onSnapshot(docRefConfig, (snap) => {
         if (snap.exists()) {
           const d = snap.data();
-          if (d.precio) {
-            PRECIO_TOKEN_USD = parseFloat(d.precio) || 1.45;
-            document.getElementById('tokenPrice').innerText = '$' + d.precio + ' USD';
-            if (usuarioActual) recalcularBalanceUsuario();
-            if (myChart) {
-                myChart.data.datasets[0].data[6] = PRECIO_TOKEN_USD;
-                myChart.update();
-            }
-          }
+          
+          // DISEÑO (Color botones)
+          if(d.colorBotones) document.documentElement.style.setProperty('--primary-cyan', d.colorBotones);
+
+          // MERCADO
+          if (d.precio) { PRECIO_TOKEN_USD = parseFloat(d.precio) || 1.45; document.getElementById('tokenPrice').innerText = '$' + d.precio + ' USD'; if (usuarioActual) recalcularBalanceUsuario(); if (myChart) { myChart.data.datasets[0].data[6] = PRECIO_TOKEN_USD; myChart.update(); } }
           if (d.variacion) document.getElementById('tokenChange').innerText = d.variacion;
           if (d.cap) document.getElementById('tokenCap').innerText = d.cap;
-          if (d.red) document.getElementById('tokenNet').innerText = d.red;
 
-          renderizarImagenDinamica(d.imageUrl || '', d.imagePos || 'none');
+          // MODO REAL WEB3 Y TRADING
+          const isReal = d.modoReal === "true";
+          const tradingActivo = d.tradingHabilitado !== "no";
+          
+          document.getElementById('realModeAlert').style.display = isReal ? 'block' : 'none';
+          document.getElementById('simulatedTradeSection').style.display = (isReal || !tradingActivo) ? 'none' : 'block';
+          document.getElementById('realTradeSection').style.display = isReal ? 'block' : 'none';
+          document.getElementById('tradingDisabledAlert').style.display = (!isReal && !tradingActivo) ? 'block' : 'none';
+          
+          document.querySelectorAll('.web3-btn').forEach(btn => btn.style.display = isReal ? 'block' : 'none');
+          document.getElementById('tokenNet').innerText = isReal ? 'BNB Smart Chain (Mainnet)' : 'Simulación Interna';
+
+          // BANNERS
+          const topCont = document.getElementById('bannerTopContainer'); const midCont = document.getElementById('bannerMiddleContainer'); const botCont = document.getElementById('bannerBottomContainer');
+          topCont.style.display = 'none'; midCont.style.display = 'none'; botCont.style.display = 'none';
+          if (d.imageUrl && d.imagePos && d.imagePos !== 'none') {
+            let ac = null, ai = null;
+            if (d.imagePos === 'top') { ac = topCont; ai = document.getElementById('bannerTopImg'); } else if (d.imagePos === 'middle') { ac = midCont; ai = document.getElementById('bannerMiddleImg'); } else if (d.imagePos === 'bottom') { ac = botCont; ai = document.getElementById('bannerBottomImg'); }
+            if (ac && ai) {
+                ai.src = d.imageUrl; ac.style.display = 'block';
+                if (d.imagePos === 'top') {
+                    const txt = document.getElementById('bannerTopText');
+                    txt.innerText = d.bannerText || ""; txt.style.color = d.bannerColor || "#ffffff";
+                    if(d.bannerMove === 'yes') txt.classList.add('moving-text'); else txt.classList.remove('moving-text');
+                }
+            }
+          }
         }
       });
 
-      function renderizarImagenDinamica(url, posicion) {
-        const topCont = document.getElementById('bannerTopContainer');
-        const midCont = document.getElementById('bannerMiddleContainer');
-        const botCont = document.getElementById('bannerBottomContainer');
-
-        if (topCont) topCont.style.display = 'none';
-        if (midCont) midCont.style.display = 'none';
-        if (botCont) botCont.style.display = 'none';
-
-        if (!url || !posicion || posicion === 'none') return;
-
-        if (posicion === 'top') {
-          document.getElementById('bannerTopImg').src = url;
-          if (topCont) topCont.style.display = 'flex';
-        } else if (posicion === 'middle') {
-          document.getElementById('bannerMiddleImg').src = url;
-          if (midCont) midCont.style.display = 'flex';
-        } else if (posicion === 'bottom') {
-          document.getElementById('bannerBottomImg').src = url;
-          if (botCont) botCont.style.display = 'flex';
-        }
-      }
+      // ESTADISTICAS ADMIN
+      onSnapshot(doc(db, "configuracion", "estadisticas"), (snap) => {
+          if(snap.exists()) document.getElementById('adminVisitasCount').innerText = snap.data().visitas || 0;
+      });
 
       onAuthStateChanged(auth, async (user) => {
-        const userDisplayElem = document.getElementById('userDisplay');
-        const authBtnElem = document.getElementById('authBtn');
-        const welcomeElem = document.getElementById('welcomeSection');
-        const appElem = document.getElementById('appContent');
-        const helpBtnElem = document.getElementById('helpBtn');
-
         if (user) {
           usuarioActual = user;
-          userDisplayElem.innerText = user.email || user.displayName || "Usuario NEXK";
-          authBtnElem.innerText = "Salir";
-          authBtnElem.onclick = () => signOut(auth);
-          
-          welcomeElem.style.display = 'none';
-          appElem.style.display = 'block';
-          helpBtnElem.style.display = 'inline-block';
+          document.getElementById('userDisplay').innerText = user.email || "Usuario NEXK";
+          const btn = document.getElementById('authBtn'); btn.innerText = "Salir"; btn.onclick = () => signOut(auth);
+          document.getElementById('welcomeSection').style.display = 'none';
+          document.getElementById('appContent').style.display = 'block';
+          document.getElementById('helpBtn').style.display = 'inline-block';
 
           inicializarGrafico();
 
@@ -681,240 +466,215 @@
           onSnapshot(userDocRef, (snapshot) => {
             if (snapshot.exists()) {
               const data = snapshot.data();
+              // SISTEMA DE BLOQUEO
+              if (data.bloqueado) { document.getElementById('bannedScreen').style.display = 'flex'; }
+              else { document.getElementById('bannedScreen').style.display = 'none'; }
+
               tokensActualesUsuario = data.tokensNEXK || 0;
               document.getElementById('userTokens').innerText = tokensActualesUsuario.toFixed(2) + ' NEXK';
-              document.getElementById('userBalanceUSD').innerText = '$' + (tokensActualesUsuario * PRECIO_TOKEN_USD).toFixed(2) + ' USD';
+              recalcularBalanceUsuario();
               document.getElementById('userProfit').innerText = (data.gananciaTokens || 0).toFixed(2) + ' NEXK';
               document.getElementById('userOps').innerText = (data.totalOperaciones || 0).toString();
             } else {
-              setDoc(userDocRef, {
-                email: user.email || user.displayName || "Sin Correo",
-                tokensNEXK: 0,
-                gananciaTokens: 0,
-                totalOperaciones: 0,
-                creado: serverTimestamp()
-              });
+              setDoc(userDocRef, { email: user.email || "Sin Correo", tokensNEXK: 0, gananciaTokens: 0, totalOperaciones: 0, creado: serverTimestamp(), bloqueado: false, alertaFraude: false });
             }
           });
-
-          conectarChatUsuario(user.uid);
-
+          conectarChatUsuario(user.uid); cargarHistorial(user.uid);
         } else {
           usuarioActual = null;
-          tokensActualesUsuario = 0;
-          userDisplayElem.innerText = "Invitado";
-          authBtnElem.innerText = "Ingresar";
-          authBtnElem.onclick = window.abrirAuthModal;
-          
-          welcomeElem.style.display = 'block';
-          appElem.style.display = 'none';
-          helpBtnElem.style.display = 'none';
+          document.getElementById('userDisplay').innerText = "Invitado";
+          const btn = document.getElementById('authBtn'); btn.innerText = "Ingresar"; btn.onclick = window.abrirAuthModal;
+          document.getElementById('welcomeSection').style.display = 'block';
+          document.getElementById('appContent').style.display = 'none';
+          document.getElementById('helpBtn').style.display = 'none';
+          document.getElementById('bannedScreen').style.display = 'none';
         }
       });
 
-      function recalcularBalanceUsuario() {
-        document.getElementById('userBalanceUSD').innerText = '$' + (tokensActualesUsuario * PRECIO_TOKEN_USD).toFixed(2) + ' USD';
-      }
+      function recalcularBalanceUsuario() { document.getElementById('userBalanceUSD').innerText = '$' + (tokensActualesUsuario * PRECIO_TOKEN_USD).toFixed(2) + ' USD'; }
 
-      const loginGoogle = async () => {
-        try {
-          await signInWithPopup(auth, googleProvider);
-          window.cerrarAuthModal();
-        } catch (e) {
-          alert("Error con inicio de Google: " + e.message);
-        }
-      };
+      // AUTH GOOGLE/APPLE
+      document.getElementById('btnGoogleWelcome').addEventListener('click', async () => { try { await signInWithPopup(auth, googleProvider); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }});
+      document.getElementById('btnAppleWelcome').addEventListener('click', async () => { try { await signInWithPopup(auth, appleProvider); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }});
+      document.getElementById('btnGoogleModal').addEventListener('click', async () => { try { await signInWithPopup(auth, googleProvider); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }});
+      document.getElementById('btnAppleModal').addEventListener('click', async () => { try { await signInWithPopup(auth, appleProvider); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }});
+      
+      window.ejecutarRegistro = async function() { const email = document.getElementById('authEmail').value; const pass = document.getElementById('authPassword').value; if (!email || !pass) return; try { await createUserWithEmailAndPassword(auth, email, pass); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }};
+      window.ejecutarLogin = async function() { const email = document.getElementById('authEmail').value; const pass = document.getElementById('authPassword').value; if (!email || !pass) return; try { await signInWithEmailAndPassword(auth, email, pass); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }};
 
-      const loginApple = async () => {
-        try {
-          await signInWithPopup(auth, appleProvider);
-          window.cerrarAuthModal();
-        } catch (e) {
-          alert("Error con inicio de Apple: " + e.message);
-        }
-      };
-
-      document.getElementById('btnGoogleWelcome').addEventListener('click', loginGoogle);
-      document.getElementById('btnAppleWelcome').addEventListener('click', loginApple);
-      document.getElementById('btnGoogleModal').addEventListener('click', loginGoogle);
-      document.getElementById('btnAppleModal').addEventListener('click', loginApple);
-
-      window.ejecutarRegistro = async function() {
-        const email = document.getElementById('authEmail').value;
-        const pass = document.getElementById('authPassword').value;
-        if (!email || !pass) return alert("Completa correo y contraseña");
-        try {
-          await createUserWithEmailAndPassword(auth, email, pass);
-          window.cerrarAuthModal();
-        } catch (e) { alert("Error: " + e.message); }
-      };
-
-      window.ejecutarLogin = async function() {
-        const email = document.getElementById('authEmail').value;
-        const pass = document.getElementById('authPassword').value;
-        if (!email || !pass) return alert("Completa correo y contraseña");
-        try {
-          await signInWithEmailAndPassword(auth, email, pass);
-          window.cerrarAuthModal();
-        } catch (e) { alert("Error: " + e.message); }
-      };
-
+      // TRANSACCIONES Y SISTEMA ANTI-FRAUDE
       window.iniciarProcesoCompra = function() {
         if (!usuarioActual) return alert("Inicia sesión primero");
-        const cantidad = parseFloat(document.getElementById('tradeAmount').value);
-        if (isNaN(cantidad) || cantidad <= 0) return alert("Ingresa una cantidad válida de tokens");
-
-        tempCantidadTokens = cantidad;
-        const moneda = document.getElementById('paymentCurrency').value;
-        const costoUSD = cantidad * PRECIO_TOKEN_USD;
-
-        document.getElementById('payTotalText').value = `${costoUSD.toFixed(2)} USD (${moneda})`;
+        const c = parseFloat(document.getElementById('tradeAmount').value);
+        if (isNaN(c) || c <= 0) return alert("Cantidad inválida");
+        tempCantidadTokens = c;
+        document.getElementById('payTotalText').value = `${(c * PRECIO_TOKEN_USD).toFixed(2)} USD`;
         document.getElementById('paymentModal').classList.add('show');
       };
 
       window.confirmarPagoCompra = async function() {
-        const det = document.getElementById('payDetailsInput').value;
-        if (!det) return alert("Por favor ingresa los datos de pago para procesar");
-
+        const det = document.getElementById('payDetailsInput').value; if (!det) return alert("Faltan datos");
         const userRef = doc(db, "usuarios", usuarioActual.uid);
+        
+        // DETECTOR DE FRAUDE (Inyección masiva)
+        let flagFraude = false;
+        if(tempCantidadTokens > 10000) flagFraude = true; 
+
         try {
-          await updateDoc(userRef, {
-            tokensNEXK: increment(tempCantidadTokens),
-            totalOperaciones: increment(1)
-          });
-          alert("¡Pago procesado exitosamente! Tokens acreditados.");
-          window.cerrarModal('paymentModal');
-        } catch (e) { alert("Error al procesar compra: " + e.message); }
+          await updateDoc(userRef, { tokensNEXK: increment(tempCantidadTokens), totalOperaciones: increment(1), alertaFraude: flagFraude ? true : false });
+          await addDoc(collection(db, "usuarios", usuarioActual.uid, "transacciones"), { tipo: 'COMPRA', cantidad: tempCantidadTokens, fecha: serverTimestamp() });
+          alert("Pago procesado."); window.cerrarModal('paymentModal');
+        } catch (e) { alert("Error: " + e.message); }
       };
 
       window.iniciarProcesoVenta = function() {
         if (!usuarioActual) return alert("Inicia sesión primero");
-        const cantidad = parseFloat(document.getElementById('tradeAmount').value);
-        if (isNaN(cantidad) || cantidad <= 0) return alert("Ingresa una cantidad válida de tokens");
-
-        if (cantidad > tokensActualesUsuario) {
-          return alert(`Saldo insuficiente. Tienes ${tokensActualesUsuario.toFixed(2)} NEXK y deseas vender ${cantidad} NEXK.`);
-        }
-
-        tempCantidadTokens = cantidad;
-        const valorRetiroUSD = cantidad * PRECIO_TOKEN_USD;
-        document.getElementById('payoutTotalText').value = `$${valorRetiroUSD.toFixed(2)} USD`;
+        const c = parseFloat(document.getElementById('tradeAmount').value);
+        if (isNaN(c) || c <= 0) return alert("Cantidad inválida");
+        if (c > tokensActualesUsuario) return alert("Saldo insuficiente.");
+        tempCantidadTokens = c; document.getElementById('payoutTotalText').value = `$${(c * PRECIO_TOKEN_USD).toFixed(2)} USD`;
         document.getElementById('payoutModal').classList.add('show');
       };
 
       window.confirmarVentaTokens = async function() {
-        const det = document.getElementById('payoutDetailsInput').value;
-        if (!det) return alert("Ingresa tu cuenta bancaria o clave Pix para recibir el pago");
-
+        const det = document.getElementById('payoutDetailsInput').value; if (!det) return alert("Faltan datos");
         const userRef = doc(db, "usuarios", usuarioActual.uid);
         try {
-          await updateDoc(userRef, {
-            tokensNEXK: increment(-tempCantidadTokens),
-            gananciaTokens: increment(tempCantidadTokens * 0.05),
-            totalOperaciones: increment(1)
-          });
-          alert("¡Venta completada! Transferencia enviada a tu cuenta.");
-          window.cerrarModal('payoutModal');
-        } catch (e) { alert("Error al procesar la venta: " + e.message); }
+          await updateDoc(userRef, { tokensNEXK: increment(-tempCantidadTokens), gananciaTokens: increment(tempCantidadTokens * 0.05), totalOperaciones: increment(1) });
+          await addDoc(collection(db, "usuarios", usuarioActual.uid, "transacciones"), { tipo: 'VENTA', cantidad: tempCantidadTokens, fecha: serverTimestamp() });
+          alert("Venta completada."); window.cerrarModal('payoutModal');
+        } catch (e) { alert("Error: " + e.message); }
       };
 
+      function cargarHistorial(uid) {
+          const q = query(collection(db, "usuarios", uid, "transacciones"), orderBy("fecha", "desc"));
+          if(historialUnsubscribe) historialUnsubscribe();
+          historialUnsubscribe = onSnapshot(q, (snapshot) => {
+              const lista = document.getElementById('historialLista');
+              if (snapshot.empty) { lista.innerHTML = '<p style="color:var(--text-muted);text-align:center;">Sin transacciones.</p>'; return; }
+              lista.innerHTML = '';
+              snapshot.forEach((docSnap) => {
+                  const data = docSnap.data(); const d = document.createElement('div'); d.className = 'historial-item';
+                  const t = data.tipo === 'COMPRA' ? 'tipo-compra' : 'tipo-venta'; const s = data.tipo === 'COMPRA' ? '+' : '-';
+                  d.innerHTML = `<div><span class="historial-tipo ${t}">${data.tipo}</span><div style="font-size:11px;color:var(--text-muted);">${data.fecha ? data.fecha.toDate().toLocaleString() : ''}</div></div><div style="font-weight:bold;">${s}${data.cantidad} NEXK</div>`;
+                  lista.appendChild(d);
+              });
+          });
+      }
+
+      window.toggleHistorial = function() { const div = document.getElementById('historialLista'); div.style.display = div.style.display === 'none' ? 'block' : 'none'; };
+
+      // CHAT USUARIO
       function conectarChatUsuario(uid) {
         const q = query(collection(db, "soporte", uid, "mensajes"), orderBy("fecha", "asc"));
         onSnapshot(q, (snapshot) => {
-          const chatBox = document.getElementById('userChatBox');
-          if (!chatBox) return;
-          chatBox.innerHTML = '';
-          snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `chat-msg ${data.remitente === 'admin' ? 'msg-admin' : 'msg-user'}`;
-            msgDiv.innerText = data.texto;
-            chatBox.appendChild(msgDiv);
-          });
+          const chatBox = document.getElementById('userChatBox'); chatBox.innerHTML = '';
+          snapshot.forEach((docSnap) => { const data = docSnap.data(); const msgDiv = document.createElement('div'); msgDiv.className = `chat-msg ${data.remitente === 'admin' ? 'msg-admin' : 'msg-user'}`; msgDiv.innerText = data.texto; chatBox.appendChild(msgDiv); });
           chatBox.scrollTop = chatBox.scrollHeight;
         });
       }
+      window.enviarMensajeSoporte = async function() { if (!usuarioActual) return; const txtInput = document.getElementById('userChatMessage'); const txt = txtInput.value.trim(); if (!txt) return; await addDoc(collection(db, "soporte", usuarioActual.uid, "mensajes"), { texto: txt, remitente: 'usuario', fecha: serverTimestamp() }); txtInput.value = ''; };
 
-      window.enviarMensajeSoporte = async function() {
-        if (!usuarioActual) return;
-        const txtInput = document.getElementById('userChatMessage');
-        const txt = txtInput.value.trim();
-        if (!txt) return;
-
-        await addDoc(collection(db, "soporte", usuarioActual.uid, "mensajes"), {
-          texto: txt, remitente: 'usuario', fecha: serverTimestamp()
-        });
-        txtInput.value = '';
-      };
-
+      // ================= PANEL ADMINISTRADOR =================
       window.abrirAdminPanelModal = async function() {
         document.getElementById('adminModal').classList.add('show');
+        
+        // Cargar Config
         const snapConfig = await getDoc(docRefConfig);
         if (snapConfig.exists()) {
           const d = snapConfig.data();
-          if (d.precio) document.getElementById('adminPrice').value = d.precio;
-          if (d.variacion) document.getElementById('adminChange').value = d.variacion;
-          if (d.cap) document.getElementById('adminCap').value = d.cap;
-          if (d.red) document.getElementById('adminNet').value = d.red;
-          if (d.imageUrl) document.getElementById('adminImageUrl').value = d.imageUrl;
-          if (d.imagePos) document.getElementById('adminImagePosition').value = d.imagePos;
+          document.getElementById('adminRealMode').value = d.modoReal || "false";
+          document.getElementById('adminTradingMode').value = d.tradingHabilitado || "yes";
+          document.getElementById('adminPrice').value = d.precio || 1.45;
+          document.getElementById('adminChange').value = d.variacion || "+3.2%";
+          document.getElementById('adminCap').value = d.cap || "$14.5M";
+          document.getElementById('adminColorMain').value = d.colorBotones || "#38bdf8";
+          document.getElementById('adminImageUrl').value = d.imageUrl || "";
+          document.getElementById('adminBannerText').value = d.bannerText || "";
+          document.getElementById('adminBannerColor').value = d.bannerColor || "#ffffff";
+          document.getElementById('adminBannerMove').value = d.bannerMove || "no";
+          document.getElementById('adminImagePosition').value = d.imagePos || "none";
         }
 
-        const select = document.getElementById('adminChatSelect');
-        select.innerHTML = '<option value="">-- Seleccionar usuario --</option>';
+        // Cargar Lista Usuarios para pestaña Chat y Seguridad
+        const selectChat = document.getElementById('adminChatSelect');
+        const listaUsr = document.getElementById('listaUsuariosAdmin');
+        selectChat.innerHTML = '<option value="">-- Seleccionar cliente --</option>';
+        listaUsr.innerHTML = '';
+
         const usersSnap = await getDocs(collection(db, "usuarios"));
         usersSnap.forEach((uDoc) => {
-          const opt = document.createElement('option');
-          opt.value = uDoc.id;
-          opt.innerText = uDoc.data().email || uDoc.id;
-          select.appendChild(opt);
+          const data = uDoc.data();
+          const email = data.email || "Sin correo";
+          const bal = (data.tokensNEXK || 0).toFixed(2);
+          const isBanned = data.bloqueado ? "Desbloquear" : "Bloquear";
+          const colorBanBtn = data.bloqueado ? "var(--green-up)" : "var(--red-down)";
+          const alerta = data.alertaFraude ? `<span class="fraud-alert" title="Posible inyección de tokens">⚠️ FRAUDE</span>` : "";
+
+          // Al select de chat
+          const opt = document.createElement('option'); opt.value = uDoc.id; opt.innerText = email; selectChat.appendChild(opt);
+
+          // A la lista de seguridad
+          const card = document.createElement('div'); card.className = 'admin-user-card';
+          card.innerHTML = `
+            <div>
+                <strong style="color: var(--primary-cyan); font-size: 13px;">${email}</strong> ${alerta}<br>
+                <span style="font-size: 11px; color: var(--text-muted);">Saldo: ${bal} NEXK</span>
+            </div>
+            <button class="btn-gen" style="background: ${colorBanBtn}; color: #fff; border: none; padding: 6px 12px;" onclick="toggleBanUser('${uDoc.id}', ${data.bloqueado})">${isBanned}</button>
+          `;
+          listaUsr.appendChild(card);
         });
       };
 
-      window.cargarChatSeleccionadoAdmin = function() {
-        const uidSelected = document.getElementById('adminChatSelect').value;
-        if (!uidSelected) return;
+      // Baneo Dinámico
+      window.toggleBanUser = async function(uid, isCurrentlyBanned) {
+          try {
+              await updateDoc(doc(db, "usuarios", uid), { bloqueado: !isCurrentlyBanned, alertaFraude: false }); // Limpiamos la alerta al revisar
+              alert(`Usuario ${!isCurrentlyBanned ? 'BLOQUEADO' : 'DESBLOQUEADO'}`);
+              abrirAdminPanelModal(); // Recargar lista
+          } catch(e) { alert("Error: " + e.message); }
+      };
 
+      // Pestañas
+      window.cambiarPestañaAdmin = function(tabId, btnElement) {
+          document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+          document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+          document.getElementById(tabId).classList.add('active');
+          btnElement.classList.add('active');
+      };
+
+      window.cargarChatSeleccionadoAdmin = function() {
+        const uidSelected = document.getElementById('adminChatSelect').value; const chatBox = document.getElementById('adminChatBox');
+        if (adminChatUnsubscribe) { adminChatUnsubscribe(); adminChatUnsubscribe = null; }
+        if (!uidSelected) { chatBox.innerHTML = ''; return; }
         const q = query(collection(db, "soporte", uidSelected, "mensajes"), orderBy("fecha", "asc"));
-        onSnapshot(q, (snapshot) => {
-          const chatBox = document.getElementById('adminChatBox');
+        adminChatUnsubscribe = onSnapshot(q, (snapshot) => {
           chatBox.innerHTML = '';
-          snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `chat-msg ${data.remitente === 'admin' ? 'msg-user' : 'msg-admin'}`;
-            msgDiv.innerText = `${data.remitente === 'admin' ? 'Admin' : 'Usuario'}: ${data.texto}`;
-            chatBox.appendChild(msgDiv);
-          });
+          snapshot.forEach((docSnap) => { const data = docSnap.data(); const msgDiv = document.createElement('div'); msgDiv.className = `chat-msg ${data.remitente === 'admin' ? 'msg-user' : 'msg-admin'}`; msgDiv.innerText = `${data.remitente === 'admin' ? 'Admin' : 'Usuario'}: ${data.texto}`; chatBox.appendChild(msgDiv); });
           chatBox.scrollTop = chatBox.scrollHeight;
         });
       };
 
-      window.enviarRespuestaAdmin = async function() {
-        const uidSelected = document.getElementById('adminChatSelect').value;
-        const txtInput = document.getElementById('adminReplyMessage');
-        const txt = txtInput.value.trim();
-        if (!uidSelected || !txt) return;
-
-        await addDoc(collection(db, "soporte", uidSelected, "mensajes"), {
-          texto: txt, remitente: 'admin', fecha: serverTimestamp()
-        });
-        txtInput.value = '';
-      };
+      window.enviarRespuestaAdmin = async function() { const uidSelected = document.getElementById('adminChatSelect').value; const txtInput = document.getElementById('adminReplyMessage'); const txt = txtInput.value.trim(); if (!uidSelected || !txt) return; await addDoc(collection(db, "soporte", uidSelected, "mensajes"), { texto: txt, remitente: 'admin', fecha: serverTimestamp() }); txtInput.value = ''; };
 
       window.guardarAjustesAdmin = async function() {
         try {
           await setDoc(docRefConfig, {
+            modoReal: document.getElementById('adminRealMode').value,
+            tradingHabilitado: document.getElementById('adminTradingMode').value,
             precio: document.getElementById('adminPrice').value,
             variacion: document.getElementById('adminChange').value,
             cap: document.getElementById('adminCap').value,
-            red: document.getElementById('adminNet').value,
+            colorBotones: document.getElementById('adminColorMain').value,
             imageUrl: document.getElementById('adminImageUrl').value.trim(),
+            bannerText: document.getElementById('adminBannerText').value,
+            bannerColor: document.getElementById('adminBannerColor').value,
+            bannerMove: document.getElementById('adminBannerMove').value,
             imagePos: document.getElementById('adminImagePosition').value,
             ultimaActualizacion: serverTimestamp()
           }, { merge: true });
-          alert("¡Ajustes guardados con éxito!");
-          window.cerrarAdminModal();
+          alert("¡Ajustes Guardados! Aplicado a todos los usuarios.");
         } catch (e) { alert("Error al guardar: " + e.message); }
       };
     </script>
@@ -926,31 +686,22 @@
       window.cerrarHelpModal = function() { document.getElementById('helpModal').classList.remove('show'); };
       window.cerrarAdminModal = function() { document.getElementById('adminModal').classList.remove('show'); };
       window.cerrarModal = function(id) { document.getElementById(id).classList.remove('show'); };
-
-      window.abrirLoginAdminModal = function() {
-        document.getElementById('adminAuthModal').classList.add('show');
-      };
+      window.abrirLoginAdminModal = function() { document.getElementById('adminAuthModal').classList.add('show'); };
 
       window.validarCredencialesAdmin = function() {
         const u = document.getElementById('adminUserInput').value.trim();
         const p = document.getElementById('adminPassInput').value.trim();
-
         if (u === 'admin' && p === '200832') {
           cerrarModal('adminAuthModal');
-          document.getElementById('adminUserInput').value = '';
-          document.getElementById('adminPassInput').value = '';
+          document.getElementById('adminUserInput').value = ''; document.getElementById('adminPassInput').value = '';
           if (window.abrirAdminPanelModal) window.abrirAdminPanelModal();
-        } else {
-          alert("Credenciales administrativas incorrectas");
-        }
+        } else { alert("Credenciales incorrectas"); }
       };
 
       window.generarPasswordAzar = function() {
-        const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%";
-        let pass = "";
+        const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%"; let pass = "";
         for (let i = 0; i < 10; i++) pass += chars.charAt(Math.floor(Math.random() * chars.length));
-        document.getElementById('authPassword').value = pass;
-        alert("Contraseña generada: " + pass);
+        document.getElementById('authPassword').value = pass; alert("Generada: " + pass);
       };
     </script>
 </body>
