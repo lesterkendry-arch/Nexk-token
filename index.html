@@ -13,6 +13,9 @@
     <link rel="icon" href="https://i.postimg.cc/cHk815mV/image-0.jpg" type="image/png">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- LIBRERÍA WEB3 ETHERS.JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js" type="text/javascript"></script>
+
     <style>
         :root {
             --bg-dark: #090d16;
@@ -66,8 +69,8 @@
         #bannedScreen h1 { font-size: 3rem; margin-bottom: 10px; }
         
         /* MODO REAL WEB3 */
-        .real-mode-alert { display: none; background: var(--primary-gold); color: #000; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; margin-bottom: 15px; }
-        .web3-btn { background: #f3ba2f; color: #000; display: none; margin-top: 10px; }
+        .real-mode-alert { display: block; background: var(--primary-gold); color: #000; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; margin-bottom: 15px; }
+        .web3-btn { background: #f3ba2f; color: #000; margin-top: 10px; }
 
         /* BANNERS DINÁMICOS */
         .dynamic-banner { position: relative; width: 100%; max-width: var(--container-max-width); margin: 0 auto 20px auto; display: none; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); }
@@ -167,8 +170,22 @@
                     <div class="stat-box"><span>Operaciones</span><h4 id="userOps">0</h4></div>
                 </div>
 
-                <!-- SIMULADOR COMPRA/VENTA -->
-                <div id="simulatedTradeSection" style="margin-top: 15px;">
+                <!-- MODO REAL BLOCKCHAIN DE TRADING -->
+                <div id="realTradeSection" style="margin-top: 15px; display: block;">
+                    <div class="field">
+                        <label>Monto de Tokens NEXK</label>
+                        <input type="number" id="realTradeAmount" value="100">
+                    </div>
+                    <button id="btnConnectWeb3" class="btn-action web3-btn" onclick="conectarWalletWeb3()">Conectar Billetera (MetaMask)</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-action btn-buy web3-btn" style="flex:1;" onclick="ejecutarCompraReal()">Comprar Tokens</button>
+                        <button class="btn-action btn-sell web3-btn" style="flex:1;" onclick="ejecutarVentaReal()">Vender Tokens</button>
+                    </div>
+                    <button class="btn-action web3-btn" style="background:#26a17b; color:#fff;" onclick="irAPancakeSwap()">Operar en PancakeSwap</button>
+                </div>
+
+                <!-- SIMULADOR COMPRA/VENTA (OCULTO EN MODO REAL) -->
+                <div id="simulatedTradeSection" style="margin-top: 15px; display: none;">
                     <div class="field">
                         <label>Monto a Operar (Tokens NEXK)</label>
                         <input type="number" id="tradeAmount" value="100">
@@ -184,12 +201,6 @@
                         <button class="btn-action btn-buy" style="margin:0; flex:1;" onclick="iniciarProcesoCompra()">Comprar</button>
                         <button class="btn-action btn-sell" style="margin:0; flex:1;" onclick="iniciarProcesoVenta()">Vender</button>
                     </div>
-                </div>
-
-                <!-- MODO REAL WEB3 -->
-                <div id="realTradeSection" style="margin-top: 15px; display: none;">
-                    <button class="btn-action web3-btn" onclick="alert('Conectando a MetaMask / TrustWallet...')">Conectar Wallet Web3</button>
-                    <button class="btn-action web3-btn" onclick="alert('Redirigiendo a PancakeSwap...')">Comprar en PancakeSwap</button>
                 </div>
 
                 <!-- HISTORIAL -->
@@ -209,7 +220,7 @@
                 <h1 id="tokenPrice" style="font-size: 2.2rem; margin-top: 10px;">$1.45 USD</h1>
                 <span id="tokenChange" style="color: var(--green-up); font-weight: bold;">+3.2%</span>
                 <p style="margin-top: 10px; font-size: 13px; color: var(--text-muted);">Cap. de Mercado: <strong id="tokenCap" style="color: #fff;">$14.5M</strong></p>
-                <p style="font-size: 13px; color: var(--text-muted);">Red: <strong id="tokenNet" style="color: #fff;">Simulación Interna</strong></p>
+                <p style="font-size: 13px; color: var(--text-muted);">Red: <strong id="tokenNet" style="color: #fff;">BNB Smart Chain (Mainnet)</strong></p>
                 <div class="chart-container"><canvas id="priceChart"></canvas></div>
             </div>
         </div>
@@ -218,7 +229,7 @@
         <div id="bannerBottomContainer" class="dynamic-banner"><img id="bannerBottomImg" src=""></div>
     </div>
 
-    <!-- MODALES -->
+    <!-- MODALES GENERALES -->
     <div id="adminAuthModal" class="modal">
         <div class="modal-content">
             <h3>Acceso Administrativo</h3>
@@ -277,7 +288,7 @@
         </div>
     </div>
 
-    <!-- MODAL ADMINISTRADOR PANEL CENTRAL (PESTAÑAS) -->
+    <!-- MODAL ADMINISTRADOR PANEL CENTRAL -->
     <div id="adminModal" class="modal">
         <div class="modal-content" style="max-width: 600px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -298,8 +309,8 @@
                 <div class="field">
                     <label>Modo Web3 vs Simulación</label>
                     <select id="adminRealMode">
-                        <option value="false">Modo Simulación (Pruebas Internas)</option>
                         <option value="true">MODO REAL (Conexión PancakeSwap / BNB)</option>
+                        <option value="false">Modo Simulación (Pruebas Internas)</option>
                     </select>
                 </div>
                 <div class="field">
@@ -344,9 +355,7 @@
             <!-- PESTAÑA: USUARIOS -->
             <div id="tabUsuarios" class="tab-content">
                 <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Gestiona las cuentas y vigila intentos de hackeo (inyección de saldo).</p>
-                <div id="listaUsuariosAdmin" style="max-height: 250px; overflow-y: auto;">
-                    <!-- Se llena via JS -->
-                </div>
+                <div id="listaUsuariosAdmin" style="max-height: 250px; overflow-y: auto;"></div>
             </div>
 
             <!-- PESTAÑA: CHAT -->
@@ -366,7 +375,7 @@
         </div>
     </div>
 
-    <!-- FIREBASE & LÓGICA -->
+    <!-- FIREBASE & LÓGICA WEB3 -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
       import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
@@ -390,6 +399,104 @@
       let adminChatUnsubscribe = null;
       let historialUnsubscribe = null;
       let usuariosSnapshotUnsubscribe = null;
+
+      // =========================================================================
+      // DIRECCIÓN OFICIAL DE TU CONTRATO EN BNB SMART CHAIN
+      // =========================================================================
+      const TOKEN_CONTRACT_ADDRESS = "0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5"; 
+      
+      const TOKEN_ABI = [
+        "function balanceOf(address owner) view returns (uint256)",
+        "function decimals() view returns (uint8)",
+        "function symbol() view returns (string)",
+        "function transfer(address to, uint256 amount) returns (bool)",
+        "function buyTokens() payable",
+        "function sellTokens(uint256 amount)"
+      ];
+
+      let web3Provider = null;
+      let web3Signer = null;
+      let tokenContract = null;
+      let userWalletAddress = null;
+
+      window.conectarWalletWeb3 = async function() {
+        if (typeof window.ethereum !== 'undefined') {
+          try {
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            userWalletAddress = accounts[0];
+            web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+            web3Signer = web3Provider.getSigner();
+            
+            tokenContract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, TOKEN_ABI, web3Signer);
+            await cargarSaldoRealToken();
+
+            document.getElementById('btnConnectWeb3').innerText = "Conectado: " + userWalletAddress.substring(0, 6) + "..." + userWalletAddress.substring(userWalletAddress.length - 4);
+            alert("Billetera conectada con éxito.");
+          } catch (error) {
+            alert("Error conectando Web3: " + error.message);
+          }
+        } else {
+          alert("Por favor instala MetaMask u otra billetera Web3 para operar directamente.");
+        }
+      };
+
+      async function cargarSaldoRealToken() {
+        if (!tokenContract || !userWalletAddress) return;
+        try {
+          const rawBalance = await tokenContract.balanceOf(userWalletAddress);
+          const decimals = await tokenContract.decimals();
+          const formattedBalance = ethers.utils.formatUnits(rawBalance, decimals);
+          
+          tokensActualesUsuario = parseFloat(formattedBalance);
+          document.getElementById('userTokens').innerText = tokensActualesUsuario.toFixed(2) + ' NEXK';
+          recalcularBalanceUsuario();
+        } catch (e) {
+          console.error("Error leyendo balance:", e);
+        }
+      }
+
+      window.ejecutarCompraReal = async function() {
+        if (!web3Signer || !tokenContract) {
+          return alert("Primero conecta tu billetera MetaMask.");
+        }
+        const cantidad = parseFloat(document.getElementById('realTradeAmount').value);
+        if (isNaN(cantidad) || cantidad <= 0) return alert("Ingresa un monto válido.");
+
+        try {
+          const valorBNB = ethers.utils.parseEther((cantidad * 0.002).toString());
+          const tx = await tokenContract.buyTokens({ value: valorBNB });
+          alert("Transacción enviada a la Blockchain. Esperando confirmación...");
+          await tx.wait();
+          alert("¡Compra confirmada!");
+          await cargarSaldoRealToken();
+        } catch (e) {
+          alert("Error al comprar: " + e.message);
+        }
+      };
+
+      window.ejecutarVentaReal = async function() {
+        if (!web3Signer || !tokenContract) {
+          return alert("Primero conecta tu billetera MetaMask.");
+        }
+        const cantidad = parseFloat(document.getElementById('realTradeAmount').value);
+        if (isNaN(cantidad) || cantidad <= 0) return alert("Ingresa un monto válido.");
+
+        try {
+          const decimals = await tokenContract.decimals();
+          const parsedAmount = ethers.utils.parseUnits(cantidad.toString(), decimals);
+          const tx = await tokenContract.sellTokens(parsedAmount);
+          alert("Transacción de venta enviada a la Blockchain...");
+          await tx.wait();
+          alert("¡Venta confirmada!");
+          await cargarSaldoRealToken();
+        } catch (e) {
+          alert("Error al vender: " + e.message);
+        }
+      };
+
+      window.irAPancakeSwap = function() {
+        window.open(`https://pancakeswap.finance/swap?outputCurrency=${TOKEN_CONTRACT_ADDRESS}`, '_blank');
+      };
 
       window.onload = async () => {
           const statsRef = doc(db, "configuracion", "estadisticas");
@@ -430,7 +537,7 @@
           if (d.variacion) document.getElementById('tokenChange').innerText = d.variacion;
           if (d.cap) document.getElementById('tokenCap').innerText = d.cap;
 
-          const isReal = d.modoReal === "true";
+          const isReal = d.modoReal !== "false";
           const tradingActivo = d.tradingHabilitado !== "no";
           
           document.getElementById('realModeAlert').style.display = isReal ? 'block' : 'none';
@@ -495,9 +602,11 @@
               if (data.bloqueado) { document.getElementById('bannedScreen').style.display = 'flex'; }
               else { document.getElementById('bannedScreen').style.display = 'none'; }
 
-              tokensActualesUsuario = data.tokensNEXK || 0;
-              document.getElementById('userTokens').innerText = tokensActualesUsuario.toFixed(2) + ' NEXK';
-              recalcularBalanceUsuario();
+              if (!web3Signer) {
+                tokensActualesUsuario = data.tokensNEXK || 0;
+                document.getElementById('userTokens').innerText = tokensActualesUsuario.toFixed(2) + ' NEXK';
+                recalcularBalanceUsuario();
+              }
               document.getElementById('userProfit').innerText = (data.gananciaTokens || 0).toFixed(2) + ' NEXK';
               document.getElementById('userOps').innerText = (data.totalOperaciones || 0).toString();
             }
@@ -516,7 +625,7 @@
 
       function recalcularBalanceUsuario() { document.getElementById('userBalanceUSD').innerText = '$' + (tokensActualesUsuario * PRECIO_TOKEN_USD).toFixed(2) + ' USD'; }
 
-      // ================= AUTENTICACIÓN GOOGLE & APPLE =================
+      // AUTENTICACIÓN GOOGLE & APPLE
       const procesarLoginPopup = async (provider) => {
           try {
               const result = await signInWithPopup(auth, provider);
@@ -576,7 +685,7 @@
           } catch (e) { alert("Error: " + e.message); }
       };
 
-      // TRANSACCIONES & ANTI-FRAUDE
+      // SIMULACIÓN COMPRA / VENTA
       window.iniciarProcesoCompra = function() {
         if (!usuarioActual) return alert("Inicia sesión primero");
         const c = parseFloat(document.getElementById('tradeAmount').value);
@@ -635,7 +744,7 @@
 
       window.toggleHistorial = function() { const div = document.getElementById('historialLista'); div.style.display = div.style.display === 'none' ? 'block' : 'none'; };
 
-      // SOPORTE / CHAT USUARIO CORREGIDO
+      // CHAT USUARIO
       function conectarChatUsuario(uid) {
         const q = query(collection(db, "soporte", uid, "mensajes"), orderBy("fecha", "asc"));
         onSnapshot(q, (snapshot) => {
@@ -664,14 +773,14 @@
           txtInput.value = ''; 
       };
 
-      // ================= PANEL ADMINISTRADOR CORREGIDO =================
+      // PANEL ADMINISTRADOR INTACTO
       window.abrirAdminPanelModal = async function() {
         document.getElementById('adminModal').classList.add('show');
         
         const snapConfig = await getDoc(docRefConfig);
         if (snapConfig.exists()) {
           const d = snapConfig.data();
-          document.getElementById('adminRealMode').value = d.modoReal || "false";
+          document.getElementById('adminRealMode').value = d.modoReal || "true";
           document.getElementById('adminTradingMode').value = d.tradingHabilitado || "yes";
           document.getElementById('adminPrice').value = d.precio || 1.45;
           document.getElementById('adminChange').value = d.variacion || "+3.2%";
