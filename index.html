@@ -10,7 +10,7 @@
             --bg-dark: #090d16;
             --card-bg: #111827;
             --border-color: #1f2937;
-            --primary-cyan: #38bdf8; /* Este color ahora se editará desde el admin */
+            --primary-cyan: #38bdf8;
             --primary-gold: #f59e0b;
             --green-up: #10b981;
             --red-down: #ef4444;
@@ -210,18 +210,17 @@
         <div id="bannerBottomContainer" class="dynamic-banner"><img id="bannerBottomImg" src=""></div>
     </div>
 
-    <!-- MODAL ACCESO ADMINISTRADOR -->
+    <!-- MODALES -->
     <div id="adminAuthModal" class="modal">
         <div class="modal-content">
             <h3>Acceso Administrativo</h3>
-            <div class="field"><label>Usuario Admin</label><input type="text" id="adminUserInput" placeholder="admin"></div>
-            <div class="field"><label>Contraseña</label><input type="password" id="adminPassInput" placeholder="200832"></div>
+            <div class="field"><label>Usuario</label><input type="text" id="adminUserInput" placeholder="Escribe tu usuario"></div>
+            <div class="field"><label>Contraseña</label><input type="password" id="adminPassInput" placeholder="Escribe tu contraseña"></div>
             <button class="btn-auth" style="width:100%; margin-top:10px;" onclick="validarCredencialesAdmin()">Ingresar a Panel</button>
             <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('adminAuthModal')">Cancelar</button>
         </div>
     </div>
 
-    <!-- MODAL PASARELAS -->
     <div id="paymentModal" class="modal">
         <div class="modal-content">
             <h3>Pasarela de Pago Segura</h3>
@@ -242,7 +241,6 @@
         </div>
     </div>
 
-    <!-- MODAL AUTH -->
     <div id="authModal" class="modal">
         <div class="modal-content">
             <h3 id="modalTitle">Acceso de Usuario</h3>
@@ -259,7 +257,6 @@
         </div>
     </div>
 
-    <!-- MODAL SOPORTE -->
     <div id="helpModal" class="modal">
         <div class="modal-content">
             <h3>Soporte en Vivo</h3>
@@ -272,7 +269,7 @@
         </div>
     </div>
 
-    <!-- MODAL ADMINISTRADOR REFORZADO CON PESTAÑAS -->
+    <!-- MODAL ADMINISTRADOR PANEL CENTRAL (PESTAÑAS) -->
     <div id="adminModal" class="modal">
         <div class="modal-content" style="max-width: 600px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -365,7 +362,10 @@
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
       import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-      import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, addDoc, query, orderBy, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+      import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, addDoc, query, orderBy, serverTimestamp, getDocs, setLogLevel } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+      // Ocultar avisos molestos de consola de Firebase
+      setLogLevel('silent');
 
       const firebaseConfig = { apiKey: "AIzaSyBJoAAzTcWn_K7gXydwwbesG_gERwBq8Us", authDomain: "nexk-131a4.firebaseapp.com", projectId: "nexk-131a4" };
       const app = initializeApp(firebaseConfig);
@@ -383,13 +383,18 @@
       let adminChatUnsubscribe = null;
       let historialUnsubscribe = null;
 
-      // 1. REGISTRO DE VISITAS
+      // 1. REGISTRO DE VISITAS SEGURO
       window.onload = async () => {
           const statsRef = doc(db, "configuracion", "estadisticas");
           try {
-              await updateDoc(statsRef, { visitas: increment(1) });
+              const snap = await getDoc(statsRef);
+              if(snap.exists()) {
+                  await updateDoc(statsRef, { visitas: increment(1) });
+              } else {
+                  await setDoc(statsRef, { visitas: 1 });
+              }
           } catch(e) {
-              await setDoc(statsRef, { visitas: 1 });
+              console.log("Estadísticas inicializadas");
           }
       };
 
@@ -402,21 +407,16 @@
         });
       }
 
-      // ESCUCHADOR GLOBAL
+      // ESCUCHADOR GLOBAL DE CONFIGURACIÓN
       const docRefConfig = doc(db, "configuracion", "general");
       onSnapshot(docRefConfig, (snap) => {
         if (snap.exists()) {
           const d = snap.data();
-          
-          // DISEÑO (Color botones)
           if(d.colorBotones) document.documentElement.style.setProperty('--primary-cyan', d.colorBotones);
-
-          // MERCADO
           if (d.precio) { PRECIO_TOKEN_USD = parseFloat(d.precio) || 1.45; document.getElementById('tokenPrice').innerText = '$' + d.precio + ' USD'; if (usuarioActual) recalcularBalanceUsuario(); if (myChart) { myChart.data.datasets[0].data[6] = PRECIO_TOKEN_USD; myChart.update(); } }
           if (d.variacion) document.getElementById('tokenChange').innerText = d.variacion;
           if (d.cap) document.getElementById('tokenCap').innerText = d.cap;
 
-          // MODO REAL WEB3 Y TRADING
           const isReal = d.modoReal === "true";
           const tradingActivo = d.tradingHabilitado !== "no";
           
@@ -428,7 +428,6 @@
           document.querySelectorAll('.web3-btn').forEach(btn => btn.style.display = isReal ? 'block' : 'none');
           document.getElementById('tokenNet').innerText = isReal ? 'BNB Smart Chain (Mainnet)' : 'Simulación Interna';
 
-          // BANNERS
           const topCont = document.getElementById('bannerTopContainer'); const midCont = document.getElementById('bannerMiddleContainer'); const botCont = document.getElementById('bannerBottomContainer');
           topCont.style.display = 'none'; midCont.style.display = 'none'; botCont.style.display = 'none';
           if (d.imageUrl && d.imagePos && d.imagePos !== 'none') {
@@ -446,7 +445,6 @@
         }
       });
 
-      // ESTADISTICAS ADMIN
       onSnapshot(doc(db, "configuracion", "estadisticas"), (snap) => {
           if(snap.exists()) document.getElementById('adminVisitasCount').innerText = snap.data().visitas || 0;
       });
@@ -454,7 +452,8 @@
       onAuthStateChanged(auth, async (user) => {
         if (user) {
           usuarioActual = user;
-          document.getElementById('userDisplay').innerText = user.email || "Usuario NEXK";
+          const userEmail = user.email || user.displayName || "Usuario NEXK";
+          document.getElementById('userDisplay').innerText = userEmail;
           const btn = document.getElementById('authBtn'); btn.innerText = "Salir"; btn.onclick = () => signOut(auth);
           document.getElementById('welcomeSection').style.display = 'none';
           document.getElementById('appContent').style.display = 'block';
@@ -463,10 +462,24 @@
           inicializarGrafico();
 
           const userDocRef = doc(db, "usuarios", user.uid);
+          const userSnap = await getDoc(userDocRef);
+          
+          if (!userSnap.exists()) {
+              // CREAR PERFIL GARANTIZADO EN FIRESTORE
+              await setDoc(userDocRef, {
+                  email: userEmail,
+                  tokensNEXK: 0,
+                  gananciaTokens: 0,
+                  totalOperaciones: 0,
+                  creado: serverTimestamp(),
+                  bloqueado: false,
+                  alertaFraude: false
+              });
+          }
+
           onSnapshot(userDocRef, (snapshot) => {
             if (snapshot.exists()) {
               const data = snapshot.data();
-              // SISTEMA DE BLOQUEO
               if (data.bloqueado) { document.getElementById('bannedScreen').style.display = 'flex'; }
               else { document.getElementById('bannedScreen').style.display = 'none'; }
 
@@ -475,8 +488,6 @@
               recalcularBalanceUsuario();
               document.getElementById('userProfit').innerText = (data.gananciaTokens || 0).toFixed(2) + ' NEXK';
               document.getElementById('userOps').innerText = (data.totalOperaciones || 0).toString();
-            } else {
-              setDoc(userDocRef, { email: user.email || "Sin Correo", tokensNEXK: 0, gananciaTokens: 0, totalOperaciones: 0, creado: serverTimestamp(), bloqueado: false, alertaFraude: false });
             }
           });
           conectarChatUsuario(user.uid); cargarHistorial(user.uid);
@@ -493,16 +504,42 @@
 
       function recalcularBalanceUsuario() { document.getElementById('userBalanceUSD').innerText = '$' + (tokensActualesUsuario * PRECIO_TOKEN_USD).toFixed(2) + ' USD'; }
 
-      // AUTH GOOGLE/APPLE
-      document.getElementById('btnGoogleWelcome').addEventListener('click', async () => { try { await signInWithPopup(auth, googleProvider); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }});
-      document.getElementById('btnAppleWelcome').addEventListener('click', async () => { try { await signInWithPopup(auth, appleProvider); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }});
-      document.getElementById('btnGoogleModal').addEventListener('click', async () => { try { await signInWithPopup(auth, googleProvider); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }});
-      document.getElementById('btnAppleModal').addEventListener('click', async () => { try { await signInWithPopup(auth, appleProvider); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }});
-      
-      window.ejecutarRegistro = async function() { const email = document.getElementById('authEmail').value; const pass = document.getElementById('authPassword').value; if (!email || !pass) return; try { await createUserWithEmailAndPassword(auth, email, pass); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }};
-      window.ejecutarLogin = async function() { const email = document.getElementById('authEmail').value; const pass = document.getElementById('authPassword').value; if (!email || !pass) return; try { await signInWithEmailAndPassword(auth, email, pass); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }};
+      // AUTH GOOGLE / APPLE
+      const procesarLoginPopup = async (provider) => {
+          try {
+              await signInWithPopup(auth, provider);
+              window.cerrarAuthModal();
+          } catch(e) {
+              alert("Error de autenticación: " + e.message);
+          }
+      };
 
-      // TRANSACCIONES Y SISTEMA ANTI-FRAUDE
+      document.getElementById('btnGoogleWelcome').addEventListener('click', () => procesarLoginPopup(googleProvider));
+      document.getElementById('btnAppleWelcome').addEventListener('click', () => procesarLoginPopup(appleProvider));
+      document.getElementById('btnGoogleModal').addEventListener('click', () => procesarLoginPopup(googleProvider));
+      document.getElementById('btnAppleModal').addEventListener('click', () => procesarLoginPopup(appleProvider));
+      
+      window.ejecutarRegistro = async function() { 
+          const email = document.getElementById('authEmail').value; 
+          const pass = document.getElementById('authPassword').value; 
+          if (!email || !pass) return alert("Completa los campos"); 
+          try { 
+              await createUserWithEmailAndPassword(auth, email, pass); 
+              window.cerrarAuthModal(); 
+          } catch (e) { alert("Error: " + e.message); }
+      };
+
+      window.ejecutarLogin = async function() { 
+          const email = document.getElementById('authEmail').value; 
+          const pass = document.getElementById('authPassword').value; 
+          if (!email || !pass) return alert("Completa los campos"); 
+          try { 
+              await signInWithEmailAndPassword(auth, email, pass); 
+              window.cerrarAuthModal(); 
+          } catch (e) { alert("Error: " + e.message); }
+      };
+
+      // TRANSACCIONES & ANTI-FRAUDE
       window.iniciarProcesoCompra = function() {
         if (!usuarioActual) return alert("Inicia sesión primero");
         const c = parseFloat(document.getElementById('tradeAmount').value);
@@ -515,13 +552,10 @@
       window.confirmarPagoCompra = async function() {
         const det = document.getElementById('payDetailsInput').value; if (!det) return alert("Faltan datos");
         const userRef = doc(db, "usuarios", usuarioActual.uid);
-        
-        // DETECTOR DE FRAUDE (Inyección masiva)
-        let flagFraude = false;
-        if(tempCantidadTokens > 10000) flagFraude = true; 
+        let flagFraude = tempCantidadTokens > 10000 ? true : false; 
 
         try {
-          await updateDoc(userRef, { tokensNEXK: increment(tempCantidadTokens), totalOperaciones: increment(1), alertaFraude: flagFraude ? true : false });
+          await updateDoc(userRef, { tokensNEXK: increment(tempCantidadTokens), totalOperaciones: increment(1), alertaFraude: flagFraude });
           await addDoc(collection(db, "usuarios", usuarioActual.uid, "transacciones"), { tipo: 'COMPRA', cantidad: tempCantidadTokens, fecha: serverTimestamp() });
           alert("Pago procesado."); window.cerrarModal('paymentModal');
         } catch (e) { alert("Error: " + e.message); }
@@ -564,22 +598,39 @@
 
       window.toggleHistorial = function() { const div = document.getElementById('historialLista'); div.style.display = div.style.display === 'none' ? 'block' : 'none'; };
 
-      // CHAT USUARIO
+      // SOPORTE / CHAT USUARIO
       function conectarChatUsuario(uid) {
         const q = query(collection(db, "soporte", uid, "mensajes"), orderBy("fecha", "asc"));
         onSnapshot(q, (snapshot) => {
           const chatBox = document.getElementById('userChatBox'); chatBox.innerHTML = '';
-          snapshot.forEach((docSnap) => { const data = docSnap.data(); const msgDiv = document.createElement('div'); msgDiv.className = `chat-msg ${data.remitente === 'admin' ? 'msg-admin' : 'msg-user'}`; msgDiv.innerText = data.texto; chatBox.appendChild(msgDiv); });
+          snapshot.forEach((docSnap) => { 
+              const data = docSnap.data(); 
+              const msgDiv = document.createElement('div'); 
+              msgDiv.className = `chat-msg ${data.remitente === 'admin' ? 'msg-admin' : 'msg-user'}`; 
+              msgDiv.innerText = data.texto; 
+              chatBox.appendChild(msgDiv); 
+          });
           chatBox.scrollTop = chatBox.scrollHeight;
         });
       }
-      window.enviarMensajeSoporte = async function() { if (!usuarioActual) return; const txtInput = document.getElementById('userChatMessage'); const txt = txtInput.value.trim(); if (!txt) return; await addDoc(collection(db, "soporte", usuarioActual.uid, "mensajes"), { texto: txt, remitente: 'usuario', fecha: serverTimestamp() }); txtInput.value = ''; };
+
+      window.enviarMensajeSoporte = async function() { 
+          if (!usuarioActual) return; 
+          const txtInput = document.getElementById('userChatMessage'); 
+          const txt = txtInput.value.trim(); 
+          if (!txt) return; 
+          await addDoc(collection(db, "soporte", usuarioActual.uid, "mensajes"), { 
+              texto: txt, 
+              remitente: 'usuario', 
+              fecha: serverTimestamp() 
+          }); 
+          txtInput.value = ''; 
+      };
 
       // ================= PANEL ADMINISTRADOR =================
       window.abrirAdminPanelModal = async function() {
         document.getElementById('adminModal').classList.add('show');
         
-        // Cargar Config
         const snapConfig = await getDoc(docRefConfig);
         if (snapConfig.exists()) {
           const d = snapConfig.data();
@@ -596,7 +647,7 @@
           document.getElementById('adminImagePosition').value = d.imagePos || "none";
         }
 
-        // Cargar Lista Usuarios para pestaña Chat y Seguridad
+        // CARGAR USUARIOS Y CLIENTES CONECTADOS EN TIEMPO REAL
         const selectChat = document.getElementById('adminChatSelect');
         const listaUsr = document.getElementById('listaUsuariosAdmin');
         selectChat.innerHTML = '<option value="">-- Seleccionar cliente --</option>';
@@ -605,17 +656,21 @@
         const usersSnap = await getDocs(collection(db, "usuarios"));
         usersSnap.forEach((uDoc) => {
           const data = uDoc.data();
-          const email = data.email || "Sin correo";
+          const email = data.email || "Usuario sin correo";
           const bal = (data.tokensNEXK || 0).toFixed(2);
           const isBanned = data.bloqueado ? "Desbloquear" : "Bloquear";
           const colorBanBtn = data.bloqueado ? "var(--green-up)" : "var(--red-down)";
           const alerta = data.alertaFraude ? `<span class="fraud-alert" title="Posible inyección de tokens">⚠️ FRAUDE</span>` : "";
 
-          // Al select de chat
-          const opt = document.createElement('option'); opt.value = uDoc.id; opt.innerText = email; selectChat.appendChild(opt);
+          // Opción para el selector de chat
+          const opt = document.createElement('option'); 
+          opt.value = uDoc.id; 
+          opt.innerText = email; 
+          selectChat.appendChild(opt);
 
-          // A la lista de seguridad
-          const card = document.createElement('div'); card.className = 'admin-user-card';
+          // Tarjeta de control de usuario
+          const card = document.createElement('div'); 
+          card.className = 'admin-user-card';
           card.innerHTML = `
             <div>
                 <strong style="color: var(--primary-cyan); font-size: 13px;">${email}</strong> ${alerta}<br>
@@ -627,16 +682,15 @@
         });
       };
 
-      // Baneo Dinámico
+      // BLOQUEAR / EXPULSAR USUARIO
       window.toggleBanUser = async function(uid, isCurrentlyBanned) {
           try {
-              await updateDoc(doc(db, "usuarios", uid), { bloqueado: !isCurrentlyBanned, alertaFraude: false }); // Limpiamos la alerta al revisar
-              alert(`Usuario ${!isCurrentlyBanned ? 'BLOQUEADO' : 'DESBLOQUEADO'}`);
-              abrirAdminPanelModal(); // Recargar lista
+              await updateDoc(doc(db, "usuarios", uid), { bloqueado: !isCurrentlyBanned, alertaFraude: false });
+              alert(`Usuario ${!isCurrentlyBanned ? 'BLOQUEADO' : 'DESBLOQUEADO'} exitosamente.`);
+              abrirAdminPanelModal(); 
           } catch(e) { alert("Error: " + e.message); }
       };
 
-      // Pestañas
       window.cambiarPestañaAdmin = function(tabId, btnElement) {
           document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
           document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -644,19 +698,48 @@
           btnElement.classList.add('active');
       };
 
+      // GESTIÓN AISLADA DE CHAT DE SOPORTE PARA ADMIN
       window.cargarChatSeleccionadoAdmin = function() {
-        const uidSelected = document.getElementById('adminChatSelect').value; const chatBox = document.getElementById('adminChatBox');
-        if (adminChatUnsubscribe) { adminChatUnsubscribe(); adminChatUnsubscribe = null; }
-        if (!uidSelected) { chatBox.innerHTML = ''; return; }
+        const uidSelected = document.getElementById('adminChatSelect').value; 
+        const chatBox = document.getElementById('adminChatBox');
+        
+        if (adminChatUnsubscribe) { 
+            adminChatUnsubscribe(); 
+            adminChatUnsubscribe = null; 
+        }
+
+        if (!uidSelected) { 
+            chatBox.innerHTML = ''; 
+            return; 
+        }
+
         const q = query(collection(db, "soporte", uidSelected, "mensajes"), orderBy("fecha", "asc"));
         adminChatUnsubscribe = onSnapshot(q, (snapshot) => {
           chatBox.innerHTML = '';
-          snapshot.forEach((docSnap) => { const data = docSnap.data(); const msgDiv = document.createElement('div'); msgDiv.className = `chat-msg ${data.remitente === 'admin' ? 'msg-user' : 'msg-admin'}`; msgDiv.innerText = `${data.remitente === 'admin' ? 'Admin' : 'Usuario'}: ${data.texto}`; chatBox.appendChild(msgDiv); });
+          snapshot.forEach((docSnap) => { 
+              const data = docSnap.data(); 
+              const msgDiv = document.createElement('div'); 
+              msgDiv.className = `chat-msg ${data.remitente === 'admin' ? 'msg-user' : 'msg-admin'}`; 
+              msgDiv.innerText = `${data.remitente === 'admin' ? 'Admin' : 'Cliente'}: ${data.texto}`; 
+              chatBox.appendChild(msgDiv); 
+          });
           chatBox.scrollTop = chatBox.scrollHeight;
         });
       };
 
-      window.enviarRespuestaAdmin = async function() { const uidSelected = document.getElementById('adminChatSelect').value; const txtInput = document.getElementById('adminReplyMessage'); const txt = txtInput.value.trim(); if (!uidSelected || !txt) return; await addDoc(collection(db, "soporte", uidSelected, "mensajes"), { texto: txt, remitente: 'admin', fecha: serverTimestamp() }); txtInput.value = ''; };
+      window.enviarRespuestaAdmin = async function() { 
+          const uidSelected = document.getElementById('adminChatSelect').value; 
+          const txtInput = document.getElementById('adminReplyMessage'); 
+          const txt = txtInput.value.trim(); 
+          if (!uidSelected || !txt) return alert("Selecciona un cliente y escribe un mensaje."); 
+          
+          await addDoc(collection(db, "soporte", uidSelected, "mensajes"), { 
+              texto: txt, 
+              remitente: 'admin', 
+              fecha: serverTimestamp() 
+          }); 
+          txtInput.value = ''; 
+      };
 
       window.guardarAjustesAdmin = async function() {
         try {
@@ -674,7 +757,7 @@
             imagePos: document.getElementById('adminImagePosition').value,
             ultimaActualizacion: serverTimestamp()
           }, { merge: true });
-          alert("¡Ajustes Guardados! Aplicado a todos los usuarios.");
+          alert("¡Ajustes Guardados! Aplicado a toda la red en tiempo real.");
         } catch (e) { alert("Error al guardar: " + e.message); }
       };
     </script>
@@ -693,7 +776,8 @@
         const p = document.getElementById('adminPassInput').value.trim();
         if (u === 'admin' && p === '200832') {
           cerrarModal('adminAuthModal');
-          document.getElementById('adminUserInput').value = ''; document.getElementById('adminPassInput').value = '';
+          document.getElementById('adminUserInput').value = ''; 
+          document.getElementById('adminPassInput').value = '';
           if (window.abrirAdminPanelModal) window.abrirAdminPanelModal();
         } else { alert("Credenciales incorrectas"); }
       };
