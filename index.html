@@ -381,6 +381,7 @@
       let myChart = null;
       let adminChatUnsubscribe = null;
       let historialUnsubscribe = null;
+      let usuariosSnapshotUnsubscribe = null;
 
       window.onload = async () => {
           const statsRef = doc(db, "configuracion", "estadisticas");
@@ -394,11 +395,15 @@
           } catch(e) {}
       };
 
-      function inicializarGrafico() {
+      function inicializarGrafico(precioInicial = 1.45) {
         const ctx = document.getElementById('priceChart').getContext('2d');
-        if (myChart) myChart.destroy();
+        if (myChart) {
+            myChart.data.datasets[0].data[6] = precioInicial;
+            myChart.update();
+            return;
+        }
         myChart = new Chart(ctx, {
-            type: 'line', data: { labels: ['12:00','13:00','14:00','15:00','16:00','17:00','Ahora'], datasets: [{ label: 'Precio (USD)', data: [1.38,1.40,1.39,1.42,1.41,1.44,PRECIO_TOKEN_USD], borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.1)', borderWidth: 2, fill: true, tension: 0.3 }] },
+            type: 'line', data: { labels: ['12:00','13:00','14:00','15:00','16:00','17:00','Ahora'], datasets: [{ label: 'Precio (USD)', data: [1.38,1.40,1.39,1.42,1.41,1.44,precioInicial], borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.1)', borderWidth: 2, fill: true, tension: 0.3 }] },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: '#1f2937' }, ticks: { color: '#9ca3af' } }, y: { grid: { color: '#1f2937' }, ticks: { color: '#9ca3af' } } } }
         });
       }
@@ -408,7 +413,12 @@
         if (snap.exists()) {
           const d = snap.data();
           if(d.colorBotones) document.documentElement.style.setProperty('--primary-cyan', d.colorBotones);
-          if (d.precio) { PRECIO_TOKEN_USD = parseFloat(d.precio) || 1.45; document.getElementById('tokenPrice').innerText = '$' + d.precio + ' USD'; if (usuarioActual) recalcularBalanceUsuario(); if (myChart) { myChart.data.datasets[0].data[6] = PRECIO_TOKEN_USD; myChart.update(); } }
+          if (d.precio) { 
+              PRECIO_TOKEN_USD = parseFloat(d.precio) || 1.45; 
+              document.getElementById('tokenPrice').innerText = '$' + d.precio + ' USD'; 
+              if (usuarioActual) recalcularBalanceUsuario(); 
+              inicializarGrafico(PRECIO_TOKEN_USD);
+          }
           if (d.variacion) document.getElementById('tokenChange').innerText = d.variacion;
           if (d.cap) document.getElementById('tokenCap').innerText = d.cap;
 
@@ -454,7 +464,7 @@
           document.getElementById('appContent').style.display = 'block';
           document.getElementById('helpBtn').style.display = 'inline-block';
 
-          inicializarGrafico();
+          inicializarGrafico(PRECIO_TOKEN_USD);
 
           const userDocRef = doc(db, "usuarios", user.uid);
           const userSnap = await getDoc(userDocRef);
@@ -498,7 +508,7 @@
 
       function recalcularBalanceUsuario() { document.getElementById('userBalanceUSD').innerText = '$' + (tokensActualesUsuario * PRECIO_TOKEN_USD).toFixed(2) + ' USD'; }
 
-      // ================= AUTENTICACIÓN GOOGLE & APPLE CORREGIDA =================
+      // ================= AUTENTICACIÓN GOOGLE & APPLE =================
       const procesarLoginPopup = async (provider) => {
           try {
               const result = await signInWithPopup(auth, provider);
@@ -617,7 +627,7 @@
 
       window.toggleHistorial = function() { const div = document.getElementById('historialLista'); div.style.display = div.style.display === 'none' ? 'block' : 'none'; };
 
-      // SOPORTE / CHAT USUARIO
+      // SOPORTE / CHAT USUARIO CORREGIDO
       function conectarChatUsuario(uid) {
         const q = query(collection(db, "soporte", uid, "mensajes"), orderBy("fecha", "asc"));
         onSnapshot(q, (snapshot) => {
@@ -646,7 +656,7 @@
           txtInput.value = ''; 
       };
 
-      // ================= PANEL ADMINISTRADOR =================
+      // ================= PANEL ADMINISTRADOR CORREGIDO =================
       window.abrirAdminPanelModal = async function() {
         document.getElementById('adminModal').classList.add('show');
         
@@ -666,43 +676,47 @@
           document.getElementById('adminImagePosition').value = d.imagePos || "none";
         }
 
-        const selectChat = document.getElementById('adminChatSelect');
-        const listaUsr = document.getElementById('listaUsuariosAdmin');
-        selectChat.innerHTML = '<option value="">-- Seleccionar cliente --</option>';
-        listaUsr.innerHTML = '';
+        if (usuariosSnapshotUnsubscribe) usuariosSnapshotUnsubscribe();
 
-        const usersSnap = await getDocs(collection(db, "usuarios"));
-        usersSnap.forEach((uDoc) => {
-          const data = uDoc.data();
-          const email = data.email || "Usuario sin correo";
-          const bal = (data.tokensNEXK || 0).toFixed(2);
-          const isBanned = data.bloqueado ? "Desbloquear" : "Bloquear";
-          const colorBanBtn = data.bloqueado ? "var(--green-up)" : "var(--red-down)";
-          const alerta = data.alertaFraude ? `<span class="fraud-alert" title="Posible inyección de tokens">⚠️ FRAUDE</span>` : "";
+        usuariosSnapshotUnsubscribe = onSnapshot(collection(db, "usuarios"), (usersSnap) => {
+            const selectChat = document.getElementById('adminChatSelect');
+            const listaUsr = document.getElementById('listaUsuariosAdmin');
+            
+            const currentSelectedChat = selectChat.value;
+            selectChat.innerHTML = '<option value="">-- Seleccionar cliente --</option>';
+            listaUsr.innerHTML = '';
 
-          const opt = document.createElement('option'); 
-          opt.value = uDoc.id; 
-          opt.innerText = email; 
-          selectChat.appendChild(opt);
+            usersSnap.forEach((uDoc) => {
+              const data = uDoc.data();
+              const email = data.email || "Usuario sin correo";
+              const bal = (data.tokensNEXK || 0).toFixed(2);
+              const isBanned = data.bloqueado ? "Desbloquear" : "Bloquear";
+              const colorBanBtn = data.bloqueado ? "var(--green-up)" : "var(--red-down)";
+              const alerta = data.alertaFraude ? `<span class="fraud-alert" title="Posible inyección de tokens">⚠️ FRAUDE</span>` : "";
 
-          const card = document.createElement('div'); 
-          card.className = 'admin-user-card';
-          card.innerHTML = `
-            <div>
-                <strong style="color: var(--primary-cyan); font-size: 13px;">${email}</strong> ${alerta}<br>
-                <span style="font-size: 11px; color: var(--text-muted);">Saldo: ${bal} NEXK</span>
-            </div>
-            <button class="btn-gen" style="background: ${colorBanBtn}; color: #fff; border: none; padding: 6px 12px;" onclick="toggleBanUser('${uDoc.id}', ${data.bloqueado})">${isBanned}</button>
-          `;
-          listaUsr.appendChild(card);
+              const opt = document.createElement('option'); 
+              opt.value = uDoc.id; 
+              opt.innerText = email; 
+              if (uDoc.id === currentSelectedChat) opt.selected = true;
+              selectChat.appendChild(opt);
+
+              const card = document.createElement('div'); 
+              card.className = 'admin-user-card';
+              card.innerHTML = `
+                <div>
+                    <strong style="color: var(--primary-cyan); font-size: 13px;">${email}</strong> ${alerta}<br>
+                    <span style="font-size: 11px; color: var(--text-muted);">Saldo: ${bal} NEXK</span>
+                </div>
+                <button class="btn-gen" style="background: ${colorBanBtn}; color: #fff; border: none; padding: 6px 12px;" onclick="toggleBanUser('${uDoc.id}', ${data.bloqueado})">${isBanned}</button>
+              `;
+              listaUsr.appendChild(card);
+            });
         });
       };
 
       window.toggleBanUser = async function(uid, isCurrentlyBanned) {
           try {
               await updateDoc(doc(db, "usuarios", uid), { bloqueado: !isCurrentlyBanned, alertaFraude: false });
-              alert(`Usuario ${!isCurrentlyBanned ? 'BLOQUEADO' : 'DESBLOQUEADO'} exitosamente.`);
-              abrirAdminPanelModal(); 
           } catch(e) { alert("Error: " + e.message); }
       };
 
