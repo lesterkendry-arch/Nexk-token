@@ -364,7 +364,6 @@
       import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
       import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, addDoc, query, orderBy, serverTimestamp, getDocs, setLogLevel } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
-      // Ocultar avisos molestos de consola de Firebase
       setLogLevel('silent');
 
       const firebaseConfig = { apiKey: "AIzaSyBJoAAzTcWn_K7gXydwwbesG_gERwBq8Us", authDomain: "nexk-131a4.firebaseapp.com", projectId: "nexk-131a4" };
@@ -383,7 +382,6 @@
       let adminChatUnsubscribe = null;
       let historialUnsubscribe = null;
 
-      // 1. REGISTRO DE VISITAS SEGURO
       window.onload = async () => {
           const statsRef = doc(db, "configuracion", "estadisticas");
           try {
@@ -393,9 +391,7 @@
               } else {
                   await setDoc(statsRef, { visitas: 1 });
               }
-          } catch(e) {
-              console.log("Estadísticas inicializadas");
-          }
+          } catch(e) {}
       };
 
       function inicializarGrafico() {
@@ -407,7 +403,6 @@
         });
       }
 
-      // ESCUCHADOR GLOBAL DE CONFIGURACIÓN
       const docRefConfig = doc(db, "configuracion", "general");
       onSnapshot(docRefConfig, (snap) => {
         if (snap.exists()) {
@@ -465,7 +460,6 @@
           const userSnap = await getDoc(userDocRef);
           
           if (!userSnap.exists()) {
-              // CREAR PERFIL GARANTIZADO EN FIRESTORE
               await setDoc(userDocRef, {
                   email: userEmail,
                   tokensNEXK: 0,
@@ -504,21 +498,46 @@
 
       function recalcularBalanceUsuario() { document.getElementById('userBalanceUSD').innerText = '$' + (tokensActualesUsuario * PRECIO_TOKEN_USD).toFixed(2) + ' USD'; }
 
-      // AUTH GOOGLE / APPLE
+      // ================= AUTENTICACIÓN GOOGLE & APPLE CORREGIDA =================
       const procesarLoginPopup = async (provider) => {
           try {
-              await signInWithPopup(auth, provider);
+              const result = await signInWithPopup(auth, provider);
+              const user = result.user;
+              const userEmail = user.email || user.displayName || "Usuario Externo";
+              
+              const userDocRef = doc(db, "usuarios", user.uid);
+              const userSnap = await getDoc(userDocRef);
+              
+              if (!userSnap.exists()) {
+                  await setDoc(userDocRef, {
+                      email: userEmail,
+                      tokensNEXK: 0,
+                      gananciaTokens: 0,
+                      totalOperaciones: 0,
+                      creado: serverTimestamp(),
+                      bloqueado: false,
+                      alertaFraude: false
+                  });
+              }
+
               window.cerrarAuthModal();
           } catch(e) {
               alert("Error de autenticación: " + e.message);
           }
       };
 
-      document.getElementById('btnGoogleWelcome').addEventListener('click', () => procesarLoginPopup(googleProvider));
-      document.getElementById('btnAppleWelcome').addEventListener('click', () => procesarLoginPopup(appleProvider));
-      document.getElementById('btnGoogleModal').addEventListener('click', () => procesarLoginPopup(googleProvider));
-      document.getElementById('btnAppleModal').addEventListener('click', () => procesarLoginPopup(appleProvider));
-      
+      const asignarEventoBoton = (id, provider) => {
+          const el = document.getElementById(id);
+          if (el) {
+              el.onclick = () => procesarLoginPopup(provider);
+          }
+      };
+
+      asignarEventoBoton('btnGoogleWelcome', googleProvider);
+      asignarEventoBoton('btnAppleWelcome', appleProvider);
+      asignarEventoBoton('btnGoogleModal', googleProvider);
+      asignarEventoBoton('btnAppleModal', appleProvider);
+
       window.ejecutarRegistro = async function() { 
           const email = document.getElementById('authEmail').value; 
           const pass = document.getElementById('authPassword').value; 
@@ -647,7 +666,6 @@
           document.getElementById('adminImagePosition').value = d.imagePos || "none";
         }
 
-        // CARGAR USUARIOS Y CLIENTES CONECTADOS EN TIEMPO REAL
         const selectChat = document.getElementById('adminChatSelect');
         const listaUsr = document.getElementById('listaUsuariosAdmin');
         selectChat.innerHTML = '<option value="">-- Seleccionar cliente --</option>';
@@ -662,13 +680,11 @@
           const colorBanBtn = data.bloqueado ? "var(--green-up)" : "var(--red-down)";
           const alerta = data.alertaFraude ? `<span class="fraud-alert" title="Posible inyección de tokens">⚠️ FRAUDE</span>` : "";
 
-          // Opción para el selector de chat
           const opt = document.createElement('option'); 
           opt.value = uDoc.id; 
           opt.innerText = email; 
           selectChat.appendChild(opt);
 
-          // Tarjeta de control de usuario
           const card = document.createElement('div'); 
           card.className = 'admin-user-card';
           card.innerHTML = `
@@ -682,7 +698,6 @@
         });
       };
 
-      // BLOQUEAR / EXPULSAR USUARIO
       window.toggleBanUser = async function(uid, isCurrentlyBanned) {
           try {
               await updateDoc(doc(db, "usuarios", uid), { bloqueado: !isCurrentlyBanned, alertaFraude: false });
@@ -698,7 +713,6 @@
           btnElement.classList.add('active');
       };
 
-      // GESTIÓN AISLADA DE CHAT DE SOPORTE PARA ADMIN
       window.cargarChatSeleccionadoAdmin = function() {
         const uidSelected = document.getElementById('adminChatSelect').value; 
         const chatBox = document.getElementById('adminChatBox');
