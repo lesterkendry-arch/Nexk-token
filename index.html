@@ -57,7 +57,6 @@
 
         #bannedScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; color: var(--red-down); text-align: center; padding: 20px; }
         
-        .real-mode-alert { display: none; background: var(--primary-gold); color: #000; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; margin-bottom: 15px; }
         .web3-btn { display: none; margin-top: 10px; font-size: 14px; }
 
         .dynamic-banner { position: relative; width: 100%; max-width: var(--container-max-width); margin: 0 auto 20px auto; display: none; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); }
@@ -97,7 +96,6 @@
         .fraud-alert { color: var(--red-down); font-weight: bold; font-size: 12px; animation: blink 1s infinite; cursor: pointer; }
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* NUEVO ESTILO DE GRÁFICO REAL */
         .chart-container { position: relative; margin-top: 15px; height: 450px; width: 100%; border-radius: 8px; overflow: hidden; background: #000; border: 1px solid var(--border-color); }
         .chart-container iframe { width: 100%; height: 100%; border: none; }
     </style>
@@ -139,8 +137,6 @@
 
         <div class="container">
             <div class="card" id="userDashboard">
-                <div id="realModeAlert" class="real-mode-alert">⚠️ CONTRATO REAL (BNB CHAIN) ACTIVO</div>
-                <div id="tradingDisabledAlert" style="display:none; color: var(--red-down); font-weight:bold; font-size: 12px; margin-bottom: 10px;">⛔ EL COMERCIO ESTÁ PAUSADO TEMPORALMENTE ⛔</div>
                 
                 <h3>Mi Portafolio NEXK</h3>
                 <div class="stat-grid">
@@ -168,7 +164,6 @@
                     </div>
                 </div>
 
-                <!-- SECCIÓN WEB3 REAL CON EL CONTRATO -->
                 <div id="realTradeSection" style="margin-top: 15px; display: none;">
                     <button class="btn-action web3-btn" style="background: #f3ba2f; color: #000; border: none; font-weight: bold;" onclick="addTokenToMetaMask()">🦊 Añadir a MetaMask / Trust Wallet</button>
                     <a href="https://pancakeswap.finance/swap?outputCurrency=0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5&chainId=56" target="_blank" style="text-decoration: none;">
@@ -189,13 +184,11 @@
 
             <div class="card">
                 <h2>Mercado NEXK Token ($NEXK)</h2>
-                <p style="margin-top: 5px; font-size: 11px; color: var(--primary-cyan); word-break: break-all;">Contrato: 0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5</p>
                 <h1 id="tokenPrice" style="font-size: 2.2rem; margin-top: 10px;">En Vivo</h1>
                 <p style="font-size: 13px; color: var(--text-muted); margin-top: 5px;">Red: <strong id="tokenNet" style="color: #fff;">BNB Smart Chain (Mainnet)</strong></p>
                 
-                <!-- IFRAME DE DEXSCREENER REAL -->
                 <div class="chart-container">
-                    <iframe src="https://dexscreener.com/bsc/0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5?embed=1&theme=dark&info=0"></iframe>
+                    <iframe src="https://dexscreener.com/bsc/0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5?embed=1&theme=dark"></iframe>
                 </div>
             </div>
         </div>
@@ -204,7 +197,6 @@
         <div id="bannerBottomContainer" class="dynamic-banner"><img id="bannerBottomImg" src=""></div>
     </div>
 
-    <!-- MODALES OMITIDOS PARA BREVEDAD (MANTÉN TUS MODALES DE PAGO/AUTH IGUALES) -->
     <div id="adminAuthModal" class="modal">
         <div class="modal-content">
             <h3>Acceso Administrativo</h3>
@@ -277,7 +269,6 @@
                 <button class="tab-btn" onclick="cambiarPestañaAdmin('tabChat', this)">💬 Chat</button>
             </div>
 
-            <!-- PESTAÑA: MERCADO -->
             <div id="tabMercado" class="tab-content active">
                 <h4 style="color: var(--primary-gold); margin-bottom: 10px;">Estado del Proyecto</h4>
                 <div class="field">
@@ -299,7 +290,6 @@
                 <div class="field" style="margin-top: 10px;"><label>Precio Simulado ($ USD)</label><input type="text" id="adminPrice" value="1.45"></div>
             </div>
 
-            <!-- PESTAÑA: DISEÑO -->
             <div id="tabDiseno" class="tab-content">
                 <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Colores de la Web</h4>
                 <div class="field">
@@ -324,14 +314,12 @@
                 </div>
             </div>
 
-            <!-- PESTAÑA: USUARIOS -->
             <div id="tabUsuarios" class="tab-content">
                 <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Gestiona las cuentas y vigila intentos de hackeo (inyección de saldo).</p>
                 <div id="listaUsuariosAdmin" style="max-height: 250px; overflow-y: auto;">
                 </div>
             </div>
 
-            <!-- PESTAÑA: CHAT -->
             <div id="tabChat" class="tab-content">
                 <div class="field"><label>Seleccionar Cliente</label><select id="adminChatSelect" onchange="cargarChatSeleccionadoAdmin()"></select></div>
                 <div id="adminChatBox" class="chat-box"></div>
@@ -397,10 +385,8 @@
           const isReal = d.modoReal === "true";
           const tradingActivo = d.tradingHabilitado !== "no";
           
-          document.getElementById('realModeAlert').style.display = isReal ? 'block' : 'none';
           document.getElementById('simulatedTradeSection').style.display = (isReal || !tradingActivo) ? 'none' : 'block';
           document.getElementById('realTradeSection').style.display = isReal ? 'block' : 'none';
-          document.getElementById('tradingDisabledAlert').style.display = (!isReal && !tradingActivo) ? 'block' : 'none';
           
           document.querySelectorAll('.web3-btn').forEach(btn => btn.style.display = isReal ? 'block' : 'none');
           document.getElementById('tokenNet').innerText = isReal ? 'BNB Smart Chain (Mainnet)' : 'Simulación Interna';
@@ -515,9 +501,12 @@
         if (!usuarioActual) return alert("Inicia sesión primero");
         const c = parseFloat(document.getElementById('tradeAmount').value);
         if (isNaN(c) || c <= 0) return alert("Cantidad inválida");
-        tempCantidadTokens = c;
-        document.getElementById('payTotalText').value = `${(c * PRECIO_TOKEN_USD).toFixed(2)} USD`;
-        document.getElementById('paymentModal').classList.add('show');
+        
+        const montoUSD = (c * PRECIO_TOKEN_USD).toFixed(2);
+        const apiKey = "MzE3RjdGQzI5MTc4Q0REMzA0Njg5RDM4OTc3NEFENDU=";
+        const paymentoUrl = `https://app.paymento.io/checkout?apiKey=${apiKey}&amount=${montoUSD}&currency=USD`;
+        
+        window.location.href = paymentoUrl;
       };
 
       window.confirmarPagoCompra = async function() {
@@ -668,7 +657,6 @@
       };
     </script>
 
-    <!-- FUNCIONES PARA VENTANAS Y CONEXIÓN WEB3 -->
     <script>
       window.abrirAuthModal = function() { document.getElementById('authModal').classList.add('show'); };
       window.cerrarAuthModal = function() { document.getElementById('authModal').classList.remove('show'); };
@@ -689,18 +677,17 @@
         document.getElementById('authPassword').value = pass; alert("Generada: " + pass);
       };
 
-      // FUNCIÓN PARA AÑADIR TOKEN A METAMASK O TRUST WALLET
       window.addTokenToMetaMask = async function() {
         if (typeof window.ethereum !== 'undefined') {
           try {
             await window.ethereum.request({
               method: 'wallet_watchAsset',
               params: {
-                type: 'ERC20', // La red BSC usa ERC20 en este comando
+                type: 'ERC20',
                 options: {
                   address: '0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5',
-                  symbol: 'NEXK', // Símbolo de tu token
-                  decimals: 18,   // Cantidad estándar, modifícalo si tu token tiene otros decimales
+                  symbol: 'NEXK',
+                  decimals: 18,
                   image: 'https://i.postimg.cc/cHk815mV/image-0.jpg',
                 },
               },
