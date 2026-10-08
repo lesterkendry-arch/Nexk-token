@@ -49,9 +49,24 @@
         .welcome-card p { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
 
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .stat-box { background: var(--bg-dark); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .stat-box { background: var(--bg-dark); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); position: relative; }
         .stat-box span { font-size: 12px; color: var(--text-muted); }
-        .stat-box h4 { font-size: 18px; color: var(--text-main); margin-top: 4px; }
+        .stat-box h4 { font-size: 17px; color: var(--text-main); margin-top: 4px; }
+
+        /* SELECTOR DE MONEDA EN EL PANEL */
+        .currency-selector {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--primary-cyan);
+            font-size: 11px;
+            font-weight: bold;
+            padding: 3px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            outline: none;
+            margin-top: 4px;
+            width: 100%;
+        }
 
         .btn-action { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; }
         .btn-send { background-color: #f59e0b; color: #000; }
@@ -100,7 +115,6 @@
         
         .admin-user-card { background: var(--bg-dark); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
 
-        /* ESTILO DEL GRÁFICO REAL EN TIEMPO REAL */
         .chart-container { position: relative; margin-top: 15px; height: 520px; width: 100%; border-radius: 12px; overflow: hidden; background: #090d16; border: 1px solid var(--border-color); }
         .chart-container iframe { width: 100%; height: 100%; border: none; }
     </style>
@@ -143,12 +157,35 @@
         <div class="container">
             <div class="card" id="userDashboard">
                 
-                <h3>Mi Portafolio NEXK</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>Mi Portafolio NEXK</h3>
+                </div>
+
                 <div class="stat-grid">
-                    <div class="stat-box"><span>Balance Tokens</span><h4 id="userTokens">0.00 NEXK</h4></div>
-                    <div class="stat-box"><span>Valor Estimado</span><h4 id="userBalanceUSD">$0.00 USD</h4></div>
-                    <div class="stat-box"><span>Ganancia/Pérdida (24h)</span><h4 id="userProfit" style="color: var(--green-up);">0.00% ($0.00)</h4></div>
-                    <div class="stat-box"><span>Operaciones On-Chain</span><h4 id="userOps">0</h4></div>
+                    <div class="stat-box">
+                        <span>Balance Tokens</span>
+                        <h4 id="userTokens">0.00 NEXK</h4>
+                    </div>
+
+                    <div class="stat-box">
+                        <span>Valor Estimado</span>
+                        <h4 id="userBalanceUSD">$0.00 USD</h4>
+                        <select id="currencySelect" class="currency-selector" onchange="recalcularBalanceUsuario()">
+                            <option value="USD">💵 Mostrar en USD</option>
+                            <option value="USDT">🪙 Mostrar en USDT (BSC)</option>
+                            <option value="BNB">🟡 Mostrar en BNB</option>
+                        </select>
+                    </div>
+
+                    <div class="stat-box">
+                        <span>Ganancia/Pérdida (24h)</span>
+                        <h4 id="userProfit" style="color: var(--green-up);">0.00% ($0.00)</h4>
+                    </div>
+
+                    <div class="stat-box">
+                        <span>Operaciones On-Chain</span>
+                        <h4 id="userOps">0</h4>
+                    </div>
                 </div>
 
                 <!-- SECCIÓN COMERCIO REAL Y BILLETERAS -->
@@ -182,12 +219,12 @@
                     Red: <strong id="tokenNet" style="color: #38bdf8;">BNB Smart Chain (Mainnet)</strong>
                 </p>
                 
-                <!-- GRÁFICO REAL EN TIEMPO REAL DESDE DEXTOOLS (BSC) -->
                 <div class="chart-container">
                     <iframe 
-                        id="dextools-widget"
-                        title="DEXTools NEXK Chart"
-                        src="https://www.dextools.io/widget-chart/en/bnbsmartchain/pe-light/0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5?theme=dark&chartType=1&chartResolution=15">
+                        id="poocoin-chart"
+                        title="PooCoin NEXK Token Chart"
+                        src="https://poocoin.app/embed-swap?outputCurrency=0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5"
+                        allowfullscreen>
                     </iframe>
                 </div>
             </div>
@@ -371,6 +408,7 @@
       let usuarioActual = null;
       let tokensActualesUsuario = 0;
       let PRECIO_TOKEN_USD = 0; 
+      let PRECIO_BNB_USD = 600; // Valor por defecto hasta que la API responda
       let CAMBIO_24H_PORCENTAJE = 0;
       let walletDireccionConectada = null;
 
@@ -385,8 +423,20 @@
       ];
       const BSC_RPC_URL = "https://bsc-dataseed.binance.org/";
 
-      // OBTENER PRECIO Y VARIACIÓN 24H REAL EN TIEMPO REAL
+      // OBTENER PRECIO DE BNB Y DEL TOKEN EN TIEMPO REAL
       window.actualizarPrecioTokenEnVivo = async function() {
+        // 1. Obtener precio actual de BNB en USD
+        try {
+          const resBnb = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT");
+          const dataBnb = await resBnb.json();
+          if (dataBnb && dataBnb.price) {
+            PRECIO_BNB_USD = parseFloat(dataBnb.price);
+          }
+        } catch(e) {
+          console.warn("No se pudo obtener precio de BNB vía Binance API");
+        }
+
+        // 2. Obtener precio del Token NEXK en USD y cambio de 24h
         try {
           const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${TOKEN_CONTRACT_ADDRESS}`);
           const data = await res.json();
@@ -399,7 +449,7 @@
               PRECIO_TOKEN_USD = precioUSD;
               CAMBIO_24H_PORCENTAJE = cambio24h;
               document.getElementById('tokenPrice').innerText = `$${precioUSD.toFixed(4)} USD`;
-              recalcularBalanceUsuario();
+              window.recalcularBalanceUsuario();
               return;
             }
           }
@@ -458,6 +508,50 @@
         } catch (err) {
           console.error("Error al cargar historial On-Chain:", err);
           lista.innerHTML = '<p style="color:var(--text-muted);text-align:center;">No se pudo sincronizar el historial on-chain.</p>';
+        }
+      };
+
+      // RECALCULAR CONVERSIÓN Y GANANCIA/PÉRDIDA EN USD, USDT O BNB
+      window.recalcularBalanceUsuario = function() { 
+        const totalUSD = tokensActualesUsuario * PRECIO_TOKEN_USD;
+        const selectedCurrency = document.getElementById('currencySelect').value;
+        const userBalanceElem = document.getElementById('userBalanceUSD');
+        const profitElem = document.getElementById('userProfit');
+
+        const gananciaUSD = totalUSD * (CAMBIO_24H_PORCENTAJE / 100);
+
+        if (selectedCurrency === 'USD') {
+            userBalanceElem.innerText = '$' + totalUSD.toFixed(2) + ' USD';
+            if (CAMBIO_24H_PORCENTAJE >= 0) {
+              profitElem.style.color = "var(--green-up)";
+              profitElem.innerText = `+${CAMBIO_24H_PORCENTAJE.toFixed(2)}% (+$${gananciaUSD.toFixed(2)})`;
+            } else {
+              profitElem.style.color = "var(--red-down)";
+              profitElem.innerText = `${CAMBIO_24H_PORCENTAJE.toFixed(2)}% (-$${Math.abs(gananciaUSD).toFixed(2)})`;
+            }
+        } else if (selectedCurrency === 'USDT') {
+            // USDT en BSC tiene equivalencia 1:1 con USD
+            userBalanceElem.innerText = totalUSD.toFixed(2) + ' USDT';
+            if (CAMBIO_24H_PORCENTAJE >= 0) {
+              profitElem.style.color = "var(--green-up)";
+              profitElem.innerText = `+${CAMBIO_24H_PORCENTAJE.toFixed(2)}% (+${gananciaUSD.toFixed(2)} USDT)`;
+            } else {
+              profitElem.style.color = "var(--red-down)";
+              profitElem.innerText = `${CAMBIO_24H_PORCENTAJE.toFixed(2)}% (-${Math.abs(gananciaUSD).toFixed(2)} USDT)`;
+            }
+        } else if (selectedCurrency === 'BNB') {
+            // Conversión al valor en vivo de BNB
+            const totalBNB = PRECIO_BNB_USD > 0 ? (totalUSD / PRECIO_BNB_USD) : 0;
+            const gananciaBNB = PRECIO_BNB_USD > 0 ? (gananciaUSD / PRECIO_BNB_USD) : 0;
+
+            userBalanceElem.innerText = totalBNB.toFixed(4) + ' BNB';
+            if (CAMBIO_24H_PORCENTAJE >= 0) {
+              profitElem.style.color = "var(--green-up)";
+              profitElem.innerText = `+${CAMBIO_24H_PORCENTAJE.toFixed(2)}% (+${gananciaBNB.toFixed(4)} BNB)`;
+            } else {
+              profitElem.style.color = "var(--red-down)";
+              profitElem.innerText = `${CAMBIO_24H_PORCENTAJE.toFixed(2)}% (-${Math.abs(gananciaBNB).toFixed(4)} BNB)`;
+            }
         }
       };
 
@@ -546,7 +640,7 @@
           
           tokensActualesUsuario = formattedBalance;
           document.getElementById('userTokens').innerText = formattedBalance.toFixed(2) + ' NEXK';
-          recalcularBalanceUsuario();
+          window.recalcularBalanceUsuario();
 
           window.cargarHistorialOnChainReal(address);
         } catch (error) {
@@ -584,22 +678,6 @@
           document.getElementById('bannedScreen').style.display = 'none';
         }
       });
-
-      function recalcularBalanceUsuario() { 
-        const totalUSD = tokensActualesUsuario * PRECIO_TOKEN_USD;
-        document.getElementById('userBalanceUSD').innerText = '$' + totalUSD.toFixed(2) + ' USD'; 
-
-        const gananciaUSD = totalUSD * (CAMBIO_24H_PORCENTAJE / 100);
-        const profitElem = document.getElementById('userProfit');
-
-        if (CAMBIO_24H_PORCENTAJE >= 0) {
-          profitElem.style.color = "var(--green-up)";
-          profitElem.innerText = `+${CAMBIO_24H_PORCENTAJE.toFixed(2)}% (+$${gananciaUSD.toFixed(2)})`;
-        } else {
-          profitElem.style.color = "var(--red-down)";
-          profitElem.innerText = `${CAMBIO_24H_PORCENTAJE.toFixed(2)}% (-$${Math.abs(gananciaUSD).toFixed(2)})`;
-        }
-      }
 
       const procesarLoginPopup = async (provider) => {
           try {
@@ -811,7 +889,6 @@
         window.open(pancakeUrl, '_blank');
       };
 
-      // AUTO-DETECCIÓN E INGRESO CON CAMBIO DE RED AUTOMÁTICO
       window.addEventListener('DOMContentLoaded', async () => {
         if (typeof window.ethereum !== 'undefined') {
           try {
