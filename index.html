@@ -392,6 +392,15 @@
 
     <div id="appContent" style="display: none;">
         
+        <!-- AVISO PURAMENTE INFORMATIVO -->
+        <div id="walletWarningBanner" style="background: rgba(245, 158, 11, 0.15); border: 1px solid var(--primary-gold); padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 20px;">⚠️</span>
+            <div>
+                <strong style="color: var(--primary-gold); font-size: 13px; display: block;">Aviso Importante:</strong>
+                <span style="font-size: 12px; color: var(--text-muted);">Debes conectar una billetera (MetaMask o Trust Wallet) para que todas las funciones de la página operen correctamente.</span>
+            </div>
+        </div>
+
         <div id="bannerTopContainer" class="dynamic-banner">
             <img id="bannerTopImg" src="" alt="Promoción NEXK">
             <div id="bannerTopText" class="banner-overlay-text"></div>
@@ -487,23 +496,6 @@
         <div id="bannerBottomContainer" class="dynamic-banner"><img id="bannerBottomImg" src=""></div>
     </div>
 
-    <!-- MODAL OBLIGATORIO DE BILLETERA (APARECE DESPUÉS DE INICIAR SESIÓN) -->
-    <div id="mandatoryWalletModal" class="modal">
-        <div class="modal-content" style="text-align: center;">
-            <h3 style="color: var(--primary-gold);">⚠️ CONEXIÓN OBLIGATORIA DE BILLETERA</h3>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">
-                Ya has iniciado sesión. Para continuar y operar en el ecosistema NEXK, debes conectar obligatoriamente una de tus billeteras Web3 en la red BNB Smart Chain.
-            </p>
-            
-            <button class="wallet-option-btn btn-metamask-choice" onclick="vincularTokenWeb3('metamask')">
-                🦊 Conectar MetaMask
-            </button>
-            <button class="wallet-option-btn btn-trust-choice" onclick="vincularTokenWeb3('trustwallet')">
-                🛡️ Conectar Trust Wallet
-            </button>
-        </div>
-    </div>
-
     <!-- MODAL COMPRAR TOKENS DIRECTO -->
     <div id="buyTokensModal" class="modal">
         <div class="modal-content">
@@ -584,7 +576,7 @@
         </div>
     </div>
 
-    <!-- MODAL SELECCIONAR BILLETERA -->
+    <!-- MODAL SELECCIONAR BILLETERA (BOTONES ORIGINALES CON SUS FUNCIONES INTACTAS) -->
     <div id="walletChoiceModal" class="modal">
         <div class="modal-content" style="text-align: center;">
             <h3>Conecta tu Billetera</h3>
@@ -1035,7 +1027,6 @@
 
                 alert("Confirma la compra con USDT...");
                 const tx = await router.swapExactTokensForTokens(amountIn, 0, path, walletUser, deadline);
-                alert("Procesando compra con USDT...");
                 await tx.wait();
             }
 
@@ -1121,45 +1112,43 @@
         } catch (error) {}
       };
 
-      // VERIFICAR BILLETERA SÓLO DESPUÉS DE INICIAR SESIÓN O ENTRAR
-      window.verificarBilleteraPostLogin = async function() {
-        if (typeof window.ethereum !== 'undefined') {
-          try {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            if (accounts && accounts.length > 0) {
-              walletDireccionConectada = accounts[0];
-              document.getElementById('userDisplay').innerText = walletDireccionConectada.substring(0, 6) + "..." + walletDireccionConectada.substring(38);
-              document.getElementById('mandatoryWalletModal').classList.remove('show');
-              document.getElementById('appContent').style.display = 'block';
-              window.consultarSaldoOnChain(walletDireccionConectada);
-              return true;
-            }
-          } catch (e) {}
-        }
-        
-        // Si hay cuenta activa pero falta la billetera, pedir conexión obligatoria
-        document.getElementById('appContent').style.display = 'none';
-        document.getElementById('mandatoryWalletModal').classList.add('show');
-        return false;
-      };
-
       onAuthStateChanged(auth, async (user) => {
         if (user) {
           usuarioActual = user;
           localStorage.setItem("nexk_sesion_activa", "true");
           document.getElementById('welcomeSection').style.display = 'none';
-          await window.verificarBilleteraPostLogin();
+          document.getElementById('appContent').style.display = 'block';
+          
+          if (typeof window.ethereum !== 'undefined') {
+            try {
+              const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+              if (accounts && accounts.length > 0) {
+                walletDireccionConectada = accounts[0];
+                document.getElementById('userDisplay').innerText = walletDireccionConectada.substring(0, 6) + "..." + walletDireccionConectada.substring(38);
+                document.getElementById('walletWarningBanner').style.display = 'none';
+                window.consultarSaldoOnChain(walletDireccionConectada);
+              }
+            } catch (e) {}
+          }
         } else {
           usuarioActual = null;
-          // Si estamos dentro de la billetera y ya había sesión previa guardada, saltamos el login de Firebase
-          if (typeof window.ethereum !== 'undefined' && localStorage.getItem("nexk_sesion_activa") === "true") {
+          if (typeof window.ethereum !== 'undefined' || localStorage.getItem("nexk_sesion_activa") === "true" || window.location.search.includes("autologin=true")) {
             document.getElementById('welcomeSection').style.display = 'none';
-            await window.verificarBilleteraPostLogin();
+            document.getElementById('appContent').style.display = 'block';
+            if (typeof window.ethereum !== 'undefined') {
+              try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (accounts && accounts.length > 0) {
+                  walletDireccionConectada = accounts[0];
+                  document.getElementById('userDisplay').innerText = walletDireccionConectada.substring(0, 6) + "..." + walletDireccionConectada.substring(38);
+                  document.getElementById('walletWarningBanner').style.display = 'none';
+                  window.consultarSaldoOnChain(walletDireccionConectada);
+                }
+              } catch(e) {}
+            }
             return;
           }
-          // Al abrir la página sin sesión, muestra la pantalla de bienvenida con correo/google/apple
           document.getElementById('appContent').style.display = 'none';
-          document.getElementById('mandatoryWalletModal').classList.remove('show');
           document.getElementById('welcomeSection').style.display = 'block';
         }
       });
@@ -1212,39 +1201,32 @@
         window.open("https://pancakeswap.finance/swap?outputCurrency=0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5&chainId=56", '_blank');
       };
 
-      function mostrarPerfilDirecto(walletAddress) {
-        document.getElementById('welcomeSection').style.display = 'none';
-        document.getElementById('mandatoryWalletModal').classList.remove('show');
-        document.getElementById('appContent').style.display = 'block';
-        document.getElementById('userDisplay').innerText = walletAddress.substring(0, 6) + "..." + walletAddress.substring(38);
-        if (window.consultarSaldoOnChain) {
-          window.consultarSaldoOnChain(walletAddress);
-        }
-      }
-
       window.vincularTokenWeb3 = async function(walletType) {
         cerrarModal('walletChoiceModal');
-        cerrarModal('mandatoryWalletModal');
         
-        // Si el navegador ya tiene inyectada la billetera (estamos dentro de MetaMask o Trust Wallet)
         if (typeof window.ethereum !== 'undefined') {
           try {
             if (window.asegurarRedBNB) await window.asegurarRedBNB();
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             if (accounts && accounts.length > 0) {
-              mostrarPerfilDirecto(accounts[0]);
+              walletDireccionConectada = accounts[0];
+              document.getElementById('userDisplay').innerText = walletDireccionConectada.substring(0, 6) + "..." + walletDireccionConectada.substring(38);
+              document.getElementById('walletWarningBanner').style.display = 'none';
+              window.consultarSaldoOnChain(walletDireccionConectada);
               return;
             }
           } catch (error) {
             alert("Debes autorizar la conexión con tu billetera.");
           }
         } else {
-          // Si estamos en un navegador externo (Chrome/Safari), abrir directamente el app link sin reiniciar sesión de Firebase
-          const cleanHost = window.location.host + window.location.pathname + window.location.search;
+          localStorage.setItem("nexk_sesion_activa", "true");
+          const baseUrl = window.location.origin + window.location.pathname;
+          const targetUrl = `${baseUrl}?autologin=true`;
+          
           if (walletType === 'metamask') {
-            window.location.href = `https://metamask.app.link/dapp/${cleanHost}`;
+            window.location.href = `https://metamask.app.link/dapp/${targetUrl.replace(/^https?:\/\//, '')}`;
           } else if (walletType === 'trustwallet') {
-            window.location.href = `https://link.trustwallet.com/open_url?coin_id=60&url=${encodeURIComponent(window.location.href)}`;
+            window.location.href = `https://link.trustwallet.com/open_url?coin_id=60&url=${encodeURIComponent(targetUrl)}`;
           }
         }
       };
