@@ -1217,16 +1217,23 @@
 
       window.vincularTokenWeb3 = async function(walletType) {
         cerrarModal('walletChoiceModal');
+        cerrarModal('mandatoryWalletModal');
+        
+        // Si el navegador ya tiene inyectada la billetera (estamos dentro de MetaMask o Trust Wallet)
         if (typeof window.ethereum !== 'undefined') {
           try {
             if (window.asegurarRedBNB) await window.asegurarRedBNB();
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            if (accounts && accounts.length > 0) mostrarPerfilDirecto(accounts[0]);
+            if (accounts && accounts.length > 0) {
+              mostrarPerfilDirecto(accounts[0]);
+              return;
+            }
           } catch (error) {
             alert("Debes autorizar la conexión con tu billetera.");
           }
         } else {
-          const cleanHost = window.location.host + window.location.pathname;
+          // Si estamos en un navegador externo (Chrome/Safari), abrir directamente el app link sin reiniciar sesión de Firebase
+          const cleanHost = window.location.host + window.location.pathname + window.location.search;
           if (walletType === 'metamask') {
             window.location.href = `https://metamask.app.link/dapp/${cleanHost}`;
           } else if (walletType === 'trustwallet') {
