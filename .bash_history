@@ -37,3 +37,38 @@ git metge --abort
 git merge --abort
 git reset --hard HEAD
 git pull origin master
+git add .
+git ammit -m "venta"
+git commit -m "venta"
+git push
+git add .
+git commit -m "nuevo"
+git push
+git add .
+git commit -m "nuevo1"
+git comit -m "nuevo1"
+git commit -m "nuevo1"
+git add .
+git commit -m "nuevo1"
+git push
+git add .
+git commit -m "areglo"
+git push
+git add .
+git commit -m "peso"
+git push
+git add .
+git commit -m "otraves"
+git push
+git add .
+git commit -m "prueba5"
+git push
+git add .
+git commit -m "pruebadeenvio"
+git push
+gir add .
+git add .
+dit commit -m "pix"
+git commit -m "pix"
+git push
+git .
