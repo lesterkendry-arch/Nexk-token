@@ -171,7 +171,6 @@
                         <button class="btn-action btn-sell" style="margin:0; flex:1;" onclick="iniciarProcesoVenta()">Vender</button>
                     </div>
                     <button class="btn-action btn-send" onclick="abrirModalEnviarTokens()">📤 Enviar Tokens a Billetera</button>
-                    <!-- BOTÓN PARA VERIFICAR SI EL PAGO DE COINREMITTER YA FUE APROBADO -->
                     <button class="btn-gen" style="width:100%; margin-top:10px; padding: 10px; font-size: 13px;" onclick="verificarPagoPendiente()">🔄 Verificar Estado de mi Pago</button>
                 </div>
 
@@ -570,7 +569,6 @@
           try { await signInWithEmailAndPassword(auth, email, pass); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }
       };
 
-      // CONTROLADOR UNIVERSAL PARA EL BOTÓN DE COMPRA SEGÚN EL MÉTODO SELECCIONADO
       window.actualizarMetodoCompra = function() {
           const metodo = document.getElementById('paymentCurrency').value;
           if (metodo === 'pasarela_alternativa') {
@@ -591,7 +589,7 @@
           }
       };
 
-      // 1. COMPRA SEGURA VÍA COINREMITTER CON VALIDACIÓN PENDIENTE
+      // 1. COMPRA SEGURA VÍA COINREMITTER CON URL CORREGIDA (api.coinremitter.com)
       async function iniciarProcesoCompraCoinremitter() {
         if (!usuarioActual) return alert("Inicia sesión primero");
         const cantidadTokens = parseFloat(document.getElementById('tradeAmount').value);
@@ -601,7 +599,7 @@
         
         try {
           const proxyUrl = "https://corsproxy.io/?";
-          const targetUrl = "https://coinremitter.com/api/v3/BNB/create-invoice";
+          const targetUrl = "https://api.coinremitter.com/api/v3/BNB/create-invoice";
 
           const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
             method: "POST",
@@ -632,7 +630,7 @@
         }
       };
 
-      // 2. VERIFICACIÓN DE PAGO ANTES DE ACREDITAR TOKENS
+      // 2. VERIFICACIÓN DE PAGO CON ENDPOINT CORREGIDO (api.coinremitter.com)
       window.verificarPagoPendiente = async function() {
         if (!usuarioActual) return alert("Inicia sesión primero");
         const invoiceId = localStorage.getItem('pending_invoice_id');
@@ -644,7 +642,7 @@
 
         try {
           const proxyUrl = "https://corsproxy.io/?";
-          const targetUrl = "https://coinremitter.com/api/v3/get-invoice";
+          const targetUrl = "https://api.coinremitter.com/api/v3/get-invoice";
 
           const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
             method: "POST",
@@ -676,7 +674,7 @@
 
             alert("¡Pago confirmado con éxito! Se han acreditado " + cantidadTokens + " NEXK a tu portafolio.");
           } else {
-            alert("El pago aún no se ha completado o confirmado por la red. Inténtalo de nuevo en unos momentos.");
+            alert("El pago aún no se ha completado o confirmado por la red. Inténtalo de nuevo en unos minutos.");
           }
         } catch (error) {
           console.error("Error al verificar factura:", error);
@@ -684,7 +682,6 @@
         }
       };
 
-      // 3. CONFIRMACIÓN PARA LA PASARELA ALTERNATIVA (TARJETA / PIX)
       window.confirmarPagoCompraAlternativa = async function() {
         const det = document.getElementById('payDetailsInput').value; 
         if (!det) return alert("Faltan datos de pago");
@@ -710,7 +707,6 @@
         } catch (e) { alert("Error: " + e.message); }
       };
 
-      // FUNCIÓN WEB3 PARA ENVIAR TOKENS NEXK A CUALQUIER BILLETERA
       window.ejecutarEnvioTokensWeb3 = async function() {
         const destino = document.getElementById('sendDestinationAddress').value.trim();
         const cantidad = parseFloat(document.getElementById('sendTokenAmount').value);
