@@ -6,15 +6,15 @@ export default async function handler(req, res) {
   const { action, payload } = req.body;
   
   // Datos de autenticación de CoinRemitter
-  const API_KEY = "wkey_MBiyQDiooBNVl8K";
+  const API_KEY = "$2y$10$wkey_MBiyQDIooBNV18K";
   const PASSWORD = "04123071043";
 
   try {
     let targetUrl = "";
     if (action === "create-invoice") {
-      targetUrl = "https://api.coinremitter.com/api/v3/BNB/create-invoice";
+      targetUrl = "https://coinremitter.com/api/v3/bnb/create-invoice";
     } else if (action === "get-invoice") {
-      targetUrl = "https://api.coinremitter.com/api/v3/get-invoice";
+      targetUrl = "https://coinremitter.com/api/v3/bnb/get-invoice";
     } else {
       return res.status(400).json({ message: "Acción no válida" });
     }
