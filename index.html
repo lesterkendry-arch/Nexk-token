@@ -1035,7 +1035,6 @@
 
                 alert("Confirma la compra con USDT...");
                 const tx = await router.swapExactTokensForTokens(amountIn, 0, path, walletUser, deadline);
-                alert("Procesando compra con USDT...");
                 await tx.wait();
             }
 
@@ -1151,9 +1150,19 @@
           await window.verificarBilleteraPostLogin();
         } else {
           usuarioActual = null;
-          // Si estamos dentro de la billetera y ya había sesión previa guardada, saltamos el login de Firebase
-          if (typeof window.ethereum !== 'undefined' && localStorage.getItem("nexk_sesion_activa") === "true") {
+          // Si estamos dentro de la billetera o viene con permiso activo, evitamos el login y cargamos directo
+          if (typeof window.ethereum !== 'undefined' || localStorage.getItem("nexk_sesion_activa") === "true" || window.location.search.includes("autologin=true")) {
             document.getElementById('welcomeSection').style.display = 'none';
+            // Si hay proveedor inyectado, conectamos la billetera directo
+            if (typeof window.ethereum !== 'undefined') {
+              try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (accounts && accounts.length > 0) {
+                  mostrarPerfilDirecto(accounts[0]);
+                  return;
+                }
+              } catch(e) {}
+            }
             await window.verificarBilleteraPostLogin();
             return;
           }
@@ -1239,12 +1248,15 @@
             alert("Debes autorizar la conexión con tu billetera.");
           }
         } else {
-          // Si estamos en un navegador externo (Chrome/Safari), abrir directamente el app link sin reiniciar sesión de Firebase
-          const cleanHost = window.location.host + window.location.pathname + window.location.search;
+          // Marcar sesión activa y pasar parámetro de autologin para que al abrir la billetera entre directo
+          localStorage.setItem("nexk_sesion_activa", "true");
+          const baseUrl = window.location.origin + window.location.pathname;
+          const targetUrl = `${baseUrl}?autologin=true`;
+          
           if (walletType === 'metamask') {
-            window.location.href = `https://metamask.app.link/dapp/${cleanHost}`;
+            window.location.href = `https://metamask.app.link/dapp/${targetUrl.replace(/^https?:\/\//, '')}`;
           } else if (walletType === 'trustwallet') {
-            window.location.href = `https://link.trustwallet.com/open_url?coin_id=60&url=${encodeURIComponent(window.location.href)}`;
+            window.location.href = `https://link.trustwallet.com/open_url?coin_id=60&url=${encodeURIComponent(targetUrl)}`;
           }
         }
       };
