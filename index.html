@@ -995,6 +995,29 @@
         window.open(pancakeUrl, '_blank');
       };
 
+      // Auto-ingreso instantáneo al abrir la página dentro del navegador de la wallet
+      window.addEventListener('DOMContentLoaded', async () => {
+        if (typeof window.ethereum !== 'undefined') {
+          try {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts && accounts.length > 0) {
+              mostrarPerfilDirecto(accounts[0]);
+            }
+          } catch (err) {
+            console.error("Error en auto-login:", err);
+          }
+        }
+      });
+
+      function mostrarPerfilDirecto(walletAddress) {
+        document.getElementById('welcomeSection').style.display = 'none';
+        document.getElementById('appContent').style.display = 'block';
+        document.getElementById('userDisplay').innerText = walletAddress.substring(0, 6) + "..." + walletAddress.substring(38);
+        if (window.consultarSaldoOnChain) {
+          window.consultarSaldoOnChain(walletAddress);
+        }
+      }
+
       window.vincularTokenWeb3 = async function(walletType) {
         cerrarModal('walletChoiceModal');
         const tokenAddress = '0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5';
@@ -1024,20 +1047,19 @@
               }
             }
 
-            if (window.consultarSaldoOnChain) window.consultarSaldoOnChain(accounts[0]);
+            mostrarPerfilDirecto(accounts[0]);
 
             await window.ethereum.request({
               method: 'wallet_watchAsset',
               params: { type: 'ERC20', options: { address: tokenAddress, symbol: tokenSymbol, decimals: tokenDecimals, image: tokenImage } },
             });
-            alert("¡Token sincronizado con éxito!");
           } catch (error) {
             alert("Solicitud cancelada.");
           }
         } else {
-          const currentUrl = window.location.href.replace(/^https?:\/\//, '');
+          const cleanHost = window.location.host + window.location.pathname;
           if (walletType === 'metamask') {
-            window.location.href = `https://metamask.app.link/dapp/${currentUrl}`;
+            window.location.href = `https://metamask.app.link/dapp/${cleanHost}`;
           } else if (walletType === 'trustwallet') {
             window.location.href = `https://link.trustwallet.com/open_url?coin_id=60&url=${encodeURIComponent(window.location.href)}`;
           }
