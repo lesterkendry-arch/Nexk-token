@@ -162,7 +162,6 @@
                     <div class="field">
                         <label>Método de Pago / Moneda</label>
                         <select id="paymentCurrency" onchange="actualizarMetodoCompra()">
-                            <option value="coinremitter">Coinremitter (BNB / Cripto)</option>
                             <option value="pasarela_alternativa">Pasarela de Pago Segura (Tarjeta / Pix)</option>
                         </select>
                     </div>
@@ -171,14 +170,16 @@
                         <button class="btn-action btn-sell" style="margin:0; flex:1;" onclick="iniciarProcesoVenta()">Vender</button>
                     </div>
                     <button class="btn-action btn-send" onclick="abrirModalEnviarTokens()">📤 Enviar Tokens a Billetera</button>
-                    <button class="btn-gen" style="width:100%; margin-top:10px; padding: 10px; font-size: 13px;" onclick="verificarPagoPendiente()">🔄 Verificar Estado de mi Pago</button>
                 </div>
 
+                <!-- SECCIÓN DE COMERCIO REAL CON REDIRECCIÓN LIMPIA DE PANCAKESWAP -->
                 <div id="realTradeSection" style="margin-top: 15px; display: block;">
-                    <a href="https://pancakeswap.finance/swap?outputCurrency=0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5&chainId=56" target="_blank" style="text-decoration: none;">
-                        <button class="btn-action web3-btn" style="background: #1fc7d4; color: white; border: none; font-weight: bold;">🥞 Comprar en PancakeSwap</button>
-                    </a>
-                    <button class="btn-action web3-btn" style="background: #f3ba2f; color: #000; border: none; font-weight: bold;" onclick="abrirWalletChoiceModal()">🦊 Añadir a MetaMask / Trust Wallet</button>
+                    <button class="btn-action web3-btn" style="background: #1fc7d4; color: white; border: none; font-weight: bold;" onclick="abrirPancakeSwapDirecto()">
+                        🥞 Comprar en PancakeSwap
+                    </button>
+                    <button class="btn-action web3-btn" style="background: #f3ba2f; color: #000; border: none; font-weight: bold;" onclick="abrirWalletChoiceModal()">
+                        🦊 Añadir a MetaMask / Trust Wallet
+                    </button>
                 </div>
 
                 <div style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
@@ -251,13 +252,48 @@
         </div>
     </div>
 
-    <!-- MODAL DE PASARELA ALTERNATIVA (TARJETA / PIX) -->
+    <!-- MODAL DE PASARELA DE PAGO (TARJETA / PIX) -->
     <div id="paymentModal" class="modal">
         <div class="modal-content">
             <h3>Pasarela de Pago Segura</h3>
-            <div class="field"><label>Total a Pagar</label><input type="text" id="payTotalText" readonly style="font-weight: bold; color: var(--primary-cyan);"></div>
-            <div class="field"><label>Número de Tarjeta / Clave Pix</label><input type="text" id="payDetailsInput" placeholder="4532 **** **** 8891 o Chave Pix"></div>
-            <button class="btn-auth" style="width:100%; margin-top:10px; background: var(--green-up); color: white;" onclick="confirmarPagoCompraAlternativa()">Confirmar Pago</button>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">
+                Compra directa mediante Pix (BRL) o Tarjeta (USD).
+            </p>
+
+            <div class="field">
+                <label>Selecciona tu Moneda de Pago</label>
+                <select id="payCurrencySelect" onchange="convertirMonedaPasarela()">
+                    <option value="BRL">Reales Brasileños (R$ - Pix)</option>
+                    <option value="USD">Dólares (USD $ - Tarjeta)</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Total a Pagar</label>
+                <input type="text" id="payTotalText" readonly style="font-weight: bold; color: var(--primary-cyan); font-size: 16px;">
+            </div>
+
+            <!-- SECCIÓN PIX (ACTIVA) -->
+            <div id="pixPaymentSection" class="field" style="background: var(--bg-dark); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 10px;">
+                <label style="color: var(--primary-gold); font-weight: bold; margin-bottom: 6px;">Clave Pix Oficial (Pagos en BRL):</label>
+                <div style="display: flex; gap: 8px; align-items: center; margin-top: 5px;">
+                    <input type="text" id="pixKeyDisplay" value="121.055.342.28" readonly style="font-weight: bold; letter-spacing: 1px; color: #fff;">
+                    <button class="btn-gen" style="padding: 10px 14px; margin: 0; background: var(--primary-cyan); color: #000; font-weight: bold;" onclick="copiarClavePix()">📋 Copiar</button>
+                </div>
+                <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">
+                    Copia la clave Pix, realiza la transferencia desde tu app bancaria y haz clic en 'Confirmar Pago' para enviar tu orden a revisión.
+                </p>
+            </div>
+
+            <!-- SECCIÓN TARJETA USD (EN MANTENIMIENTO) -->
+            <div id="cardPaymentSection" class="field" style="display: none; background: rgba(255, 193, 7, 0.1); padding: 12px; border-radius: 8px; border: 1px solid #ffc107; margin-top: 10px;">
+                <label style="color: #ffc107; font-weight: bold; margin-bottom: 6px;">⚠️ Pagos en USD con Tarjeta</label>
+                <p style="font-size: 12px; color: #fff; margin-top: 4px;">
+                    El procesamiento de tarjetas en USD está temporalmente en mantenimiento. Por favor, selecciona **Reales Brasileños (Pix)** para completar tu compra.
+                </p>
+            </div>
+
+            <button id="btnConfirmarPago" class="btn-auth" style="width:100%; margin-top:15px; background: var(--green-up); color: white;" onclick="confirmarPagoCompraAlternativa()">Confirmar Pago</button>
             <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('paymentModal')">Cancelar</button>
         </div>
     </div>
@@ -300,6 +336,7 @@
         </div>
     </div>
 
+    <!-- PANEL ADMINISTRATIVO -->
     <div id="adminModal" class="modal">
         <div class="modal-content" style="max-width: 600px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -309,6 +346,7 @@
             
             <div class="admin-tabs">
                 <button class="tab-btn active" onclick="cambiarPestañaAdmin('tabMercado', this)">💰 Mercado</button>
+                <button class="tab-btn" onclick="cambiarPestañaAdmin('tabPagosPix', this)">📌 Pagos Pix Pendientes</button>
                 <button class="tab-btn" onclick="cambiarPestañaAdmin('tabDiseno', this)">🎨 Diseño</button>
                 <button class="tab-btn" onclick="cambiarPestañaAdmin('tabUsuarios', this)">👥 Usuarios & Seguridad</button>
                 <button class="tab-btn" onclick="cambiarPestañaAdmin('tabChat', this)">💬 Chat</button>
@@ -333,6 +371,17 @@
                 <hr style="border-color: var(--border-color); margin: 15px 0;">
                 <p style="font-size: 12px; color: var(--text-muted);">Los valores del token se leen directamente en tiempo real desde la cadena de bloques BSC.</p>
                 <div class="field" style="margin-top: 10px;"><label>Precio Simulado ($ USD)</label><input type="text" id="adminPrice" value="1.45"></div>
+            </div>
+
+            <!-- PESTAÑA PARA VERIFICACIÓN Y APROBACIÓN MANUAL DE PIX -->
+            <div id="tabPagosPix" class="tab-content">
+                <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Validación Manual de Pagos Pix</h4>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+                    Verifica tu cuenta bancaria. Haz clic en "Aprobar" únicamente en la transacción confirmada para acreditar de forma individual los tokens al cliente.
+                </p>
+                <div id="listaOrdenesPixAdmin" style="max-height: 280px; overflow-y: auto;">
+                    <p style="color: var(--text-muted); font-size: 12px;">Cargando solicitudes de pago Pix...</p>
+                </div>
             </div>
 
             <div id="tabDiseno" class="tab-content">
@@ -381,11 +430,11 @@
         </div>
     </div>
 
-    <!-- FIREBASE & LÓGICA -->
+    <!-- FIREBASE & LÓGICA INTEGRADA -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
       import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-      import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, addDoc, query, orderBy, serverTimestamp, getDocs, setLogLevel } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+      import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, addDoc, query, orderBy, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
       setLogLevel('silent');
 
@@ -404,7 +453,9 @@
       let adminChatUnsubscribe = null;
       let historialUnsubscribe = null;
       let usuariosSnapshotUnsubscribe = null;
+      let ordenesPixUnsubscribe = null;
 
+      const TASA_CAMBIO_BRL = 5.50; // Tipo de cambio estimado USD -> BRL
       const TOKEN_CONTRACT_ADDRESS = "0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5";
       const ERC20_ABI = [
           "function balanceOf(address owner) view returns (uint256)",
@@ -568,141 +619,92 @@
           try { await signInWithEmailAndPassword(auth, email, pass); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }
       };
 
-      window.actualizarMetodoCompra = function() {
-          const metodo = document.getElementById('paymentCurrency').value;
-          if (metodo === 'pasarela_alternativa') {
-              const cantidad = parseFloat(document.getElementById('tradeAmount').value);
-              if (isNaN(cantidad) || cantidad <= 0) { alert("Cantidad inválida"); return; }
-              tempCantidadTokens = cantidad;
-              document.getElementById('payTotalText').value = `$${(cantidad * PRECIO_TOKEN_USD).toFixed(2)} USD`;
-              document.getElementById('paymentModal').classList.add('show');
-          }
-      };
-
       window.iniciarProcesoCompraUniversal = function() {
-          const metodo = document.getElementById('paymentCurrency').value;
-          if (metodo === 'coinremitter') {
-              iniciarProcesoCompraCoinremitter();
+          window.actualizarMetodoCompra();
+      };
+
+      window.actualizarMetodoCompra = function() {
+          const cantidad = parseFloat(document.getElementById('tradeAmount').value);
+          if (isNaN(cantidad) || cantidad <= 0) { alert("Cantidad inválida"); return; }
+          tempCantidadTokens = cantidad;
+          
+          document.getElementById('payCurrencySelect').value = 'BRL';
+          window.convertirMonedaPasarela();
+          
+          document.getElementById('paymentModal').classList.add('show');
+      };
+
+      window.convertirMonedaPasarela = function() {
+          const moneda = document.getElementById('payCurrencySelect').value;
+          const montoUSD = tempCantidadTokens * PRECIO_TOKEN_USD;
+
+          const pixSection = document.getElementById('pixPaymentSection');
+          const cardSection = document.getElementById('cardPaymentSection');
+          const btnConfirmar = document.getElementById('btnConfirmarPago');
+
+          if (moneda === 'BRL') {
+              const montoBRL = (montoUSD * TASA_CAMBIO_BRL).toFixed(2);
+              document.getElementById('payTotalText').value = `R$ ${montoBRL} BRL`;
+              pixSection.style.display = 'block';
+              cardSection.style.display = 'none';
+              btnConfirmar.disabled = false;
+              btnConfirmar.style.opacity = '1';
+              btnConfirmar.style.cursor = 'pointer';
           } else {
-              window.actualizarMetodoCompra();
+              document.getElementById('payTotalText').value = `$${montoUSD.toFixed(2)} USD`;
+              pixSection.style.display = 'none';
+              cardSection.style.display = 'block';
+              btnConfirmar.disabled = true;
+              btnConfirmar.style.opacity = '0.5';
+              btnConfirmar.style.cursor = 'not-allowed';
           }
       };
 
-      // 1. COMPRA VÍA VERCEL SERVERLESS FUNCTION
-      async function iniciarProcesoCompraCoinremitter() {
-        if (!usuarioActual) return alert("Inicia sesión primero");
-        const cantidadTokens = parseFloat(document.getElementById('tradeAmount').value);
-        if (isNaN(cantidadTokens) || cantidadTokens <= 0) return alert("Cantidad inválida");
-        
-        const montoUSD = (cantidadTokens * PRECIO_TOKEN_USD).toFixed(2);
-        
-        try {
-          const response = await fetch('/api/coinremitter', {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              action: "create-invoice",
-              payload: {
-                amount: montoUSD,
-                name: "Compra NEXK Tokens",
-                description: `Compra de ${cantidadTokens} NEXK por ${usuarioActual.email || usuarioActual.uid}`
-              }
-            })
+      window.copiarClavePix = function() {
+          const pixInput = document.getElementById('pixKeyDisplay');
+          navigator.clipboard.writeText(pixInput.value).then(() => {
+              alert("¡Clave Pix copiada al portapapeles!");
+          }).catch(err => {
+              alert("Error al copiar clave Pix");
           });
-
-          const data = await response.json();
-          console.log("Respuesta de Coinremitter:", data);
-
-          if (data && data.flag === 1 && data.data && data.data.url_invoice) {
-            localStorage.setItem('pending_invoice_id', data.data.invoice_id);
-            localStorage.setItem('pending_tokens', cantidadTokens);
-
-            alert("Factura creada. Realiza el pago. Cuando termines, regresa aquí y pulsa 'Verificar Estado de mi Pago'.");
-            window.location.href = data.data.url_invoice;
-          } else {
-            const errorMsg = data.msg || data.message || "No se pudo generar la factura.";
-            alert("Error al generar la orden de pago: " + errorMsg);
-          }
-        } catch (error) {
-          console.error("Error al conectar con el servidor Vercel:", error);
-          alert("Ocurrió un problema de conexión al procesar el pago.");
-        }
       };
 
-      // 2. VERIFICACIÓN DE PAGO VÍA VERCEL SERVERLESS FUNCTION
-      window.verificarPagoPendiente = async function() {
-        if (!usuarioActual) return alert("Inicia sesión primero");
-        const invoiceId = localStorage.getItem('pending_invoice_id');
-        const cantidadTokens = parseFloat(localStorage.getItem('pending_tokens'));
-
-        if (!invoiceId) {
-          return alert("No hay ninguna factura pendiente registrada en este navegador.");
-        }
-
-        try {
-          const response = await fetch('/api/coinremitter', {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              action: "get-invoice",
-              payload: {
-                invoice_id: invoiceId
-              }
-            })
-          });
-
-          const data = await response.json();
-
-          if (data && data.flag === 1 && data.data && (data.data.status === 1 || data.data.status_code === 1)) {
-            const userRef = doc(db, "usuarios", usuarioActual.uid);
-            
-            await updateDoc(userRef, { 
-                tokensNEXK: increment(cantidadTokens), 
-                totalOperaciones: increment(1) 
-            });
-            await addDoc(collection(db, "usuarios", usuarioActual.uid, "transacciones"), { 
-                tipo: 'COMPRA', 
-                cantidad: cantidadTokens, 
-                invoice_id: invoiceId, 
-                fecha: serverTimestamp() 
-            });
-
-            localStorage.removeItem('pending_invoice_id');
-            localStorage.removeItem('pending_tokens');
-
-            alert("¡Pago confirmado con éxito! Se han acreditado " + cantidadTokens + " NEXK a tu portafolio.");
-          } else {
-            alert("El pago aún no se ha completado o confirmado por la red. Inténtalo de nuevo en unos minutos.");
-          }
-        } catch (error) {
-          console.error("Error al verificar factura:", error);
-          alert("No se pudo comprobar el estado del pago en este momento.");
-        }
-      };
-
+      /* ENVÍO DE COMPRA PIX PARA VERIFICACIÓN MANUAL */
       window.confirmarPagoCompraAlternativa = async function() {
-        const det = document.getElementById('payDetailsInput').value; 
-        if (!det) return alert("Faltan datos de pago");
-        if (!usuarioActual) return alert("Inicia sesión primero");
+          const moneda = document.getElementById('payCurrencySelect').value;
+          if (moneda === 'USD') {
+              return alert("Los pagos en USD no están disponibles por el momento. Selecciona BRL (Pix).");
+          }
 
-        const userRef = doc(db, "usuarios", usuarioActual.uid);
-        let flagFraude = tempCantidadTokens > 10000 ? true : false; 
-        try {
-          await updateDoc(userRef, { 
-              tokensNEXK: increment(tempCantidadTokens), 
-              totalOperaciones: increment(1), 
-              alertaFraude: flagFraude 
-          });
-          await addDoc(collection(db, "usuarios", usuarioActual.uid, "transacciones"), { 
-              tipo: 'COMPRA', 
-              cantidad: tempCantidadTokens, 
-              metodo: 'Alternativa', 
-              fecha: serverTimestamp() 
-          });
-          alert("¡Pago procesado y tokens acreditados exitosamente!"); 
-          window.cerrarModal('paymentModal');
-          document.getElementById('payDetailsInput').value = '';
-        } catch (e) { alert("Error: " + e.message); }
+          if (!usuarioActual) return alert("Inicia sesión primero.");
+
+          const montoUSD = tempCantidadTokens * PRECIO_TOKEN_USD;
+          const montoBRL = (montoUSD * TASA_CAMBIO_BRL).toFixed(2);
+
+          try {
+              // 1. Crear la solicitud de pago pendiente para la aprobación del administrador
+              await addDoc(collection(db, "ordenes_pix"), {
+                  uidUsuario: usuarioActual.uid,
+                  emailUsuario: usuarioActual.email || "Usuario sin correo",
+                  cantidadTokens: tempCantidadTokens,
+                  montoBRL: montoBRL,
+                  estado: 'PENDIENTE',
+                  fecha: serverTimestamp()
+              });
+
+              // 2. Registrar en el historial personal del cliente como 'En verificación'
+              await addDoc(collection(db, "usuarios", usuarioActual.uid, "transacciones"), { 
+                  tipo: 'COMPRA (PIX)', 
+                  cantidad: tempCantidadTokens, 
+                  metodo: 'Pix (BRL) - En verificación', 
+                  fecha: serverTimestamp() 
+              });
+              
+              alert("¡Pago registrado! Su solicitud Pix está en proceso de verificación manual. Una vez confirmado en la cuenta bancaria, se acreditarán sus tokens."); 
+              window.cerrarModal('paymentModal');
+          } catch (e) { 
+              alert("Error al enviar la solicitud de pago: " + e.message); 
+          }
       };
 
       window.ejecutarEnvioTokensWeb3 = async function() {
@@ -768,7 +770,7 @@
               lista.innerHTML = '';
               snapshot.forEach((docSnap) => {
                   const data = docSnap.data(); const d = document.createElement('div'); d.className = 'historial-item';
-                  const t = data.tipo === 'COMPRA' ? 'tipo-compra' : 'tipo-venta'; const s = data.tipo === 'COMPRA' ? '+' : '-';
+                  const t = data.tipo.includes('COMPRA') ? 'tipo-compra' : 'tipo-venta'; const s = data.tipo.includes('COMPRA') ? '+' : '-';
                   d.innerHTML = `<div><span class="historial-tipo ${t}">${data.tipo}</span><div style="font-size:11px;color:var(--text-muted);">${data.fecha ? data.fecha.toDate().toLocaleString() : ''}</div></div><div style="font-weight:bold;">${s}${data.cantidad} NEXK</div>`;
                   lista.appendChild(d);
               });
@@ -799,6 +801,7 @@
           txtInput.value = ''; 
       };
 
+      /* PANEL ADMINISTRADOR - CARGAR DATOS Y GESTIONAR ORDENES PIX */
       window.abrirAdminPanelModal = async function() {
         document.getElementById('adminModal').classList.add('show');
         const snapConfig = await getDoc(docRefConfig);
@@ -815,6 +818,7 @@
           document.getElementById('adminImagePosition').value = d.imagePos || "none";
         }
 
+        // Cargar lista de usuarios
         if (usuariosSnapshotUnsubscribe) usuariosSnapshotUnsubscribe();
         usuariosSnapshotUnsubscribe = onSnapshot(collection(db, "usuarios"), (usersSnap) => {
             const selectChat = document.getElementById('adminChatSelect'); const listaUsr = document.getElementById('listaUsuariosAdmin');
@@ -831,6 +835,97 @@
               listaUsr.appendChild(card);
             });
         });
+
+        // Escuchar ordenes Pix pendientes para aprobación manual
+        if (ordenesPixUnsubscribe) ordenesPixUnsubscribe();
+        const qPix = query(collection(db, "ordenes_pix"), orderBy("fecha", "desc"));
+        ordenesPixUnsubscribe = onSnapshot(qPix, (snapshot) => {
+            const contenedor = document.getElementById('listaOrdenesPixAdmin');
+            if (!contenedor) return;
+
+            if (snapshot.empty) {
+                contenedor.innerHTML = '<p style="color:var(--text-muted); font-size: 12px;">No hay pagos Pix pendientes por verificar.</p>';
+                return;
+            }
+
+            contenedor.innerHTML = '';
+            let pendientesContador = 0;
+
+            snapshot.forEach((ordenDoc) => {
+                const orden = ordenDoc.data();
+                const ordenId = ordenDoc.id;
+
+                if (orden.estado === 'PENDIENTE') {
+                    pendientesContador++;
+                    const card = document.createElement('div');
+                    card.className = 'admin-user-card';
+                    card.style.flexDirection = 'column';
+                    card.style.alignItems = 'flex-start';
+                    card.style.gap = '8px';
+
+                    card.innerHTML = `
+                        <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                            <strong style="color: var(--primary-cyan); font-size: 13px;">${orden.emailUsuario}</strong>
+                            <span style="color: var(--primary-gold); font-size: 12px; font-weight: bold;">R$ ${orden.montoBRL} BRL</span>
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-muted);">
+                            Tokens solicitados: <b>${orden.cantidadTokens} NEXK</b>
+                        </div>
+                        <div style="display: flex; gap: 8px; width: 100%; margin-top: 4px;">
+                            <button class="btn-gen" style="background: var(--green-up); color: #fff; border: none; padding: 6px 12px; flex: 1;" onclick="aprobarPagoPixIndividual('${ordenId}', '${orden.uidUsuario}', ${orden.cantidadTokens})">
+                                ✅ Aprobar y Acreditar
+                            </button>
+                            <button class="btn-gen" style="background: var(--red-down); color: #fff; border: none; padding: 6px 12px; flex: 1;" onclick="rechazarPagoPixIndividual('${ordenId}')">
+                                ❌ Rechazar
+                            </button>
+                        </div>
+                    `;
+                    contenedor.appendChild(card);
+                }
+            });
+
+            if (pendientesContador === 0) {
+                contenedor.innerHTML = '<p style="color:var(--text-muted); font-size: 12px;">Todos los pagos han sido procesados.</p>';
+            }
+        });
+      };
+
+      /* FUNCIONES DE APROBACIÓN Y RECHAZO INDIVIDUAL EN EL PANEL ADMIN */
+      window.aprobarPagoPixIndividual = async function(ordenId, uidUsuario, cantidadTokens) {
+          if (!confirm(`¿Confirmas que el depósito ingresó correctamente a tu cuenta y deseas acreditar ${cantidadTokens} NEXK a este usuario?`)) return;
+
+          try {
+              // 1. Acreditar saldo directamente a la cuenta del usuario objetivo
+              const userRef = doc(db, "usuarios", uidUsuario);
+              await updateDoc(userRef, {
+                  tokensNEXK: increment(cantidadTokens),
+                  totalOperaciones: increment(1)
+              });
+
+              // 2. Marcar la orden como APROBADA
+              await updateDoc(doc(db, "ordenes_pix", ordenId), {
+                  estado: 'APROBADO',
+                  fechaAprobacion: serverTimestamp()
+              });
+
+              alert("¡Pago aprobado! Se han acreditado los tokens al usuario correctamente.");
+          } catch (e) {
+              alert("Error al aprobar pago: " + e.message);
+          }
+      };
+
+      window.rechazarPagoPixIndividual = async function(ordenId) {
+          if (!confirm("¿Deseas rechazar esta orden de pago?")) return;
+
+          try {
+              await updateDoc(doc(db, "ordenes_pix", ordenId), {
+                  estado: 'RECHAZADO',
+                  fechaRechazo: serverTimestamp()
+              });
+              alert("Orden de pago rechazada.");
+          } catch (e) {
+              alert("Error al rechazar orden: " + e.message);
+          }
       };
 
       window.toggleBanUser = async function(uid, isCurrentlyBanned) { try { await updateDoc(doc(db, "usuarios", uid), { bloqueado: !isCurrentlyBanned, alertaFraude: false }); } catch(e) { alert("Error: " + e.message); } };
@@ -905,8 +1000,22 @@
         document.getElementById('authPassword').value = pass; alert("Generada: " + pass);
       };
 
+      /* FUNCIÓN MEJORADA PARA ABRIR PANCAKESWAP DIRECTAMENTE FUERA DE IFRAMES Y PREVENIR REINICIOS */
+      window.abrirPancakeSwapDirecto = function() {
+        const pancakeUrl = "https://pancakeswap.finance/swap?outputCurrency=0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5&chainId=56";
+        
+        if (typeof window.ethereum !== 'undefined') {
+            window.open(pancakeUrl, '_blank');
+        } else {
+            const cleanUrl = pancakeUrl.replace(/^https?:\/\//, '');
+            window.location.href = `https://metamask.app.link/dapp/${cleanUrl}`;
+        }
+      };
+
+      /* FUNCIÓN PARA VINCULACIÓN Y SOLICITUD DIRECTA EN BILLETERAS WEB3 (METAMASK / TRUST WALLET) */
       window.vincularTokenWeb3 = async function(walletType) {
         cerrarModal('walletChoiceModal');
+        
         const tokenAddress = '0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5';
         const tokenSymbol = 'NEXK';
         const tokenDecimals = 18;
@@ -914,12 +1023,42 @@
 
         if (typeof window.ethereum !== 'undefined') {
           try {
+            // 1. Solicitar permiso explícito de conexión de la cuenta
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             
-            if (accounts.length > 0 && window.consultarSaldoOnChain) {
+            if (!accounts || accounts.length === 0) {
+              alert("No se seleccionó ninguna cuenta en la billetera.");
+              return;
+            }
+
+            // 2. Forzar el cambio a la red BNB Smart Chain Mainnet (ChainID 0x38 = 56)
+            try {
+              await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: '0x38' }], 
+              });
+            } catch (switchError) {
+              // Si la red BSC no está guardada, se agrega a la app
+              if (switchError.code === 4902) {
+                await window.ethereum.request({
+                  method: 'wallet_addEthereumChain',
+                  params: [{
+                    chainId: '0x38',
+                    chainName: 'BNB Smart Chain Mainnet',
+                    nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
+                    rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                    blockExplorerUrls: ['https://bscscan.com/']
+                  }]
+                });
+              }
+            }
+
+            // 3. Consultar saldo on-chain
+            if (window.consultarSaldoOnChain) {
               window.consultarSaldoOnChain(accounts[0]);
             }
 
+            // 4. Solicitar guardar el token NEXK
             const wasAdded = await window.ethereum.request({
               method: 'wallet_watchAsset',
               params: {
@@ -934,13 +1073,14 @@
             });
 
             if (wasAdded) {
-              alert("¡El token NEXK fue sincronizado exitosamente con tu billetera!");
+              alert("¡El token NEXK fue sincronizado y agregado exitosamente a tu billetera!");
             }
           } catch (error) {
-            console.error("Error al añadir el token:", error);
-            alert("Solicitud cancelada o rechazada desde la aplicación.");
+            console.error("Error al vincular billetera:", error);
+            alert("La solicitud fue cancelada o rechazada en la aplicación.");
           }
         } else {
+          // Redirección directa por Deep Link cuando se navega desde navegador estándar
           const currentUrl = window.location.href.replace(/^https?:\/\//, '');
           if (walletType === 'metamask') {
             window.location.href = `https://metamask.app.link/dapp/${currentUrl}`;
