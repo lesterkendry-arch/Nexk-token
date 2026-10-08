@@ -56,6 +56,7 @@
         .btn-action { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; }
         .btn-buy { background-color: var(--primary-cyan); color: #000; }
         .btn-sell { background-color: var(--red-down); color: #fff; }
+        .btn-send { background-color: #f59e0b; color: #000; }
 
         #bannedScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; color: var(--red-down); text-align: center; padding: 20px; }
         
@@ -160,14 +161,18 @@
                     </div>
                     <div class="field">
                         <label>Método de Pago / Moneda</label>
-                        <select id="paymentCurrency">
-                            <option value="USD">Coinremitter (BNB / Cripto)</option>
+                        <select id="paymentCurrency" onchange="actualizarMetodoCompra()">
+                            <option value="coinremitter">Coinremitter (BNB / Cripto)</option>
+                            <option value="pasarela_alternativa">Pasarela de Pago Segura (Tarjeta / Pix)</option>
                         </select>
                     </div>
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <button class="btn-action btn-buy" style="margin:0; flex:1;" onclick="iniciarProcesoCompra()">Comprar</button>
+                        <button class="btn-action btn-buy" style="margin:0; flex:1;" onclick="iniciarProcesoCompraUniversal()">Comprar</button>
                         <button class="btn-action btn-sell" style="margin:0; flex:1;" onclick="iniciarProcesoVenta()">Vender</button>
                     </div>
+                    <button class="btn-action btn-send" onclick="abrirModalEnviarTokens()">📤 Enviar Tokens a Billetera</button>
+                    <!-- BOTÓN PARA VERIFICAR SI EL PAGO DE COINREMITTER YA FUE APROBADO -->
+                    <button class="btn-gen" style="width:100%; margin-top:10px; padding: 10px; font-size: 13px;" onclick="verificarPagoPendiente()">🔄 Verificar Estado de mi Pago</button>
                 </div>
 
                 <div id="realTradeSection" style="margin-top: 15px; display: block;">
@@ -203,6 +208,23 @@
         <div id="bannerBottomContainer" class="dynamic-banner"><img id="bannerBottomImg" src=""></div>
     </div>
 
+    <!-- MODAL PARA ENVIAR TOKENS A OTRA CARTERA -->
+    <div id="sendTokensModal" class="modal">
+        <div class="modal-content">
+            <h3>Enviar NEXK por Red BNB</h3>
+            <div class="field">
+                <label>Dirección de Destino (0x...)</label>
+                <input type="text" id="sendDestinationAddress" placeholder="0xDireccionDeBilletera">
+            </div>
+            <div class="field">
+                <label>Cantidad de Tokens a Enviar</label>
+                <input type="number" id="sendTokenAmount" placeholder="Ej. 50">
+            </div>
+            <button class="btn-auth" style="width:100%; margin-top:10px; background: #f59e0b; color: #000;" onclick="ejecutarEnvioTokensWeb3()">Confirmar Envío</button>
+            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('sendTokensModal')">Cancelar</button>
+        </div>
+    </div>
+
     <!-- MODAL PARA SELECCIONAR BILLETERA (METAMASK / TRUST WALLET) -->
     <div id="walletChoiceModal" class="modal">
         <div class="modal-content" style="text-align: center;">
@@ -230,12 +252,13 @@
         </div>
     </div>
 
+    <!-- MODAL DE PASARELA ALTERNATIVA (TARJETA / PIX) -->
     <div id="paymentModal" class="modal">
         <div class="modal-content">
             <h3>Pasarela de Pago Segura</h3>
             <div class="field"><label>Total a Pagar</label><input type="text" id="payTotalText" readonly style="font-weight: bold; color: var(--primary-cyan);"></div>
             <div class="field"><label>Número de Tarjeta / Clave Pix</label><input type="text" id="payDetailsInput" placeholder="4532 **** **** 8891 o Chave Pix"></div>
-            <button class="btn-auth" style="width:100%; margin-top:10px; background: var(--green-up); color: white;" onclick="confirmarPagoCompra()">Confirmar Pago</button>
+            <button class="btn-auth" style="width:100%; margin-top:10px; background: var(--green-up); color: white;" onclick="confirmarPagoCompraAlternativa()">Confirmar Pago</button>
             <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('paymentModal')">Cancelar</button>
         </div>
     </div>
@@ -383,9 +406,11 @@
       let historialUnsubscribe = null;
       let usuariosSnapshotUnsubscribe = null;
 
-      // DATOS DEL CONTRATO BSC REAL Y COINREMITTER
       const TOKEN_CONTRACT_ADDRESS = "0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5";
-      const ERC20_ABI = ["function balanceOf(address owner) view returns (uint256)"];
+      const ERC20_ABI = [
+          "function balanceOf(address owner) view returns (uint256)",
+          "function transfer(address to, uint amount) returns (bool)"
+      ];
       const BSC_RPC_URL = "https://bsc-dataseed.binance.org/";
       const COINREMITTER_API_KEY = "wkey_MBiyQDiooBNVl8K";
 
@@ -440,7 +465,6 @@
           if(snap.exists()) document.getElementById('adminVisitasCount').innerText = snap.data().visitas || 0;
       });
 
-      // LECTURA DE SALDO REAL DIRECTAMENTE DESDE LA BLOCKCHAIN
       window.consultarSaldoOnChain = async function(address) {
         try {
           const provider = new ethers.providers.JsonRpcProvider(BSC_RPC_URL);
@@ -487,7 +511,6 @@
               if (data.bloqueado) { document.getElementById('bannedScreen').style.display = 'flex'; }
               else { document.getElementById('bannedScreen').style.display = 'none'; }
 
-              // Si tiene billetera vinculada consulta la blockchain, sino muestra Firebase
               if (window.ethereum && window.ethereum.selectedAddress) {
                 window.consultarSaldoOnChain(window.ethereum.selectedAddress);
               } else {
@@ -547,8 +570,29 @@
           try { await signInWithEmailAndPassword(auth, email, pass); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }
       };
 
-      // INTEGRACIÓN CON COINREMITTER
-      window.iniciarProcesoCompra = async function() {
+      // CONTROLADOR UNIVERSAL PARA EL BOTÓN DE COMPRA SEGÚN EL MÉTODO SELECCIONADO
+      window.actualizarMetodoCompra = function() {
+          const metodo = document.getElementById('paymentCurrency').value;
+          if (metodo === 'pasarela_alternativa') {
+              const cantidad = parseFloat(document.getElementById('tradeAmount').value);
+              if (isNaN(cantidad) || cantidad <= 0) { alert("Cantidad inválida"); return; }
+              tempCantidadTokens = cantidad;
+              document.getElementById('payTotalText').value = `$${(cantidad * PRECIO_TOKEN_USD).toFixed(2)} USD`;
+              document.getElementById('paymentModal').classList.add('show');
+          }
+      };
+
+      window.iniciarProcesoCompraUniversal = function() {
+          const metodo = document.getElementById('paymentCurrency').value;
+          if (metodo === 'coinremitter') {
+              iniciarProcesoCompraCoinremitter();
+          } else {
+              window.actualizarMetodoCompra();
+          }
+      };
+
+      // 1. COMPRA SEGURA VÍA COINREMITTER CON VALIDACIÓN PENDIENTE
+      async function iniciarProcesoCompraCoinremitter() {
         if (!usuarioActual) return alert("Inicia sesión primero");
         const cantidadTokens = parseFloat(document.getElementById('tradeAmount').value);
         if (isNaN(cantidadTokens) || cantidadTokens <= 0) return alert("Cantidad inválida");
@@ -556,11 +600,12 @@
         const montoUSD = (cantidadTokens * PRECIO_TOKEN_USD).toFixed(2);
         
         try {
-          const response = await fetch("https://coinremitter.com/api/v3/BNB/create-invoice", {
+          const proxyUrl = "https://corsproxy.io/?";
+          const targetUrl = "https://coinremitter.com/api/v3/BNB/create-invoice";
+
+          const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               api_key: COINREMITTER_API_KEY,
               amount: montoUSD,
@@ -573,6 +618,10 @@
           const data = await response.json();
 
           if (data.flag === 1 && data.data && data.data.url_invoice) {
+            localStorage.setItem('pending_invoice_id', data.data.invoice_id);
+            localStorage.setItem('pending_tokens', cantidadTokens);
+
+            alert("Factura creada. Realiza el pago. Cuando termines, regresa aquí y pulsa 'Verificar Estado de mi Pago'.");
             window.location.href = data.data.url_invoice;
           } else {
             alert("Error al generar la orden de pago: " + (data.msg || "Inténtalo de nuevo."));
@@ -583,15 +632,118 @@
         }
       };
 
-      window.confirmarPagoCompra = async function() {
-        const det = document.getElementById('payDetailsInput').value; if (!det) return alert("Faltan datos");
+      // 2. VERIFICACIÓN DE PAGO ANTES DE ACREDITAR TOKENS
+      window.verificarPagoPendiente = async function() {
+        if (!usuarioActual) return alert("Inicia sesión primero");
+        const invoiceId = localStorage.getItem('pending_invoice_id');
+        const cantidadTokens = parseFloat(localStorage.getItem('pending_tokens'));
+
+        if (!invoiceId) {
+          return alert("No hay ninguna factura pendiente registrada en este navegador.");
+        }
+
+        try {
+          const proxyUrl = "https://corsproxy.io/?";
+          const targetUrl = "https://coinremitter.com/api/v3/get-invoice";
+
+          const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              api_key: COINREMITTER_API_KEY,
+              invoice_id: invoiceId
+            })
+          });
+
+          const data = await response.json();
+
+          if (data.flag === 1 && data.data && (data.data.status === 1 || data.data.status_code === 1)) {
+            const userRef = doc(db, "usuarios", usuarioActual.uid);
+            
+            await updateDoc(userRef, { 
+                tokensNEXK: increment(cantidadTokens), 
+                totalOperaciones: increment(1) 
+            });
+            await addDoc(collection(db, "usuarios", usuarioActual.uid, "transacciones"), { 
+                tipo: 'COMPRA', 
+                cantidad: cantidadTokens, 
+                invoice_id: invoiceId, 
+                fecha: serverTimestamp() 
+            });
+
+            localStorage.removeItem('pending_invoice_id');
+            localStorage.removeItem('pending_tokens');
+
+            alert("¡Pago confirmado con éxito! Se han acreditado " + cantidadTokens + " NEXK a tu portafolio.");
+          } else {
+            alert("El pago aún no se ha completado o confirmado por la red. Inténtalo de nuevo en unos momentos.");
+          }
+        } catch (error) {
+          console.error("Error al verificar factura:", error);
+          alert("No se pudo comprobar el estado del pago en este momento.");
+        }
+      };
+
+      // 3. CONFIRMACIÓN PARA LA PASARELA ALTERNATIVA (TARJETA / PIX)
+      window.confirmarPagoCompraAlternativa = async function() {
+        const det = document.getElementById('payDetailsInput').value; 
+        if (!det) return alert("Faltan datos de pago");
+        if (!usuarioActual) return alert("Inicia sesión primero");
+
         const userRef = doc(db, "usuarios", usuarioActual.uid);
         let flagFraude = tempCantidadTokens > 10000 ? true : false; 
         try {
-          await updateDoc(userRef, { tokensNEXK: increment(tempCantidadTokens), totalOperaciones: increment(1), alertaFraude: flagFraude });
-          await addDoc(collection(db, "usuarios", usuarioActual.uid, "transacciones"), { tipo: 'COMPRA', cantidad: tempCantidadTokens, fecha: serverTimestamp() });
-          alert("Pago procesado."); window.cerrarModal('paymentModal');
+          await updateDoc(userRef, { 
+              tokensNEXK: increment(tempCantidadTokens), 
+              totalOperaciones: increment(1), 
+              alertaFraude: flagFraude 
+          });
+          await addDoc(collection(db, "usuarios", usuarioActual.uid, "transacciones"), { 
+              tipo: 'COMPRA', 
+              cantidad: tempCantidadTokens, 
+              metodo: 'Alternativa', 
+              fecha: serverTimestamp() 
+          });
+          alert("¡Pago procesado y tokens acreditados exitosamente!"); 
+          window.cerrarModal('paymentModal');
+          document.getElementById('payDetailsInput').value = '';
         } catch (e) { alert("Error: " + e.message); }
+      };
+
+      // FUNCIÓN WEB3 PARA ENVIAR TOKENS NEXK A CUALQUIER BILLETERA
+      window.ejecutarEnvioTokensWeb3 = async function() {
+        const destino = document.getElementById('sendDestinationAddress').value.trim();
+        const cantidad = parseFloat(document.getElementById('sendTokenAmount').value);
+
+        if (!destino || !ethers.utils.isAddress(destino)) return alert("Introduce una dirección de billetera válida (0x...)");
+        if (isNaN(cantidad) || cantidad <= 0) return alert("Introduce una cantidad válida de tokens");
+
+        if (typeof window.ethereum === 'undefined') {
+          return alert("Se requiere una billetera Web3 (MetaMask o Trust Wallet) para realizar el envío.");
+        }
+
+        try {
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          await provider.send("eth_requestAccounts", []);
+          const signer = provider.getSigner();
+
+          const contract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, signer);
+          const parsedAmount = ethers.utils.parseUnits(cantidad.toString(), 18);
+
+          alert("Por favor, confirma la transacción de envío en tu billetera.");
+          const tx = await contract.transfer(destino, parsedAmount);
+          
+          alert("¡Transacción enviada a la red! Esperando confirmación...");
+          await tx.wait();
+          
+          alert("¡Tokens NEXK enviados exitosamente a la dirección de destino!");
+          window.cerrarModal('sendTokensModal');
+          document.getElementById('sendDestinationAddress').value = '';
+          document.getElementById('sendTokenAmount').value = '';
+        } catch (error) {
+          console.error("Error al enviar tokens:", error);
+          alert("No se pudo completar el envío: " + (error.data?.message || error.message));
+        }
       };
 
       window.iniciarProcesoVenta = function() {
@@ -744,6 +896,10 @@
         document.getElementById('walletChoiceModal').classList.add('show');
       };
 
+      window.abrirModalEnviarTokens = function() {
+        document.getElementById('sendTokensModal').classList.add('show');
+      };
+
       window.validarCredencialesAdmin = function() {
         const u = document.getElementById('adminUserInput').value.trim(); const p = document.getElementById('adminPassInput').value.trim();
         if (u === 'admin' && p === '200832') { cerrarModal('adminAuthModal'); document.getElementById('adminUserInput').value = ''; document.getElementById('adminPassInput').value = ''; if (window.abrirAdminPanelModal) window.abrirAdminPanelModal(); } else { alert("Credenciales incorrectas"); }
@@ -755,7 +911,6 @@
         document.getElementById('authPassword').value = pass; alert("Generada: " + pass);
       };
 
-      // VINCULACIÓN Y LECTURA CON METAMASK O TRUST WALLET
       window.vincularTokenWeb3 = async function(walletType) {
         cerrarModal('walletChoiceModal');
         const tokenAddress = '0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5';
@@ -765,7 +920,6 @@
 
         if (typeof window.ethereum !== 'undefined') {
           try {
-            // Solicita conectar cuenta al usuario
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             
             if (accounts.length > 0 && window.consultarSaldoOnChain) {
@@ -793,7 +947,6 @@
             alert("Solicitud cancelada o rechazada desde la aplicación.");
           }
         } else {
-          // Abrir deep link en móviles si el navegador no soporta extensiones Web3 directamente
           const currentUrl = window.location.href.replace(/^https?:\/\//, '');
           if (walletType === 'metamask') {
             window.location.href = `https://metamask.app.link/dapp/${currentUrl}`;
