@@ -8,8 +8,10 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4729162767039305" crossorigin="anonymous"></script>
     <link rel="icon" href="https://i.postimg.cc/cHk815mV/image-0.jpg" type="image/png">
     
-    <!-- Librería Ethers.js para conectar con la Blockchain BNB -->
+    <!-- Librerías Ethers.js y WalletConnect Web3Modal v2 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js" type="text/javascript"></script>
+    <script src="https://unpkg.com/@web3modal/ethereum@2.7.1/dist/index.umd.min.js"></script>
+    <script src="https://unpkg.com/@web3modal/html@2.7.1/dist/index.umd.min.js"></script>
 
     <style>
         :root {
@@ -116,18 +118,20 @@
         <p>El acceso a este ecosistema ha sido revocado.</p>
     </div>
 
-    <!-- MODAL OBLIGATORIO PARA ENLAZAR BILLETERA (NO SE PUEDE CERRAR) -->
+    <!-- MODAL OBLIGATORIO PARA ENLAZAR BILLETERA MEDIANTE WALLETCONNECT / WEB3 -->
     <div id="mandatoryWalletModal" class="modal" style="background: rgba(0,0,0,0.98); z-index: 9999;">
         <div class="modal-content" style="text-align: center; border: 1px solid var(--primary-cyan);">
             <h3 style="color: var(--primary-cyan); margin-bottom: 10px;">⚠️ Paso Final: Enlaza tu Billetera</h3>
             <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
-                Para operar con NEXK, es obligatorio conectar tu billetera Web3. Así podremos leer tu saldo real en la blockchain.
+                Para operar con NEXK, conecta tu billetera directamente aprobando el permiso en pantalla:
             </p>
-            <button class="wallet-option-btn btn-metamask-choice" onclick="ejecutarConexionWeb3Obligatoria()" style="background: #f59e0b; color: #000;">
-                🦊 Conectar Billetera Web3
+            
+            <button class="wallet-option-btn btn-metamask-choice" onclick="ejecutarConexionWalletConnect()" style="background: var(--primary-cyan); color: #000;">
+                🦊 Conectar Billetera (MetaMask / Trust Wallet)
             </button>
-            <p style="font-size: 11px; color: var(--red-down); margin-top: 15px;">
-                Abre la web desde el navegador de MetaMask o Trust Wallet para continuar.
+
+            <p style="font-size: 11px; color: var(--text-muted); margin-top: 15px;">
+                Se abrirá el selector seguro para dar el permiso de acceso.
             </p>
         </div>
     </div>
@@ -193,8 +197,8 @@
                     <button class="btn-action web3-btn" style="background: #1fc7d4; color: white; border: none; font-weight: bold;" onclick="abrirPancakeSwapDirecto()">
                         🥞 Comprar en PancakeSwap
                     </button>
-                    <button class="btn-action web3-btn" style="background: #f3ba2f; color: #000; border: none; font-weight: bold;" onclick="abrirWalletChoiceModal()">
-                        🦊 Añadir a MetaMask / Trust Wallet
+                    <button class="btn-action web3-btn" style="background: #f3ba2f; color: #000; border: none; font-weight: bold;" onclick="ejecutarConexionWalletConnect()">
+                        🦊 Cambiar / Reconectar Billetera
                     </button>
                 </div>
 
@@ -238,23 +242,6 @@
             </div>
             <button class="btn-auth" style="width:100%; margin-top:10px; background: #f59e0b; color: #000;" onclick="ejecutarEnvioTokensWeb3()">Confirmar Envío</button>
             <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('sendTokensModal')">Cancelar</button>
-        </div>
-    </div>
-
-    <!-- MODAL PARA SELECCIONAR BILLETERA (METAMASK / TRUST WALLET) -->
-    <div id="walletChoiceModal" class="modal">
-        <div class="modal-content" style="text-align: center;">
-            <h3>Selecciona tu Billetera</h3>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Elige tu aplicación para vincular y sincronizar el saldo real de NEXK:</p>
-            
-            <button class="wallet-option-btn btn-metamask-choice" onclick="vincularTokenWeb3('metamask')">
-                🦊 MetaMask
-            </button>
-            <button class="wallet-option-btn btn-trust-choice" onclick="vincularTokenWeb3('trustwallet')">
-                🛡️ Trust Wallet
-            </button>
-            
-            <button class="btn-gen" style="width:100%; margin-top:15px; border:none;" onclick="cerrarModal('walletChoiceModal')">Cancelar</button>
         </div>
     </div>
 
@@ -389,7 +376,6 @@
                 <div class="field" style="margin-top: 10px;"><label>Precio Simulado ($ USD)</label><input type="text" id="adminPrice" value="1.45"></div>
             </div>
 
-            <!-- PESTAÑA PARA VERIFICACIÓN Y APROBACIÓN MANUAL DE PIX -->
             <div id="tabPagosPix" class="tab-content">
                 <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Validación Manual de Pagos Pix</h4>
                 <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
@@ -446,7 +432,7 @@
         </div>
     </div>
 
-    <!-- FIREBASE & LÓGICA INTEGRADA -->
+    <!-- FIREBASE & LÓGICA INTEGRADA CON WALLETCONNECT -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
       import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
@@ -471,13 +457,32 @@
       let usuariosSnapshotUnsubscribe = null;
       let ordenesPixUnsubscribe = null;
 
-      const TASA_CAMBIO_BRL = 5.50; // Tipo de cambio estimado USD -> BRL
+      const TASA_CAMBIO_BRL = 5.50; 
       const TOKEN_CONTRACT_ADDRESS = "0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5";
       const ERC20_ABI = [
           "function balanceOf(address owner) view returns (uint256)",
           "function transfer(address to, uint amount) returns (bool)"
       ];
       const BSC_RPC_URL = "https://bsc-dataseed.binance.org/";
+
+      // CONFIGURACIÓN DE WALLETCONNECT / WEB3MODAL PARA NAVEGADORES MÓVILES Y PC
+      const projectId = 'b5644d18ec99059f0cf0b62e49c7192f'; // ID público universal de soporte
+      const chains = [
+          {
+              id: 56,
+              name: 'Binance Smart Chain',
+              network: 'bsc',
+              nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
+              rpcUrls: { default: { http: [BSC_RPC_URL] }, public: { http: [BSC_RPC_URL] } },
+              blockExplorers: { default: { name: 'BscScan', url: 'https://bscscan.com' } }
+          }
+      ];
+
+      const { EthereumClient, modalConnectors, walletConnectProvider } = window['@web3modal/ethereum'];
+      const { Web3Modal } = window['@web3modal/html'];
+
+      const ethereumClient = new EthereumClient(modalConnectors({ projectId, chains }), chains);
+      const web3Modal = new Web3Modal({ projectId, themeMode: 'dark', themeColor: 'sky' }, ethereumClient);
 
       window.onload = async () => {
           const statsRef = doc(db, "configuracion", "estadisticas");
@@ -506,7 +511,6 @@
           
           document.getElementById('simulatedTradeSection').style.display = tradingActivo ? 'block' : 'none';
           document.getElementById('realTradeSection').style.display = tradingActivo ? 'block' : 'none';
-          
           document.getElementById('tokenNet').innerText = isReal ? 'BNB Smart Chain (Mainnet)' : 'Simulación Interna';
 
           const topCont = document.getElementById('bannerTopContainer'); const midCont = document.getElementById('bannerMiddleContainer'); const botCont = document.getElementById('bannerBottomContainer');
@@ -576,7 +580,6 @@
               if (data.bloqueado) { document.getElementById('bannedScreen').style.display = 'flex'; return; }
               else { document.getElementById('bannedScreen').style.display = 'none'; }
 
-              // LÓGICA DE BILLETERA OBLIGATORIA
               if (!data.walletAddress) {
                   document.getElementById('mandatoryWalletModal').classList.add('show');
               } else {
@@ -638,49 +641,35 @@
           try { await signInWithEmailAndPassword(auth, email, pass); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }
       };
 
-      window.ejecutarConexionWeb3Obligatoria = async function() {
-          if (typeof window.ethereum === 'undefined') {
-              alert("No detectamos ninguna billetera Web3. Debes abrir esta página desde el navegador interno de Trust Wallet o MetaMask.");
-              return;
-          }
-
+      /* FUNCIÓN QUE ABRE EL MODAL DE PERMISOS DE WALLETCONNECT EN CUALQUIER NAVEGADOR */
+      window.ejecutarConexionWalletConnect = async function() {
           try {
-              const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-              const address = accounts[0];
-
-              if (!address) return alert("No seleccionaste ninguna cuenta.");
-
-              try {
-                  await window.ethereum.request({
-                      method: 'wallet_switchEthereumChain',
-                      params: [{ chainId: '0x38' }], 
-                  });
-              } catch (switchError) {
-                  if (switchError.code === 4902) {
-                      await window.ethereum.request({
-                          method: 'wallet_addEthereumChain',
-                          params: [{
-                              chainId: '0x38',
-                              chainName: 'BNB Smart Chain Mainnet',
-                              nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
-                              rpcUrls: ['https://bsc-dataseed.binance.org/'],
-                              blockExplorerUrls: ['https://bscscan.com/']
-                          }]
-                      });
+              await web3Modal.openModal();
+              
+              // Escuchar cuando el usuario acepte la conexión en su billetera
+              ethereumClient.watchAccount(async (account) => {
+                  if (account.isConnected && account.address && usuarioActual) {
+                      const address = account.address;
+                      const userRef = doc(db, "usuarios", usuarioActual.uid);
+                      await updateDoc(userRef, { walletAddress: address });
+                      
+                      document.getElementById('mandatoryWalletModal').classList.remove('show');
+                      web3Modal.closeModal();
+                      window.consultarSaldoOnChain(address);
+                  }
+              });
+          } catch (error) {
+              console.error("Error en WalletConnect:", error);
+              // Fallback directo a ventana ethereum si está en navegador interno
+              if (window.ethereum) {
+                  const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                  if (accounts[0] && usuarioActual) {
+                      const userRef = doc(db, "usuarios", usuarioActual.uid);
+                      await updateDoc(userRef, { walletAddress: accounts[0] });
+                      document.getElementById('mandatoryWalletModal').classList.remove('show');
+                      window.consultarSaldoOnChain(accounts[0]);
                   }
               }
-
-              const userRef = doc(db, "usuarios", usuarioActual.uid);
-              await updateDoc(userRef, { walletAddress: address });
-
-              alert("¡Billetera " + address.substring(0,6) + "... enlazada exitosamente!");
-              document.getElementById('mandatoryWalletModal').classList.remove('show');
-              
-              if (window.consultarSaldoOnChain) window.consultarSaldoOnChain(address);
-
-          } catch (error) {
-              console.error("Error conectando wallet:", error);
-              alert("Error al conectar: " + error.message);
           }
       };
 
@@ -734,7 +723,6 @@
           });
       };
 
-      /* ENVÍO DE COMPRA PIX PARA VERIFICACIÓN MANUAL */
       window.confirmarPagoCompraAlternativa = async function() {
           const moneda = document.getElementById('payCurrencySelect').value;
           if (moneda === 'USD') {
@@ -763,7 +751,7 @@
                   fecha: serverTimestamp() 
               });
               
-              alert("¡Pago registrado! Su solicitud Pix está en proceso de verificación manual. Una vez confirmado en la cuenta bancaria, se acreditarán sus tokens."); 
+              alert("¡Pago registrado! Su solicitud Pix está en proceso de verificación manual."); 
               window.cerrarModal('paymentModal');
           } catch (e) { 
               alert("Error al enviar la solicitud de pago: " + e.message); 
@@ -777,25 +765,23 @@
         if (!destino || !ethers.utils.isAddress(destino)) return alert("Introduce una dirección de billetera válida (0x...)");
         if (isNaN(cantidad) || cantidad <= 0) return alert("Introduce una cantidad válida de tokens");
 
-        if (typeof window.ethereum === 'undefined') {
-          return alert("Se requiere una billetera Web3 (MetaMask o Trust Wallet) para realizar el envío.");
-        }
-
         try {
-          const provider = new ethers.providers.Web3Provider(window.ethereum);
-          await provider.send("eth_requestAccounts", []);
-          const signer = provider.getSigner();
+          let provider, signer;
+          if (window.ethereum) {
+              provider = new ethers.providers.Web3Provider(window.ethereum);
+              signer = provider.getSigner();
+          } else {
+              provider = new ethers.providers.JsonRpcProvider(BSC_RPC_URL);
+          }
 
           const contract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, signer);
           const parsedAmount = ethers.utils.parseUnits(cantidad.toString(), 18);
 
           alert("Por favor, confirma la transacción de envío en tu billetera.");
           const tx = await contract.transfer(destino, parsedAmount);
-          
-          alert("¡Transacción enviada a la red! Esperando confirmación...");
           await tx.wait();
           
-          alert("¡Tokens NEXK enviados exitosamente a la dirección de destino!");
+          alert("¡Tokens NEXK enviados exitosamente!");
           window.cerrarModal('sendTokensModal');
           document.getElementById('sendDestinationAddress').value = '';
           document.getElementById('sendTokenAmount').value = '';
@@ -864,7 +850,6 @@
           txtInput.value = ''; 
       };
 
-      /* PANEL ADMINISTRADOR - CARGAR DATOS Y GESTIONAR ORDENES PIX */
       window.abrirAdminPanelModal = async function() {
         document.getElementById('adminModal').classList.add('show');
         const snapConfig = await getDoc(docRefConfig);
@@ -888,11 +873,10 @@
             usersSnap.forEach((uDoc) => {
               const data = uDoc.data(); const email = data.email || "Usuario sin correo"; const bal = (data.tokensNEXK || 0).toFixed(2);
               const isBanned = data.bloqueado ? "Desbloquear" : "Bloquear"; const colorBanBtn = data.bloqueado ? "var(--green-up)" : "var(--red-down)";
-              const alerta = data.alertaFraude ? `<span class="fraud-alert" title="Posible inyección de tokens">⚠️ FRAUDE</span>` : "";
               const opt = document.createElement('option'); opt.value = uDoc.id; opt.innerText = email; 
               if (uDoc.id === currentSelectedChat) opt.selected = true; selectChat.appendChild(opt);
               const card = document.createElement('div'); card.className = 'admin-user-card';
-              card.innerHTML = `<div><strong style="color: var(--primary-cyan); font-size: 13px;">${email}</strong> ${alerta}<br><span style="font-size: 11px; color: var(--text-muted);">Saldo: ${bal} NEXK</span></div>
+              card.innerHTML = `<div><strong style="color: var(--primary-cyan); font-size: 13px;">${email}</strong><br><span style="font-size: 11px; color: var(--text-muted);">Saldo: ${bal} NEXK</span></div>
                 <button class="btn-gen" style="background: ${colorBanBtn}; color: #fff; border: none; padding: 6px 12px;" onclick="toggleBanUser('${uDoc.id}', ${data.bloqueado})">${isBanned}</button>`;
               listaUsr.appendChild(card);
             });
@@ -952,7 +936,7 @@
       };
 
       window.aprobarPagoPixIndividual = async function(ordenId, uidUsuario, cantidadTokens) {
-          if (!confirm(`¿Confirmas que el depósito ingresó correctamente a tu cuenta y deseas acreditar ${cantidadTokens} NEXK a este usuario?`)) return;
+          if (!confirm(`¿Confirmas que el depósito ingresó correctamente y deseas acreditar ${cantidadTokens} NEXK?`)) return;
 
           try {
               const userRef = doc(db, "usuarios", uidUsuario);
@@ -966,7 +950,7 @@
                   fechaAprobacion: serverTimestamp()
               });
 
-              alert("¡Pago aprobado! Se han acreditado los tokens al usuario correctamente.");
+              alert("¡Pago aprobado y tokens acreditados!");
           } catch (e) {
               alert("Error al aprobar pago: " + e.message);
           }
@@ -980,13 +964,13 @@
                   estado: 'RECHAZADO',
                   fechaRechazo: serverTimestamp()
               });
-              alert("Orden de pago rechazada.");
+              alert("Orden rechazada.");
           } catch (e) {
-              alert("Error al rechazar orden: " + e.message);
+              alert("Error: " + e.message);
           }
       };
 
-      window.toggleBanUser = async function(uid, isCurrentlyBanned) { try { await updateDoc(doc(db, "usuarios", uid), { bloqueado: !isCurrentlyBanned, alertaFraude: false }); } catch(e) { alert("Error: " + e.message); } };
+      window.toggleBanUser = async function(uid, isCurrentlyBanned) { try { await updateDoc(doc(db, "usuarios", uid), { bloqueado: !isCurrentlyBanned }); } catch(e) { alert("Error: " + e.message); } };
       window.cambiarPestañaAdmin = function(tabId, btnElement) { document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active')); document.getElementById(tabId).classList.add('active'); btnElement.classList.add('active'); };
 
       window.cargarChatSeleccionadoAdmin = function() {
@@ -1025,7 +1009,7 @@
             imagePos: document.getElementById('adminImagePosition').value,
             ultimaActualizacion: serverTimestamp()
           }, { merge: true });
-          alert("¡Ajustes Guardados! Aplicado a toda la red en tiempo real.");
+          alert("¡Ajustes Guardados!");
         } catch (e) { alert("Error al guardar: " + e.message); }
       };
     </script>
@@ -1038,10 +1022,6 @@
       window.cerrarAdminModal = function() { document.getElementById('adminModal').classList.remove('show'); };
       window.cerrarModal = function(id) { document.getElementById(id).classList.remove('show'); };
       window.abrirLoginAdminModal = function() { document.getElementById('adminAuthModal').classList.add('show'); };
-
-      window.abrirWalletChoiceModal = function() {
-        document.getElementById('walletChoiceModal').classList.add('show');
-      };
 
       window.abrirModalEnviarTokens = function() {
         document.getElementById('sendTokensModal').classList.add('show');
@@ -1060,84 +1040,7 @@
 
       window.abrirPancakeSwapDirecto = function() {
         const pancakeUrl = "https://pancakeswap.finance/swap?outputCurrency=0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5&chainId=56";
-        
-        if (typeof window.ethereum !== 'undefined') {
-            window.open(pancakeUrl, '_blank');
-        } else {
-            const cleanUrl = pancakeUrl.replace(/^https?:\/\//, '');
-            window.location.href = `https://metamask.app.link/dapp/${cleanUrl}`;
-        }
-      };
-
-      window.vincularTokenWeb3 = async function(walletType) {
-        cerrarModal('walletChoiceModal');
-        
-        const tokenAddress = '0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5';
-        const tokenSymbol = 'NEXK';
-        const tokenDecimals = 18;
-        const tokenImage = 'https://i.postimg.cc/cHk815mV/image-0.jpg';
-
-        if (typeof window.ethereum !== 'undefined') {
-          try {
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            
-            if (!accounts || accounts.length === 0) {
-              alert("No se seleccionó ninguna cuenta en la billetera.");
-              return;
-            }
-
-            try {
-              await window.ethereum.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: '0x38' }], 
-              });
-            } catch (switchError) {
-              if (switchError.code === 4902) {
-                await window.ethereum.request({
-                  method: 'wallet_addEthereumChain',
-                  params: [{
-                    chainId: '0x38',
-                    chainName: 'BNB Smart Chain Mainnet',
-                    nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
-                    rpcUrls: ['https://bsc-dataseed.binance.org/'],
-                    blockExplorerUrls: ['https://bscscan.com/']
-                  }]
-                });
-              }
-            }
-
-            if (window.consultarSaldoOnChain) {
-              window.consultarSaldoOnChain(accounts[0]);
-            }
-
-            const wasAdded = await window.ethereum.request({
-              method: 'wallet_watchAsset',
-              params: {
-                type: 'ERC20',
-                options: {
-                  address: tokenAddress,
-                  symbol: tokenSymbol,
-                  decimals: tokenDecimals,
-                  image: tokenImage,
-                },
-              },
-            });
-
-            if (wasAdded) {
-              alert("¡El token NEXK fue sincronizado y agregado exitosamente a tu billetera!");
-            }
-          } catch (error) {
-            console.error("Error al vincular billetera:", error);
-            alert("La solicitud fue cancelada o rechazada en la aplicación.");
-          }
-        } else {
-          const currentUrl = window.location.href.replace(/^https?:\/\//, '');
-          if (walletType === 'metamask') {
-            window.location.href = `https://metamask.app.link/dapp/${currentUrl}`;
-          } else if (walletType === 'trustwallet') {
-            window.location.href = `https://link.trustwallet.com/open_url?coin_id=60&url=${encodeURIComponent(window.location.href)}`;
-          }
-        }
+        window.open(pancakeUrl, '_blank');
       };
     </script>
 </body>
