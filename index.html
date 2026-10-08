@@ -186,7 +186,7 @@
             color: var(--red-down); 
             text-align: center; 
             padding: 20px; 
-        }
+        } 
         
         .web3-btn { display: block; margin-top: 10px; font-size: 14px; }
 
@@ -262,7 +262,6 @@
             margin-top: 4px; 
         }
 
-        /* VISTA DE RESUMEN DE COTIZACIÓN */
         .quote-box {
             background: var(--bg-dark);
             border: 1px dashed var(--primary-cyan);
@@ -383,17 +382,8 @@
 
     <div id="welcomeSection" class="card welcome-card">
         <h2>Bienvenido al token NEXK</h2>
-        <p>Inicia sesión o conecta tu billetera para acceder a tu portafolio y operar dentro del ecosistema.</p>
+        <p>Inicia sesión o crea tu cuenta para acceder a tu portafolio y operar dentro del ecosistema.</p>
 
-        <button class="wallet-option-btn btn-metamask-choice" onclick="vincularTokenWeb3('metamask')">
-            🦊 Entrar con MetaMask
-        </button>
-        <button class="wallet-option-btn btn-trust-choice" onclick="vincularTokenWeb3('trustwallet')">
-            🛡️ Entrar con Trust Wallet
-        </button>
-        
-        <div style="margin: 15px 0; color: var(--text-muted); font-size: 12px;">o usa tu cuenta de redes / correo</div>
-        
         <button class="btn-provider btn-google" id="btnGoogleWelcome">Continuar con Google</button>
         <button class="btn-provider btn-apple" id="btnAppleWelcome">Continuar con Apple</button>
         
@@ -497,7 +487,24 @@
         <div id="bannerBottomContainer" class="dynamic-banner"><img id="bannerBottomImg" src=""></div>
     </div>
 
-    <!-- MODAL COMPRAR TOKENS DIRECTO CON COTIZADOR EN TIEMPO REAL Y EJECUCIÓN WEB3 -->
+    <!-- MODAL OBLIGATORIO DE BILLETERA (APARECE DESPUÉS DE INICIAR SESIÓN) -->
+    <div id="mandatoryWalletModal" class="modal">
+        <div class="modal-content" style="text-align: center;">
+            <h3 style="color: var(--primary-gold);">⚠️ CONEXIÓN OBLIGATORIA DE BILLETERA</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">
+                Ya has iniciado sesión. Para continuar y operar en el ecosistema NEXK, debes conectar obligatoriamente una de tus billeteras Web3 en la red BNB Smart Chain.
+            </p>
+            
+            <button class="wallet-option-btn btn-metamask-choice" onclick="vincularTokenWeb3('metamask')">
+                🦊 Conectar MetaMask
+            </button>
+            <button class="wallet-option-btn btn-trust-choice" onclick="vincularTokenWeb3('trustwallet')">
+                🛡️ Conectar Trust Wallet
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL COMPRAR TOKENS DIRECTO -->
     <div id="buyTokensModal" class="modal">
         <div class="modal-content">
             <h3 style="color: var(--green-up);">🛒 Comprar NEXK Token</h3>
@@ -528,7 +535,7 @@
         </div>
     </div>
 
-    <!-- MODAL VENDER TOKENS DIRECTO CON COTIZADOR EN TIEMPO REAL Y EJECUCIÓN WEB3 -->
+    <!-- MODAL VENDER TOKENS DIRECTO -->
     <div id="sellTokensModal" class="modal">
         <div class="modal-content">
             <h3 style="color: var(--red-down);">💰 Vender NEXK Token</h3>
@@ -714,7 +721,7 @@
         </div>
     </div>
 
-    <!-- FIREBASE & LÓGICA INTEGRADA REAL CON ROTACIÓN DE NODOS Y CÁLCULO PRECISO -->
+    <!-- FIREBASE & LÓGICA INTEGRADA REAL -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
       import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
@@ -742,7 +749,6 @@
       const WBNB_ADDRESS = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
       const USDT_BSC_ADDRESS = "0x55d398326f99059fF775485246999027B3197955";
 
-      // NODOS DE RESPALDO PARA SOLUCIONAR ERRORES RPC HTTP CLIENT
       const BSC_RPC_NODES = [
           "https://bsc-dataseed.binance.org/",
           "https://bsc-dataseed1.defibit.io/",
@@ -773,7 +779,6 @@
         return new ethers.providers.JsonRpcProvider(BSC_RPC_NODES[0]);
       };
 
-      // FORMATEADOR DE PRECISIÓN EXACTA
       window.formatearMoneda = function(valor, maxDec = 8) {
         if (isNaN(valor) || valor === 0) return "0.00";
         if (valor < 0.000001) return valor.toFixed(maxDec);
@@ -941,7 +946,6 @@
         }
       };
 
-      // ENVÍO DE TOKENS DIRECTO CORREGIDO PARA EVITAR ERROR RPC HTTP
       window.ejecutarEnvioTokensWeb3 = async function() {
         const destino = document.getElementById('sendDestinationAddress').value.trim();
         const cantidadStr = document.getElementById('sendTokenAmount').value.trim();
@@ -1007,7 +1011,7 @@
             const walletUser = await signer.getAddress();
 
             const router = new ethers.Contract(PANCAKE_ROUTER_ADDRESS, ROUTER_ABI, signer);
-            const deadline = Math.floor(Date.now() / 1000) + 60 * 10;
+            const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
 
             if (moneda === 'BNB') {
                 const amountIn = ethers.utils.parseEther(montoGastoStr);
@@ -1042,7 +1046,7 @@
 
         } catch (error) {
             console.error("Error en compra:", error);
-            alert("No se pudo completar la transacción: " + (error.reason || error.message));
+            alert("No se pudo completar la transacción: " + (error.reason || error.message || "Cancelado o error Web3"));
         }
       };
 
@@ -1070,7 +1074,7 @@
             const router = new ethers.Contract(PANCAKE_ROUTER_ADDRESS, ROUTER_ABI, signer);
             
             const amountIn = ethers.utils.parseUnits(nexkAmountStr, 18);
-            const deadline = Math.floor(Date.now() / 1000) + 60 * 10;
+            const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
 
             const allowance = await tokenContract.allowance(walletUser, PANCAKE_ROUTER_ADDRESS);
             if (allowance.lt(amountIn)) {
@@ -1098,7 +1102,7 @@
 
         } catch (error) {
             console.error("Error en venta:", error);
-            alert("No se pudo completar la venta: " + (error.reason || error.message));
+            alert("No se pudo completar la venta: " + (error.reason || error.message || "Cancelado o error Web3"));
         }
       };
 
@@ -1117,40 +1121,45 @@
         } catch (error) {}
       };
 
-      // VERIFICACIÓN AUTOMÁTICA DE BILLETERA AL NAVEGAR DESDE METAMASK/TRUST
-      window.comprobarConexionAutomaticaWeb3 = async function() {
+      // VERIFICAR BILLETERA SÓLO DESPUÉS DE INICIAR SESIÓN O ENTRAR
+      window.verificarBilleteraPostLogin = async function() {
         if (typeof window.ethereum !== 'undefined') {
           try {
             const accounts = await window.ethereum.request({ method: 'eth_accounts' });
             if (accounts && accounts.length > 0) {
-              const acc = accounts[0];
-              document.getElementById('welcomeSection').style.display = 'none';
+              walletDireccionConectada = accounts[0];
+              document.getElementById('userDisplay').innerText = walletDireccionConectada.substring(0, 6) + "..." + walletDireccionConectada.substring(38);
+              document.getElementById('mandatoryWalletModal').classList.remove('show');
               document.getElementById('appContent').style.display = 'block';
-              document.getElementById('userDisplay').innerText = acc.substring(0, 6) + "..." + acc.substring(38);
-              window.consultarSaldoOnChain(acc);
+              window.consultarSaldoOnChain(walletDireccionConectada);
+              return true;
             }
           } catch (e) {}
         }
+        
+        // Si hay cuenta activa pero falta la billetera, pedir conexión obligatoria
+        document.getElementById('appContent').style.display = 'none';
+        document.getElementById('mandatoryWalletModal').classList.add('show');
+        return false;
       };
 
       onAuthStateChanged(auth, async (user) => {
         if (user) {
           usuarioActual = user;
-          document.getElementById('userDisplay').innerText = user.email || "Usuario NEXK";
           document.getElementById('welcomeSection').style.display = 'none';
-          document.getElementById('appContent').style.display = 'block';
-
-          if (window.ethereum && window.ethereum.selectedAddress) {
-            window.consultarSaldoOnChain(window.ethereum.selectedAddress);
-          }
+          await window.verificarBilleteraPostLogin();
         } else {
           usuarioActual = null;
-          await window.comprobarConexionAutomaticaWeb3();
+          // Al abrir la página sin sesión, muestra la pantalla de bienvenida con correo/google/apple
+          document.getElementById('appContent').style.display = 'none';
+          document.getElementById('mandatoryWalletModal').classList.remove('show');
+          document.getElementById('welcomeSection').style.display = 'block';
         }
       });
 
       window.onload = async () => {
-          await window.comprobarConexionAutomaticaWeb3();
+          document.getElementById('appContent').style.display = 'none';
+          document.getElementById('welcomeSection').style.display = 'block';
           await window.asegurarRedBNB();
           await window.actualizarPrecioTokenEnVivo();
           setInterval(window.actualizarPrecioTokenEnVivo, 12000);
@@ -1196,20 +1205,9 @@
         window.open("https://pancakeswap.finance/swap?outputCurrency=0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5&chainId=56", '_blank');
       };
 
-      window.addEventListener('DOMContentLoaded', async () => {
-        if (typeof window.ethereum !== 'undefined') {
-          try {
-            if (window.asegurarRedBNB) await window.asegurarRedBNB();
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            if (accounts && accounts.length > 0) {
-              mostrarPerfilDirecto(accounts[0]);
-            }
-          } catch (err) {}
-        }
-      });
-
       function mostrarPerfilDirecto(walletAddress) {
         document.getElementById('welcomeSection').style.display = 'none';
+        document.getElementById('mandatoryWalletModal').classList.remove('show');
         document.getElementById('appContent').style.display = 'block';
         document.getElementById('userDisplay').innerText = walletAddress.substring(0, 6) + "..." + walletAddress.substring(38);
         if (window.consultarSaldoOnChain) {
@@ -1224,7 +1222,9 @@
             if (window.asegurarRedBNB) await window.asegurarRedBNB();
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             if (accounts && accounts.length > 0) mostrarPerfilDirecto(accounts[0]);
-          } catch (error) {}
+          } catch (error) {
+            alert("Debes autorizar la conexión con tu billetera.");
+          }
         } else {
           const cleanHost = window.location.host + window.location.pathname;
           if (walletType === 'metamask') {
