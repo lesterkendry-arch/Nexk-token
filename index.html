@@ -54,8 +54,6 @@
         .stat-box h4 { font-size: 18px; color: var(--text-main); margin-top: 4px; }
 
         .btn-action { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; }
-        .btn-buy { background-color: var(--primary-cyan); color: #000; }
-        .btn-sell { background-color: var(--red-down); color: #fff; }
         .btn-send { background-color: #f59e0b; color: #000; }
 
         #bannedScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; color: var(--red-down); text-align: center; padding: 20px; }
@@ -101,10 +99,9 @@
         .tab-content.active { display: block; }
         
         .admin-user-card { background: var(--bg-dark); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .fraud-alert { color: var(--red-down); font-weight: bold; font-size: 12px; animation: blink 1s infinite; cursor: pointer; }
-        @keyframes blink { 50% { opacity: 0; } }
 
-        .chart-container { position: relative; margin-top: 15px; height: 450px; width: 100%; border-radius: 8px; overflow: hidden; background: #000; border: 1px solid var(--border-color); }
+        /* ESTILO DEL GRÁFICO REAL EN TIEMPO REAL */
+        .chart-container { position: relative; margin-top: 15px; height: 520px; width: 100%; border-radius: 12px; overflow: hidden; background: #090d16; border: 1px solid var(--border-color); }
         .chart-container iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
@@ -150,56 +147,48 @@
                 <div class="stat-grid">
                     <div class="stat-box"><span>Balance Tokens</span><h4 id="userTokens">0.00 NEXK</h4></div>
                     <div class="stat-box"><span>Valor Estimado</span><h4 id="userBalanceUSD">$0.00 USD</h4></div>
-                    <div class="stat-box"><span>Ganancia</span><h4 id="userProfit" style="color: var(--green-up);">0.00 NEXK</h4></div>
-                    <div class="stat-box"><span>Operaciones</span><h4 id="userOps">0</h4></div>
+                    <div class="stat-box"><span>Ganancia/Pérdida (24h)</span><h4 id="userProfit" style="color: var(--green-up);">0.00% ($0.00)</h4></div>
+                    <div class="stat-box"><span>Operaciones On-Chain</span><h4 id="userOps">0</h4></div>
                 </div>
 
-                <div id="simulatedTradeSection" style="margin-top: 15px; display: block;">
-                    <div class="field">
-                        <label>Monto a Operar (Tokens NEXK)</label>
-                        <input type="number" id="tradeAmount" value="100">
-                    </div>
-                    <div class="field">
-                        <label>Método de Pago / Moneda</label>
-                        <select id="paymentCurrency" onchange="actualizarMetodoCompra()">
-                            <option value="pasarela_alternativa">Pasarela de Pago Segura (Tarjeta / Pix)</option>
-                        </select>
-                    </div>
-                    <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <button class="btn-action btn-buy" style="margin:0; flex:1;" onclick="iniciarProcesoCompraUniversal()">Comprar</button>
-                        <button class="btn-action btn-sell" style="margin:0; flex:1;" onclick="iniciarProcesoVenta()">Vender</button>
-                    </div>
-                    <button class="btn-action btn-send" onclick="abrirModalEnviarTokens()">📤 Enviar Tokens a Billetera</button>
-                </div>
-
-                <!-- SECCIÓN DE COMERCIO REAL Y ENLACE WEB3 -->
+                <!-- SECCIÓN COMERCIO REAL Y BILLETERAS -->
                 <div id="realTradeSection" style="margin-top: 15px; display: block;">
                     <button class="btn-action web3-btn" style="background: #1fc7d4; color: white; border: none; font-weight: bold;" onclick="abrirPancakeSwapDirecto()">
-                        🥞 Comprar en PancakeSwap
+                        🥞 Comprar / Vender en PancakeSwap
                     </button>
                     <button class="btn-action web3-btn" style="background: #f3ba2f; color: #000; border: none; font-weight: bold;" onclick="abrirWalletChoiceModal()">
                         🦊 Añadir a MetaMask / Trust Wallet
+                    </button>
+                    <button class="btn-action btn-send" onclick="abrirModalEnviarTokens()">
+                        📤 Enviar Tokens a Otra Billetera
                     </button>
                 </div>
 
                 <div style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h4 style="color: var(--text-main); font-size: 14px;">Historial de Movimientos</h4>
+                        <h4 style="color: var(--text-main); font-size: 14px;">📜 Historial On-Chain Real</h4>
                         <button class="btn-gen" style="padding: 4px 8px;" onclick="toggleHistorial()">Mostrar / Ocultar</button>
                     </div>
-                    <div id="historialLista" style="display: none; margin-top: 10px; font-size: 13px; max-height: 200px; overflow-y: auto;">
-                        <p style="color: var(--text-muted); text-align: center;">No hay transacciones aún.</p>
+                    <div id="historialLista" style="display: none; margin-top: 10px; font-size: 13px; max-height: 250px; overflow-y: auto;">
+                        <p style="color: var(--text-muted); text-align: center;">Conecta tu billetera para cargar transacciones reales.</p>
                     </div>
                 </div>
             </div>
 
             <div class="card">
                 <h2>Mercado NEXK Token ($NEXK)</h2>
-                <h1 id="tokenPrice" style="font-size: 2.2rem; margin-top: 10px;">En Vivo</h1>
-                <p style="font-size: 13px; color: var(--text-muted); margin-top: 5px;">Red: <strong id="tokenNet" style="color: #fff;">BNB Smart Chain (Mainnet)</strong></p>
+                <h1 id="tokenPrice" style="font-size: 2.2rem; margin-top: 10px;">Cargando...</h1>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 5px;">
+                    Red: <strong id="tokenNet" style="color: #38bdf8;">BNB Smart Chain (Mainnet)</strong>
+                </p>
                 
+                <!-- GRÁFICO REAL EN TIEMPO REAL DESDE DEXTOOLS (BSC) -->
                 <div class="chart-container">
-                    <iframe src="https://dexscreener.com/bsc/0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5?embed=1&theme=dark"></iframe>
+                    <iframe 
+                        id="dextools-widget"
+                        title="DEXTools NEXK Chart"
+                        src="https://www.dextools.io/widget-chart/en/bnbsmartchain/pe-light/0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5?theme=dark&chartType=1&chartResolution=15">
+                    </iframe>
                 </div>
             </div>
         </div>
@@ -208,19 +197,20 @@
         <div id="bannerBottomContainer" class="dynamic-banner"><img id="bannerBottomImg" src=""></div>
     </div>
 
-    <!-- MODAL PARA ENVIAR TOKENS A OTRA CARTERA -->
+    <!-- MODAL PARA ENVIAR TOKENS WEB3 REAL -->
     <div id="sendTokensModal" class="modal">
         <div class="modal-content">
-            <h3>Enviar NEXK por Red BNB</h3>
+            <h3>Enviar NEXK Real (Red BNB)</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Transfiere tokens directamente en la cadena de bloques BSC.</p>
             <div class="field">
                 <label>Dirección de Destino (0x...)</label>
                 <input type="text" id="sendDestinationAddress" placeholder="0xDireccionDeBilletera">
             </div>
             <div class="field">
-                <label>Cantidad de Tokens a Enviar</label>
+                <label>Cantidad de Tokens NEXK a Enviar</label>
                 <input type="number" id="sendTokenAmount" placeholder="Ej. 50">
             </div>
-            <button class="btn-auth" style="width:100%; margin-top:10px; background: #f59e0b; color: #000;" onclick="ejecutarEnvioTokensWeb3()">Confirmar Envío</button>
+            <button class="btn-auth" style="width:100%; margin-top:10px; background: #f59e0b; color: #000;" onclick="ejecutarEnvioTokensWeb3()">Confirmar y Enviar</button>
             <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('sendTokensModal')">Cancelar</button>
         </div>
     </div>
@@ -228,8 +218,8 @@
     <!-- MODAL PARA SELECCIONAR BILLETERA (METAMASK / TRUST WALLET) -->
     <div id="walletChoiceModal" class="modal">
         <div class="modal-content" style="text-align: center;">
-            <h3>Selecciona tu Billetera</h3>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Elige tu aplicación para vincular y sincronizar el saldo real de NEXK:</p>
+            <h3>Conecta tu Billetera</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Selecciona tu billetera para vincular y sincronizar tus tokens NEXK:</p>
             
             <button class="wallet-option-btn btn-metamask-choice" onclick="vincularTokenWeb3('metamask')">
                 🦊 MetaMask
@@ -249,62 +239,6 @@
             <div class="field"><label>Contraseña</label><input type="password" id="adminPassInput" placeholder="Escribe tu contraseña"></div>
             <button class="btn-auth" style="width:100%; margin-top:10px;" onclick="validarCredencialesAdmin()">Ingresar a Panel</button>
             <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('adminAuthModal')">Cancelar</button>
-        </div>
-    </div>
-
-    <!-- MODAL DE PASARELA DE PAGO (TARJETA / PIX) -->
-    <div id="paymentModal" class="modal">
-        <div class="modal-content">
-            <h3>Pasarela de Pago Segura</h3>
-            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">
-                Compra directa mediante Pix (BRL) o Tarjeta (USD).
-            </p>
-
-            <div class="field">
-                <label>Selecciona tu Moneda de Pago</label>
-                <select id="payCurrencySelect" onchange="convertirMonedaPasarela()">
-                    <option value="BRL">Reales Brasileños (R$ - Pix)</option>
-                    <option value="USD">Dólares (USD $ - Tarjeta)</option>
-                </select>
-            </div>
-
-            <div class="field">
-                <label>Total a Pagar</label>
-                <input type="text" id="payTotalText" readonly style="font-weight: bold; color: var(--primary-cyan); font-size: 16px;">
-            </div>
-
-            <!-- SECCIÓN PIX (ACTIVA) -->
-            <div id="pixPaymentSection" class="field" style="background: var(--bg-dark); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 10px;">
-                <label style="color: var(--primary-gold); font-weight: bold; margin-bottom: 6px;">Clave Pix Oficial (Pagos en BRL):</label>
-                <div style="display: flex; gap: 8px; align-items: center; margin-top: 5px;">
-                    <input type="text" id="pixKeyDisplay" value="121.055.342.28" readonly style="font-weight: bold; letter-spacing: 1px; color: #fff;">
-                    <button class="btn-gen" style="padding: 10px 14px; margin: 0; background: var(--primary-cyan); color: #000; font-weight: bold;" onclick="copiarClavePix()">📋 Copiar</button>
-                </div>
-                <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">
-                    Copia la clave Pix, realiza la transferencia desde tu app bancaria y haz clic en 'Confirmar Pago' para enviar tu orden a revisión.
-                </p>
-            </div>
-
-            <!-- SECCIÓN TARJETA USD (EN MANTENIMIENTO) -->
-            <div id="cardPaymentSection" class="field" style="display: none; background: rgba(255, 193, 7, 0.1); padding: 12px; border-radius: 8px; border: 1px solid #ffc107; margin-top: 10px;">
-                <label style="color: #ffc107; font-weight: bold; margin-bottom: 6px;">⚠️ Pagos en USD con Tarjeta</label>
-                <p style="font-size: 12px; color: #fff; margin-top: 4px;">
-                    El procesamiento de tarjetas en USD está temporalmente en mantenimiento. Por favor, selecciona **Reales Brasileños (Pix)** para completar tu compra.
-                </p>
-            </div>
-
-            <button id="btnConfirmarPago" class="btn-auth" style="width:100%; margin-top:15px; background: var(--green-up); color: white;" onclick="confirmarPagoCompraAlternativa()">Confirmar Pago</button>
-            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('paymentModal')">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="payoutModal" class="modal">
-        <div class="modal-content">
-            <h3>Procesar Retiro</h3>
-            <div class="field"><label>Monto a Recibir</label><input type="text" id="payoutTotalText" readonly style="font-weight: bold; color: var(--green-up);"></div>
-            <div class="field"><label>Cuenta Bancaria / Clave Pix</label><input type="text" id="payoutDetailsInput" placeholder="IBAN / Chave Pix"></div>
-            <button class="btn-auth" style="width:100%; margin-top:10px; background: var(--red-down); color: white;" onclick="confirmarVentaTokens()">Confirmar Venta</button>
-            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('payoutModal')">Cancelar</button>
         </div>
     </div>
 
@@ -346,7 +280,6 @@
             
             <div class="admin-tabs">
                 <button class="tab-btn active" onclick="cambiarPestañaAdmin('tabMercado', this)">💰 Mercado</button>
-                <button class="tab-btn" onclick="cambiarPestañaAdmin('tabPagosPix', this)">📌 Pagos Pix Pendientes</button>
                 <button class="tab-btn" onclick="cambiarPestañaAdmin('tabDiseno', this)">🎨 Diseño</button>
                 <button class="tab-btn" onclick="cambiarPestañaAdmin('tabUsuarios', this)">👥 Usuarios & Seguridad</button>
                 <button class="tab-btn" onclick="cambiarPestañaAdmin('tabChat', this)">💬 Chat</button>
@@ -370,18 +303,7 @@
                 </div>
                 <hr style="border-color: var(--border-color); margin: 15px 0;">
                 <p style="font-size: 12px; color: var(--text-muted);">Los valores del token se leen directamente en tiempo real desde la cadena de bloques BSC.</p>
-                <div class="field" style="margin-top: 10px;"><label>Precio Simulado ($ USD)</label><input type="text" id="adminPrice" value="1.45"></div>
-            </div>
-
-            <!-- PESTAÑA PARA VERIFICACIÓN Y APROBACIÓN MANUAL DE PIX -->
-            <div id="tabPagosPix" class="tab-content">
-                <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Validación Manual de Pagos Pix</h4>
-                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
-                    Verifica tu cuenta bancaria. Haz clic en "Aprobar" únicamente en la transacción confirmada para acreditar de forma individual los tokens al cliente.
-                </p>
-                <div id="listaOrdenesPixAdmin" style="max-height: 280px; overflow-y: auto;">
-                    <p style="color: var(--text-muted); font-size: 12px;">Cargando solicitudes de pago Pix...</p>
-                </div>
+                <div class="field" style="margin-top: 10px;"><label>Precio Manual Backup ($ USD)</label><input type="text" id="adminPrice" value="1.45"></div>
             </div>
 
             <div id="tabDiseno" class="tab-content">
@@ -448,22 +370,128 @@
 
       let usuarioActual = null;
       let tokensActualesUsuario = 0;
-      let PRECIO_TOKEN_USD = 1.45;
-      let tempCantidadTokens = 0;
-      let adminChatUnsubscribe = null;
-      let historialUnsubscribe = null;
-      let usuariosSnapshotUnsubscribe = null;
-      let ordenesPixUnsubscribe = null;
+      let PRECIO_TOKEN_USD = 0; 
+      let CAMBIO_24H_PORCENTAJE = 0;
+      let walletDireccionConectada = null;
 
-      const TASA_CAMBIO_BRL = 5.50; // Tipo de cambio estimado USD -> BRL
+      let adminChatUnsubscribe = null;
+      let usuariosSnapshotUnsubscribe = null;
+
       const TOKEN_CONTRACT_ADDRESS = "0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5";
       const ERC20_ABI = [
           "function balanceOf(address owner) view returns (uint256)",
-          "function transfer(address to, uint amount) returns (bool)"
+          "function transfer(address to, uint256 amount) returns (bool)",
+          "function decimals() view returns (uint8)"
       ];
       const BSC_RPC_URL = "https://bsc-dataseed.binance.org/";
 
+      // OBTENER PRECIO Y VARIACIÓN 24H REAL EN TIEMPO REAL
+      window.actualizarPrecioTokenEnVivo = async function() {
+        try {
+          const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${TOKEN_CONTRACT_ADDRESS}`);
+          const data = await res.json();
+          if (data && data.pairs && data.pairs.length > 0) {
+            const pair = data.pairs[0];
+            const precioUSD = parseFloat(pair.priceUsd);
+            const cambio24h = parseFloat(pair.priceChange?.h24 || 0);
+
+            if (!isNaN(precioUSD) && precioUSD > 0) {
+              PRECIO_TOKEN_USD = precioUSD;
+              CAMBIO_24H_PORCENTAJE = cambio24h;
+              document.getElementById('tokenPrice').innerText = `$${precioUSD.toFixed(4)} USD`;
+              recalcularBalanceUsuario();
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn("Error leyendo API DexScreener");
+        }
+
+        if (PRECIO_TOKEN_USD === 0) {
+          document.getElementById('tokenPrice').innerText = `$${PRECIO_TOKEN_USD.toFixed(2)} USD`;
+        }
+      };
+
+      // CONSULTAR HISTORIAL REAL ON-CHAIN DE BSC POR LA DIRECCIÓN DE LA CARTERA
+      window.cargarHistorialOnChainReal = async function(address) {
+        const lista = document.getElementById('historialLista');
+        if (!address) return;
+
+        try {
+          lista.innerHTML = '<p style="color:var(--text-muted);text-align:center;">Cargando transacciones de BSCScan...</p>';
+          
+          const url = `https://api.bscscan.com/api?module=account&action=tokentx&contractaddress=${TOKEN_CONTRACT_ADDRESS}&address=${address}&page=1&offset=20&sort=desc`;
+          const res = await fetch(url);
+          const data = await res.json();
+
+          if (data.status === "1" && data.result && data.result.length > 0) {
+            lista.innerHTML = '';
+            document.getElementById('userOps').innerText = data.result.length.toString();
+
+            data.result.forEach(tx => {
+              const esRecibido = tx.to.toLowerCase() === address.toLowerCase();
+              const cantidad = parseFloat(ethers.utils.formatUnits(tx.value, parseInt(tx.tokenDecimal || 18))).toFixed(2);
+              const fecha = new Date(parseInt(tx.timeStamp) * 1000).toLocaleString();
+
+              const d = document.createElement('div');
+              d.className = 'historial-item';
+              const tipoClase = esRecibido ? 'tipo-compra' : 'tipo-venta';
+              const signo = esRecibido ? '+' : '-';
+              const textoTipo = esRecibido ? 'RECIBIDO' : 'ENVIADO';
+
+              d.innerHTML = `
+                <div>
+                  <span class="historial-tipo ${tipoClase}">${textoTipo}</span>
+                  <div style="font-size:11px;color:var(--text-muted);">${fecha}</div>
+                  <div style="font-size:10px;color:var(--text-muted);">${esRecibido ? 'De: ' + tx.from.substring(0,6)+'...'+tx.from.substring(38) : 'A: ' + tx.to.substring(0,6)+'...'+tx.to.substring(38)}</div>
+                </div>
+                <div style="font-weight:bold; color: ${esRecibido ? 'var(--green-up)' : 'var(--red-down)'};">
+                  ${signo}${cantidad} NEXK
+                </div>
+              `;
+              lista.appendChild(d);
+            });
+          } else {
+            lista.innerHTML = '<p style="color:var(--text-muted);text-align:center;">Sin transacciones previas registradas para este token.</p>';
+            document.getElementById('userOps').innerText = "0";
+          }
+        } catch (err) {
+          console.error("Error al cargar historial On-Chain:", err);
+          lista.innerHTML = '<p style="color:var(--text-muted);text-align:center;">No se pudo sincronizar el historial on-chain.</p>';
+        }
+      };
+
+      // FORZAR CAMBIO AUTOMÁTICO A BNB SMART CHAIN
+      window.asegurarRedBNB = async function() {
+        if (typeof window.ethereum !== 'undefined') {
+          try {
+            await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x38' }] });
+          } catch (switchError) {
+            if (switchError.code === 4902) {
+              try {
+                await window.ethereum.request({
+                  method: 'wallet_addEthereumChain',
+                  params: [{
+                    chainId: '0x38',
+                    chainName: 'BNB Smart Chain Mainnet',
+                    nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
+                    rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                    blockExplorerUrls: ['https://bscscan.com/']
+                  }]
+                });
+              } catch (addError) {
+                console.error("Error agregando red BNB:", addError);
+              }
+            }
+          }
+        }
+      };
+
       window.onload = async () => {
+          await window.asegurarRedBNB();
+          await window.actualizarPrecioTokenEnVivo();
+          setInterval(window.actualizarPrecioTokenEnVivo, 15000);
+
           const statsRef = doc(db, "configuracion", "estadisticas");
           try {
               const snap = await getDoc(statsRef);
@@ -480,17 +508,11 @@
         if (snap.exists()) {
           const d = snap.data();
           if(d.colorBotones) document.documentElement.style.setProperty('--primary-cyan', d.colorBotones);
-          if (d.precio) { 
-              PRECIO_TOKEN_USD = parseFloat(d.precio) || 1.45; 
-              if (usuarioActual) recalcularBalanceUsuario(); 
-          }
 
           const isReal = d.modoReal === "true";
           const tradingActivo = d.tradingHabilitado !== "no";
           
-          document.getElementById('simulatedTradeSection').style.display = tradingActivo ? 'block' : 'none';
           document.getElementById('realTradeSection').style.display = tradingActivo ? 'block' : 'none';
-          
           document.getElementById('tokenNet').innerText = isReal ? 'BNB Smart Chain (Mainnet)' : 'Simulación Interna';
 
           const topCont = document.getElementById('bannerTopContainer'); const midCont = document.getElementById('bannerMiddleContainer'); const botCont = document.getElementById('bannerBottomContainer');
@@ -516,6 +538,7 @@
 
       window.consultarSaldoOnChain = async function(address) {
         try {
+          walletDireccionConectada = address;
           const provider = new ethers.providers.JsonRpcProvider(BSC_RPC_URL);
           const contract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, provider);
           const rawBalance = await contract.balanceOf(address);
@@ -524,6 +547,8 @@
           tokensActualesUsuario = formattedBalance;
           document.getElementById('userTokens').innerText = formattedBalance.toFixed(2) + ' NEXK';
           recalcularBalanceUsuario();
+
+          window.cargarHistorialOnChainReal(address);
         } catch (error) {
           console.error("Error leyendo balance de blockchain:", error);
         }
@@ -539,40 +564,16 @@
           document.getElementById('appContent').style.display = 'block';
           document.getElementById('helpBtn').style.display = 'inline-block';
 
-          const userDocRef = doc(db, "usuarios", user.uid);
-          const userSnap = await getDoc(userDocRef);
-          
-          if (!userSnap.exists()) {
-              await setDoc(userDocRef, {
-                  email: userEmail,
-                  tokensNEXK: 0,
-                  gananciaTokens: 0,
-                  totalOperaciones: 0,
-                  creado: serverTimestamp(),
-                  bloqueado: false,
-                  alertaFraude: false
-              });
+          if (window.ethereum && window.ethereum.selectedAddress) {
+            window.consultarSaldoOnChain(window.ethereum.selectedAddress);
           }
 
-          onSnapshot(userDocRef, (snapshot) => {
-            if (snapshot.exists()) {
-              const data = snapshot.data();
-              if (data.bloqueado) { document.getElementById('bannedScreen').style.display = 'flex'; return; }
-              else { document.getElementById('bannedScreen').style.display = 'none'; }
+          conectarChatUsuario(user.uid);
 
-              if (window.ethereum && window.ethereum.selectedAddress) {
-                window.consultarSaldoOnChain(window.ethereum.selectedAddress);
-              } else {
-                tokensActualesUsuario = data.tokensNEXK || 0;
-                document.getElementById('userTokens').innerText = tokensActualesUsuario.toFixed(2) + ' NEXK';
-                recalcularBalanceUsuario();
-              }
+          setTimeout(() => {
+            window.abrirWalletChoiceModal();
+          }, 400);
 
-              document.getElementById('userProfit').innerText = (data.gananciaTokens || 0).toFixed(2) + ' NEXK';
-              document.getElementById('userOps').innerText = (data.totalOperaciones || 0).toString();
-            }
-          });
-          conectarChatUsuario(user.uid); cargarHistorial(user.uid);
         } else {
           usuarioActual = null;
           document.getElementById('userDisplay').innerText = "Invitado";
@@ -584,21 +585,25 @@
         }
       });
 
-      function recalcularBalanceUsuario() { document.getElementById('userBalanceUSD').innerText = '$' + (tokensActualesUsuario * PRECIO_TOKEN_USD).toFixed(2) + ' USD'; }
+      function recalcularBalanceUsuario() { 
+        const totalUSD = tokensActualesUsuario * PRECIO_TOKEN_USD;
+        document.getElementById('userBalanceUSD').innerText = '$' + totalUSD.toFixed(2) + ' USD'; 
+
+        const gananciaUSD = totalUSD * (CAMBIO_24H_PORCENTAJE / 100);
+        const profitElem = document.getElementById('userProfit');
+
+        if (CAMBIO_24H_PORCENTAJE >= 0) {
+          profitElem.style.color = "var(--green-up)";
+          profitElem.innerText = `+${CAMBIO_24H_PORCENTAJE.toFixed(2)}% (+$${gananciaUSD.toFixed(2)})`;
+        } else {
+          profitElem.style.color = "var(--red-down)";
+          profitElem.innerText = `${CAMBIO_24H_PORCENTAJE.toFixed(2)}% (-$${Math.abs(gananciaUSD).toFixed(2)})`;
+        }
+      }
 
       const procesarLoginPopup = async (provider) => {
           try {
               const result = await signInWithPopup(auth, provider);
-              const user = result.user;
-              const userEmail = user.email || user.displayName || "Usuario Externo";
-              
-              const userDocRef = doc(db, "usuarios", user.uid);
-              const userSnap = await getDoc(userDocRef);
-              
-              if (!userSnap.exists()) {
-                  await setDoc(userDocRef, { email: userEmail, tokensNEXK: 0, gananciaTokens: 0, totalOperaciones: 0, creado: serverTimestamp(), bloqueado: false, alertaFraude: false });
-              }
-
               window.cerrarAuthModal();
           } catch(e) { alert("Error de autenticación: " + e.message); }
       };
@@ -619,161 +624,59 @@
           try { await signInWithEmailAndPassword(auth, email, pass); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }
       };
 
-      window.iniciarProcesoCompraUniversal = function() {
-          window.actualizarMetodoCompra();
-      };
-
-      window.actualizarMetodoCompra = function() {
-          const cantidad = parseFloat(document.getElementById('tradeAmount').value);
-          if (isNaN(cantidad) || cantidad <= 0) { alert("Cantidad inválida"); return; }
-          tempCantidadTokens = cantidad;
-          
-          document.getElementById('payCurrencySelect').value = 'BRL';
-          window.convertirMonedaPasarela();
-          
-          document.getElementById('paymentModal').classList.add('show');
-      };
-
-      window.convertirMonedaPasarela = function() {
-          const moneda = document.getElementById('payCurrencySelect').value;
-          const montoUSD = tempCantidadTokens * PRECIO_TOKEN_USD;
-
-          const pixSection = document.getElementById('pixPaymentSection');
-          const cardSection = document.getElementById('cardPaymentSection');
-          const btnConfirmar = document.getElementById('btnConfirmarPago');
-
-          if (moneda === 'BRL') {
-              const montoBRL = (montoUSD * TASA_CAMBIO_BRL).toFixed(2);
-              document.getElementById('payTotalText').value = `R$ ${montoBRL} BRL`;
-              pixSection.style.display = 'block';
-              cardSection.style.display = 'none';
-              btnConfirmar.disabled = false;
-              btnConfirmar.style.opacity = '1';
-              btnConfirmar.style.cursor = 'pointer';
-          } else {
-              document.getElementById('payTotalText').value = `$${montoUSD.toFixed(2)} USD`;
-              pixSection.style.display = 'none';
-              cardSection.style.display = 'block';
-              btnConfirmar.disabled = true;
-              btnConfirmar.style.opacity = '0.5';
-              btnConfirmar.style.cursor = 'not-allowed';
-          }
-      };
-
-      window.copiarClavePix = function() {
-          const pixInput = document.getElementById('pixKeyDisplay');
-          navigator.clipboard.writeText(pixInput.value).then(() => {
-              alert("¡Clave Pix copiada al portapapeles!");
-          }).catch(err => {
-              alert("Error al copiar clave Pix");
-          });
-      };
-
-      /* ENVÍO DE COMPRA PIX PARA VERIFICACIÓN MANUAL */
-      window.confirmarPagoCompraAlternativa = async function() {
-          const moneda = document.getElementById('payCurrencySelect').value;
-          if (moneda === 'USD') {
-              return alert("Los pagos en USD no están disponibles por el momento. Selecciona BRL (Pix).");
-          }
-
-          if (!usuarioActual) return alert("Inicia sesión primero.");
-
-          const montoUSD = tempCantidadTokens * PRECIO_TOKEN_USD;
-          const montoBRL = (montoUSD * TASA_CAMBIO_BRL).toFixed(2);
-
-          try {
-              await addDoc(collection(db, "ordenes_pix"), {
-                  uidUsuario: usuarioActual.uid,
-                  emailUsuario: usuarioActual.email || "Usuario sin correo",
-                  cantidadTokens: tempCantidadTokens,
-                  montoBRL: montoBRL,
-                  estado: 'PENDIENTE',
-                  fecha: serverTimestamp()
-              });
-
-              await addDoc(collection(db, "usuarios", usuarioActual.uid, "transacciones"), { 
-                  tipo: 'COMPRA (PIX)', 
-                  cantidad: tempCantidadTokens, 
-                  metodo: 'Pix (BRL) - En verificación', 
-                  fecha: serverTimestamp() 
-              });
-              
-              alert("¡Pago registrado! Su solicitud Pix está en proceso de verificación manual."); 
-              window.cerrarModal('paymentModal');
-          } catch (e) { 
-              alert("Error al enviar la solicitud de pago: " + e.message); 
-          }
-      };
-
+      /* ENVÍO DE TOKENS NEXK REAL ON-CHAIN */
       window.ejecutarEnvioTokensWeb3 = async function() {
         const destino = document.getElementById('sendDestinationAddress').value.trim();
-        const cantidad = parseFloat(document.getElementById('sendTokenAmount').value);
+        const cantidadStr = document.getElementById('sendTokenAmount').value.trim();
+        const cantidad = parseFloat(cantidadStr);
 
-        if (!destino || !ethers.utils.isAddress(destino)) return alert("Introduce una dirección de billetera válida (0x...)");
-        if (isNaN(cantidad) || cantidad <= 0) return alert("Introduce una cantidad válida de tokens");
+        if (!destino || !ethers.utils.isAddress(destino)) {
+            return alert("Introduce una dirección de billetera válida (ej. 0x...)");
+        }
+        if (isNaN(cantidad) || cantidad <= 0) {
+            return alert("Introduce una cantidad válida de tokens a enviar");
+        }
 
         if (typeof window.ethereum === 'undefined') {
-          return alert("Se requiere abrir la web desde el navegador interno de MetaMask o Trust Wallet para realizar envíos on-chain.");
+            return alert("Para enviar tokens reales debes abrir esta web desde el navegador interno de MetaMask o Trust Wallet.");
         }
 
         try {
-          const provider = new ethers.providers.Web3Provider(window.ethereum);
-          await provider.send("eth_requestAccounts", []);
-          const signer = provider.getSigner();
+            await window.asegurarRedBNB();
 
-          const contract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, signer);
-          const parsedAmount = ethers.utils.parseUnits(cantidad.toString(), 18);
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            const signer = provider.getSigner();
+            const walletUser = await signer.getAddress();
 
-          alert("Por favor, confirma la transacción de envío en tu billetera.");
-          const tx = await contract.transfer(destino, parsedAmount);
-          await tx.wait();
-          
-          alert("¡Tokens NEXK enviados exitosamente!");
-          window.cerrarModal('sendTokensModal');
-          document.getElementById('sendDestinationAddress').value = '';
-          document.getElementById('sendTokenAmount').value = '';
+            const contract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, signer);
+            const parsedAmount = ethers.utils.parseUnits(cantidadStr, 18);
+
+            alert("Confirma la transacción en tu billetera para autorizar el envío.");
+
+            const tx = await contract.transfer(destino, parsedAmount);
+            alert("Transacción enviada a la red. Esperando confirmación...");
+
+            await tx.wait();
+
+            alert("¡Envío completado exitosamente en la red BNB!");
+            window.cerrarModal('sendTokensModal');
+            document.getElementById('sendDestinationAddress').value = '';
+            document.getElementById('sendTokenAmount').value = '';
+
+            window.consultarSaldoOnChain(walletUser);
+
         } catch (error) {
-          console.error("Error al enviar tokens:", error);
-          alert("No se pudo completar el envío: " + (error.data?.message || error.message));
+            console.error("Error en transferencia Web3:", error);
+            const errMessage = error.reason || error.data?.message || error.message || "Error desconocido";
+            alert("No se pudo enviar la transacción: " + errMessage);
         }
       };
 
-      window.iniciarProcesoVenta = function() {
-        if (!usuarioActual) return alert("Inicia sesión primero");
-        const c = parseFloat(document.getElementById('tradeAmount').value);
-        if (isNaN(c) || c <= 0) return alert("Cantidad inválida");
-        if (c > tokensActualesUsuario) return alert("Saldo insuficiente.");
-        tempCantidadTokens = c; document.getElementById('payoutTotalText').value = `$${(c * PRECIO_TOKEN_USD).toFixed(2)} USD`;
-        document.getElementById('payoutModal').classList.add('show');
+      window.toggleHistorial = function() { 
+        const div = document.getElementById('historialLista'); 
+        div.style.display = div.style.display === 'none' ? 'block' : 'none'; 
       };
-
-      window.confirmarVentaTokens = async function() {
-        const det = document.getElementById('payoutDetailsInput').value; if (!det) return alert("Faltan datos");
-        const userRef = doc(db, "usuarios", usuarioActual.uid);
-        try {
-          await updateDoc(userRef, { tokensNEXK: increment(-tempCantidadTokens), gananciaTokens: increment(tempCantidadTokens * 0.05), totalOperaciones: increment(1) });
-          await addDoc(collection(db, "usuarios", usuarioActual.uid, "transacciones"), { tipo: 'VENTA', cantidad: tempCantidadTokens, fecha: serverTimestamp() });
-          alert("Venta completada."); window.cerrarModal('payoutModal');
-        } catch (e) { alert("Error: " + e.message); }
-      };
-
-      function cargarHistorial(uid) {
-          const q = query(collection(db, "usuarios", uid, "transacciones"), orderBy("fecha", "desc"));
-          if(historialUnsubscribe) historialUnsubscribe();
-          historialUnsubscribe = onSnapshot(q, (snapshot) => {
-              const lista = document.getElementById('historialLista');
-              if (snapshot.empty) { lista.innerHTML = '<p style="color:var(--text-muted);text-align:center;">Sin transacciones.</p>'; return; }
-              lista.innerHTML = '';
-              snapshot.forEach((docSnap) => {
-                  const data = docSnap.data(); const d = document.createElement('div'); d.className = 'historial-item';
-                  const t = data.tipo.includes('COMPRA') ? 'tipo-compra' : 'tipo-venta'; const s = data.tipo.includes('COMPRA') ? '+' : '-';
-                  d.innerHTML = `<div><span class="historial-tipo ${t}">${data.tipo}</span><div style="font-size:11px;color:var(--text-muted);">${data.fecha ? data.fecha.toDate().toLocaleString() : ''}</div></div><div style="font-weight:bold;">${s}${data.cantidad} NEXK</div>`;
-                  lista.appendChild(d);
-              });
-          });
-      }
-
-      window.toggleHistorial = function() { const div = document.getElementById('historialLista'); div.style.display = div.style.display === 'none' ? 'block' : 'none'; };
 
       function conectarChatUsuario(uid) {
         const q = query(collection(db, "soporte", uid, "mensajes"), orderBy("fecha", "asc"));
@@ -797,7 +700,7 @@
           txtInput.value = ''; 
       };
 
-      /* PANEL ADMINISTRADOR - CARGAR DATOS Y GESTIONAR ORDENES PIX */
+      /* PANEL ADMINISTRADOR */
       window.abrirAdminPanelModal = async function() {
         document.getElementById('adminModal').classList.add('show');
         const snapConfig = await getDoc(docRefConfig);
@@ -829,96 +732,9 @@
               listaUsr.appendChild(card);
             });
         });
-
-        if (ordenesPixUnsubscribe) ordenesPixUnsubscribe();
-        const qPix = query(collection(db, "ordenes_pix"), orderBy("fecha", "desc"));
-        ordenesPixUnsubscribe = onSnapshot(qPix, (snapshot) => {
-            const contenedor = document.getElementById('listaOrdenesPixAdmin');
-            if (!contenedor) return;
-
-            if (snapshot.empty) {
-                contenedor.innerHTML = '<p style="color:var(--text-muted); font-size: 12px;">No hay pagos Pix pendientes por verificar.</p>';
-                return;
-            }
-
-            contenedor.innerHTML = '';
-            let pendientesContador = 0;
-
-            snapshot.forEach((ordenDoc) => {
-                const orden = ordenDoc.data();
-                const ordenId = ordenDoc.id;
-
-                if (orden.estado === 'PENDIENTE') {
-                    pendientesContador++;
-                    const card = document.createElement('div');
-                    card.className = 'admin-user-card';
-                    card.style.flexDirection = 'column';
-                    card.style.alignItems = 'flex-start';
-                    card.style.gap = '8px';
-
-                    card.innerHTML = `
-                        <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-                            <strong style="color: var(--primary-cyan); font-size: 13px;">${orden.emailUsuario}</strong>
-                            <span style="color: var(--primary-gold); font-size: 12px; font-weight: bold;">R$ ${orden.montoBRL} BRL</span>
-                        </div>
-                        <div style="font-size: 11px; color: var(--text-muted);">
-                            Tokens solicitados: <b>${orden.cantidadTokens} NEXK</b>
-                        </div>
-                        <div style="display: flex; gap: 8px; width: 100%; margin-top: 4px;">
-                            <button class="btn-gen" style="background: var(--green-up); color: #fff; border: none; padding: 6px 12px; flex: 1;" onclick="aprobarPagoPixIndividual('${ordenId}', '${orden.uidUsuario}', ${orden.cantidadTokens})">
-                                ✅ Aprobar y Acreditar
-                            </button>
-                            <button class="btn-gen" style="background: var(--red-down); color: #fff; border: none; padding: 6px 12px; flex: 1;" onclick="rechazarPagoPixIndividual('${ordenId}')">
-                                ❌ Rechazar
-                            </button>
-                        </div>
-                    `;
-                    contenedor.appendChild(card);
-                }
-            });
-
-            if (pendientesContador === 0) {
-                contenedor.innerHTML = '<p style="color:var(--text-muted); font-size: 12px;">Todos los pagos han sido procesados.</p>';
-            }
-        });
       };
 
-      window.aprobarPagoPixIndividual = async function(ordenId, uidUsuario, cantidadTokens) {
-          if (!confirm(`¿Confirmas que el depósito ingresó correctamente y deseas acreditar ${cantidadTokens} NEXK?`)) return;
-
-          try {
-              const userRef = doc(db, "usuarios", uidUsuario);
-              await updateDoc(userRef, {
-                  tokensNEXK: increment(cantidadTokens),
-                  totalOperaciones: increment(1)
-              });
-
-              await updateDoc(doc(db, "ordenes_pix", ordenId), {
-                  estado: 'APROBADO',
-                  fechaAprobacion: serverTimestamp()
-              });
-
-              alert("¡Pago aprobado y tokens acreditados!");
-          } catch (e) {
-              alert("Error al aprobar pago: " + e.message);
-          }
-      };
-
-      window.rechazarPagoPixIndividual = async function(ordenId) {
-          if (!confirm("¿Deseas rechazar esta orden de pago?")) return;
-
-          try {
-              await updateDoc(doc(db, "ordenes_pix", ordenId), {
-                  estado: 'RECHAZADO',
-                  fechaRechazo: serverTimestamp()
-              });
-              alert("Orden rechazada.");
-          } catch (e) {
-              alert("Error: " + e.message);
-          }
-      };
-
-      window.toggleBanUser = async function(uid, isCurrentlyBanned) { try { await updateDoc(doc(db, "usuarios", uid), { bloqueado: !isCurrentlyBanned }); } catch(e) { alert("Error: " + e.message); } };
+      window.toggleBanUser = async function(uid, isCurrentlyBanned) { try { await updateDoc(doc(docRefConfig, "usuarios", uid), { bloqueado: !isCurrentlyBanned }); } catch(e) { alert("Error: " + e.message); } };
       window.cambiarPestañaAdmin = function(tabId, btnElement) { document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active')); document.getElementById(tabId).classList.add('active'); btnElement.classList.add('active'); };
 
       window.cargarChatSeleccionadoAdmin = function() {
@@ -995,16 +811,17 @@
         window.open(pancakeUrl, '_blank');
       };
 
-      // Auto-ingreso instantáneo y directo al abrir la página dentro del navegador de la wallet
+      // AUTO-DETECCIÓN E INGRESO CON CAMBIO DE RED AUTOMÁTICO
       window.addEventListener('DOMContentLoaded', async () => {
         if (typeof window.ethereum !== 'undefined') {
           try {
+            if (window.asegurarRedBNB) await window.asegurarRedBNB();
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             if (accounts && accounts.length > 0) {
               mostrarPerfilDirecto(accounts[0]);
             }
           } catch (err) {
-            console.error("Error en auto-login:", err);
+            console.error("Error en auto-login Web3:", err);
           }
         }
       });
@@ -1027,25 +844,9 @@
 
         if (typeof window.ethereum !== 'undefined') {
           try {
+            if (window.asegurarRedBNB) await window.asegurarRedBNB();
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             if (!accounts || accounts.length === 0) return alert("No se seleccionó cuenta.");
-
-            try {
-              await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x38' }] });
-            } catch (switchError) {
-              if (switchError.code === 4902) {
-                await window.ethereum.request({
-                  method: 'wallet_addEthereumChain',
-                  params: [{
-                    chainId: '0x38',
-                    chainName: 'BNB Smart Chain Mainnet',
-                    nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
-                    rpcUrls: ['https://bsc-dataseed.binance.org/'],
-                    blockExplorerUrls: ['https://bscscan.com/']
-                  }]
-                });
-              }
-            }
 
             mostrarPerfilDirecto(accounts[0]);
 
