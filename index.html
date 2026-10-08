@@ -197,8 +197,8 @@
             color: var(--red-down); 
             text-align: center; 
             padding: 20px; 
-        }
-
+        } 
+        
         .web3-btn { display: block; margin-top: 10px; font-size: 14px; }
 
         .dynamic-banner { 
@@ -212,7 +212,12 @@
             border: 1px solid var(--border-color); 
         }
 
-        .dynamic-banner img { width: 100%; display: block; max-height: 250px; object-fit: cover; }
+        .dynamic-banner img { 
+            width: 100%; 
+            display: block; 
+            max-height: 250px; 
+            object-fit: cover; 
+        }
 
         .banner-overlay-text { 
             position: absolute; 
@@ -358,8 +363,18 @@
             line-height: 1.4; 
         }
 
-        .msg-user { align-self: flex-end; background: var(--primary-cyan); color: #000; font-weight: 500; }
-        .msg-admin { align-self: flex-start; background: var(--border-color); color: #fff; }
+        .msg-user { 
+            align-self: flex-end; 
+            background: var(--primary-cyan); 
+            color: #000; 
+            font-weight: 500; 
+        }
+
+        .msg-admin { 
+            align-self: flex-start; 
+            background: var(--border-color); 
+            color: #fff; 
+        }
 
         .chat-input-container { display: flex; gap: 8px; }
 
@@ -400,7 +415,7 @@
 
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-
+        
         .admin-user-card { 
             background: var(--bg-dark); 
             padding: 10px; 
@@ -451,40 +466,23 @@
 
     <div id="welcomeSection" class="card welcome-card">
         <h2>Bienvenido al token NEXK</h2>
+        <p>Inicia sesión o crea tu cuenta para acceder a tu portafolio y operar dentro del ecosistema.</p>
 
-        <p>
-            Inicia sesión o crea tu cuenta para acceder a tu portafolio y operar dentro del ecosistema.
-        </p>
-
-        <button class="btn-provider btn-google" id="btnGoogleWelcome">
-            Continuar con Google
-        </button>
-
-        <button class="btn-provider btn-apple" id="btnAppleWelcome">
-            Continuar con Apple
-        </button>
-
-        <button 
-            class="btn-auth" 
-            style="width: 100%; padding: 10px; margin-top:10px; background: var(--border-color); color: white;" 
-            onclick="abrirAuthModal()">
+        <button class="btn-provider btn-google" id="btnGoogleWelcome">Continuar con Google</button>
+        <button class="btn-provider btn-apple" id="btnAppleWelcome">Continuar con Apple</button>
+        
+        <button class="btn-auth" style="width: 100%; padding: 10px; margin-top:10px; background: var(--border-color); color: white;" onclick="abrirAuthModal()">
             Iniciar con Correo
         </button>
     </div>
 
     <div id="appContent" style="display: none;">
-
-        <div 
-            id="walletWarningBanner" 
-            style="background: rgba(245, 158, 11, 0.15); border: 1px solid var(--primary-gold); padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-
+        
+        <div id="walletWarningBanner" style="background: rgba(245, 158, 11, 0.15); border: 1px solid var(--primary-gold); padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
             <span style="font-size: 20px;">⚠️</span>
 
             <div>
-                <strong style="color: var(--primary-gold); font-size: 13px; display: block;">
-                    Aviso Importante:
-                </strong>
-
+                <strong style="color: var(--primary-gold); font-size: 13px; display: block;">Aviso Importante:</strong>
                 <span style="font-size: 12px; color: var(--text-muted);">
                     Debes conectar una billetera (MetaMask o Trust Wallet) para que todas las funciones de la página operen correctamente.
                 </span>
@@ -499,7 +497,7 @@
         <div class="container">
 
             <div class="card" id="userDashboard">
-
+                
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <h3>Mi Portafolio NEXK</h3>
                 </div>
@@ -515,26 +513,16 @@
                         <span>Valor Estimado Real</span>
                         <h4 id="userBalanceUSD">$0.00 USD</h4>
 
-                        <select 
-                            id="currencySelect" 
-                            class="currency-selector" 
-                            onchange="recalcularBalanceUsuario()">
-
+                        <select id="currencySelect" class="currency-selector" onchange="recalcularBalanceUsuario()">
                             <option value="USD">💵 Mostrar en USD</option>
                             <option value="USDT">🪙 Mostrar en USDT (BSC)</option>
                             <option value="BNB">🟡 Mostrar en BNB</option>
-
                         </select>
                     </div>
 
                     <div class="stat-box">
                         <span>Ganancia/Pérdida (24h)</span>
-
-                        <h4 
-                            id="userProfit" 
-                            style="color: var(--green-up);">
-                            0.00% ($0.00)
-                        </h4>
+                        <h4 id="userProfit" style="color: var(--green-up);">0.00% ($0.00)</h4>
                     </div>
 
                     <div class="stat-box">
@@ -548,37 +536,25 @@
 
                     <div style="display: flex; gap: 10px; margin-bottom: 10px;">
 
-                        <button 
-                            class="btn-action btn-buy" 
-                            onclick="abrirModalComprarTokens()">
+                        <button class="btn-action btn-buy" onclick="abrirModalComprarTokens()">
                             🛒 Comprar NEXK
                         </button>
 
-                        <button 
-                            class="btn-action btn-sell" 
-                            onclick="abrirModalVenderTokens()">
+                        <button class="btn-action btn-sell" onclick="abrirModalVenderTokens()">
                             💰 Vender NEXK
                         </button>
 
                     </div>
 
-                    <button 
-                        class="btn-action web3-btn" 
-                        style="background: #1fc7d4; color: white; border: none; font-weight: bold;" 
-                        onclick="abrirPancakeSwapDirecto()">
+                    <button class="btn-action web3-btn" style="background: #1fc7d4; color: white; border: none; font-weight: bold;" onclick="abrirPancakeSwapDirecto()">
                         🥞 Abrir en PancakeSwap
                     </button>
 
-                    <button 
-                        class="btn-action btn-send" 
-                        onclick="abrirModalEnviarTokens()">
+                    <button class="btn-action btn-send" onclick="abrirModalEnviarTokens()">
                         📤 Enviar Tokens a Otra Billetera
                     </button>
 
-                    <button 
-                        class="btn-action web3-btn" 
-                        style="background: #f3ba2f; color: #000; border: none; font-weight: bold;" 
-                        onclick="abrirWalletChoiceModal()">
+                    <button class="btn-action web3-btn" style="background: #f3ba2f; color: #000; border: none; font-weight: bold;" onclick="abrirWalletChoiceModal()">
                         🦊 Cambiar o Reconectar Billetera
                     </button>
 
@@ -587,29 +563,16 @@
                 <div style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
 
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-
-                        <h4 style="color: var(--text-main); font-size: 14px;">
-                            📜 Historial On-Chain Real
-                        </h4>
-
-                        <button 
-                            class="btn-gen" 
-                            style="padding: 4px 8px;" 
-                            onclick="toggleHistorial()">
-                            Mostrar / Ocultar
-                        </button>
-
+                        <h4 style="color: var(--text-main); font-size: 14px;">📜 Historial On-Chain Real</h4>
+                        <button class="btn-gen" style="padding: 4px 8px;" onclick="toggleHistorial()">Mostrar / Ocultar</button>
                     </div>
 
-                    <div 
-                        id="historialLista" 
-                        style="display: none; margin-top: 10px; font-size: 13px; max-height: 250px; overflow-y: auto;">
-
+                    <div id="historialLista" style="display: none; margin-top: 10px; font-size: 13px; max-height: 250px; overflow-y: auto;">
                         <p style="color: var(--text-muted); text-align: center;">
                             Conecta tu billetera para cargar transacciones reales.
                         </p>
-
                     </div>
+
                 </div>
 
             </div>
@@ -618,21 +581,17 @@
 
                 <h2>Mercado NEXK Token ($NEXK)</h2>
 
-                <h1 
-                    id="tokenPrice" 
-                    style="font-size: 2.2rem; margin-top: 10px;">
+                <h1 id="tokenPrice" style="font-size: 2.2rem; margin-top: 10px;">
                     Cargando...
                 </h1>
 
                 <p style="font-size: 13px; color: var(--text-muted); margin-top: 5px;">
                     Red:
-                    <strong 
-                        id="tokenNet" 
-                        style="color: #38bdf8;">
+                    <strong id="tokenNet" style="color: #38bdf8;">
                         BNB Smart Chain (Mainnet)
                     </strong>
                 </p>
-
+                
                 <div class="chart-container">
 
                     <iframe 
@@ -659,7 +618,10 @@
 
     </div>
 
-    <!-- MODAL COMPRAR -->
+    <!-- ========================= -->
+    <!-- MODAL COMPRAR NEXK -->
+    <!-- ========================= -->
+
     <div id="buyTokensModal" class="modal">
 
         <div class="modal-content">
@@ -669,16 +631,14 @@
             </h3>
 
             <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
-                Paga usando BNB o USDT en BNB Smart Chain.
+                La cotización se obtiene en tiempo real desde PancakeSwap. La operación real se confirma en tu billetera.
             </p>
-
+            
             <div class="field">
 
                 <label>Moneda de Pago:</label>
 
-                <select 
-                    id="buyPayCurrency" 
-                    onchange="calcularCotizacionCompra()">
+                <select id="buyPayCurrency" onchange="calcularCotizacionCompra()">
 
                     <option value="BNB">
                         🟡 BNB Smart Chain
@@ -702,7 +662,8 @@
                     placeholder="Ej. 5" 
                     min="0"
                     step="any"
-                    oninput="calcularCotizacionCompra()">
+                    oninput="calcularCotizacionCompra()"
+                >
 
             </div>
 
@@ -710,18 +671,14 @@
 
                 <div>
                     Tokens a Recibir:
-                    <strong 
-                        id="quoteBuyTokens" 
-                        style="color: var(--primary-cyan);">
+                    <strong id="quoteBuyTokens" style="color: var(--primary-cyan);">
                         0.00 NEXK
                     </strong>
                 </div>
 
                 <div>
                     Costo Total Estimado:
-                    <span 
-                        id="quoteBuyUsd" 
-                        style="color: var(--text-muted);">
+                    <span id="quoteBuyUsd" style="color: var(--text-muted);">
                         $0.00 USD
                     </span>
                 </div>
@@ -730,12 +687,6 @@
                     1 NEXK =
                     <span id="buyRateUsd">$0.00</span>
                     USD
-                </div>
-
-                <div 
-                    id="buyRouteInfo"
-                    style="font-size:10px; color:var(--text-muted); margin-top:5px;">
-                    Esperando cotización real...
                 </div>
 
             </div>
@@ -758,7 +709,10 @@
 
     </div>
 
-    <!-- MODAL VENDER -->
+    <!-- ========================= -->
+    <!-- MODAL VENDER NEXK -->
+    <!-- ========================= -->
+
     <div id="sellTokensModal" class="modal">
 
         <div class="modal-content">
@@ -768,9 +722,9 @@
             </h3>
 
             <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
-                Ingresa cuántos NEXK deseas vender y la moneda que recibirás.
+                Ingresa cuántos NEXK deseas vender. La cotización se consulta en tiempo real antes de abrir la operación.
             </p>
-
+            
             <div class="field">
 
                 <label>Cantidad de NEXK a Vender:</label>
@@ -781,7 +735,8 @@
                     placeholder="Ej. 10"
                     min="0"
                     step="any"
-                    oninput="calcularCotizacionVenta()">
+                    oninput="calcularCotizacionVenta()"
+                >
 
             </div>
 
@@ -789,9 +744,7 @@
 
                 <label>Recibirás en:</label>
 
-                <select 
-                    id="sellReceiveCurrency" 
-                    onchange="calcularCotizacionVenta()">
+                <select id="sellReceiveCurrency" onchange="calcularCotizacionVenta()">
 
                     <option value="BNB">
                         🟡 BNB Smart Chain
@@ -809,18 +762,14 @@
 
                 <div>
                     Recibirás Aprox:
-                    <strong 
-                        id="quoteSellReceive" 
-                        style="color: var(--green-up);">
+                    <strong id="quoteSellReceive" style="color: var(--green-up);">
                         0.00 BNB
                     </strong>
                 </div>
 
                 <div>
                     Valor en Dólares:
-                    <span 
-                        id="quoteSellUsd" 
-                        style="color: var(--text-muted);">
+                    <span id="quoteSellUsd" style="color: var(--text-muted);">
                         $0.00 USD
                     </span>
                 </div>
@@ -829,12 +778,6 @@
                     1 NEXK =
                     <span id="sellRateUsd">$0.00</span>
                     USD
-                </div>
-
-                <div 
-                    id="sellRouteInfo"
-                    style="font-size:10px; color:var(--text-muted); margin-top:5px;">
-                    Esperando cotización real...
                 </div>
 
             </div>
@@ -857,7 +800,10 @@
 
     </div>
 
-    <!-- MODAL ENVIAR -->
+    <!-- ========================= -->
+    <!-- ENVIAR TOKENS -->
+    <!-- ========================= -->
+
     <div id="sendTokensModal" class="modal">
 
         <div class="modal-content">
@@ -877,7 +823,8 @@
                 <input 
                     type="text" 
                     id="sendDestinationAddress" 
-                    placeholder="0xDireccionDeBilletera">
+                    placeholder="0xDireccionDeBilletera"
+                >
 
             </div>
 
@@ -888,7 +835,10 @@
                 <input 
                     type="number" 
                     id="sendTokenAmount" 
-                    placeholder="Ej. 50">
+                    placeholder="Ej. 50"
+                    min="0"
+                    step="any"
+                >
 
             </div>
 
@@ -910,7 +860,10 @@
 
     </div>
 
-    <!-- MODAL BILLETERA -->
+    <!-- ========================= -->
+    <!-- SELECCIÓN BILLETERA -->
+    <!-- ========================= -->
+
     <div id="walletChoiceModal" class="modal">
 
         <div class="modal-content" style="text-align: center;">
@@ -920,7 +873,7 @@
             <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">
                 Selecciona tu billetera para vincular y sincronizar tus tokens NEXK:
             </p>
-
+            
             <button 
                 class="wallet-option-btn btn-metamask-choice" 
                 onclick="vincularTokenWeb3('metamask')">
@@ -932,7 +885,7 @@
                 onclick="vincularTokenWeb3('trustwallet')">
                 🛡️ Trust Wallet
             </button>
-
+            
             <button 
                 class="btn-gen" 
                 style="width:100%; margin-top:15px; border:none;" 
@@ -943,6 +896,10 @@
         </div>
 
     </div>
+
+    <!-- ========================= -->
+    <!-- ADMIN LOGIN -->
+    <!-- ========================= -->
 
     <div id="adminAuthModal" class="modal">
 
@@ -978,17 +935,27 @@
 
     </div>
 
+    <!-- ========================= -->
+    <!-- AUTH -->
+    <!-- ========================= -->
+
     <div id="authModal" class="modal">
 
         <div class="modal-content">
 
-            <h3 id="modalTitle">Acceso de Usuario</h3>
+            <h3 id="modalTitle">
+                Acceso de Usuario
+            </h3>
 
-            <button class="btn-provider btn-google" id="btnGoogleModal">
+            <button 
+                class="btn-provider btn-google" 
+                id="btnGoogleModal">
                 Continuar con Google
             </button>
 
-            <button class="btn-provider btn-apple" id="btnAppleModal">
+            <button 
+                class="btn-provider btn-apple" 
+                id="btnAppleModal">
                 Continuar con Apple
             </button>
 
@@ -997,19 +964,32 @@
             </div>
 
             <div class="field">
+
                 <label>Correo</label>
-                <input type="email" id="authEmail" placeholder="tu@correo.com">
+
+                <input 
+                    type="email" 
+                    id="authEmail" 
+                    placeholder="tu@correo.com"
+                >
+
             </div>
 
             <div class="field">
+
                 <label>Contraseña</label>
-                <input type="password" id="authPassword">
+
+                <input 
+                    type="password" 
+                    id="authPassword"
+                >
 
                 <button 
                     class="btn-gen" 
                     onclick="generarPasswordAzar()">
                     Generar Azar
                 </button>
+
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 15px;">
@@ -1041,6 +1021,10 @@
 
     </div>
 
+    <!-- ========================= -->
+    <!-- SOPORTE -->
+    <!-- ========================= -->
+
     <div id="helpModal" class="modal">
 
         <div class="modal-content">
@@ -1054,7 +1038,8 @@
                 <input 
                     type="text" 
                     id="userChatMessage" 
-                    placeholder="Escribe aquí...">
+                    placeholder="Escribe aquí..."
+                >
 
                 <button 
                     class="btn-auth" 
@@ -1075,7 +1060,10 @@
 
     </div>
 
-    <!-- PANEL ADMINISTRATIVO -->
+    <!-- ========================= -->
+    <!-- PANEL ADMIN -->
+    <!-- ========================= -->
+
     <div id="adminModal" class="modal">
 
         <div class="modal-content" style="max-width: 600px;">
@@ -1090,7 +1078,7 @@
                 </span>
 
             </div>
-
+            
             <div class="admin-tabs">
 
                 <button 
@@ -1164,7 +1152,7 @@
                 <hr style="border-color: var(--border-color); margin: 15px 0;">
 
                 <p style="font-size: 12px; color: var(--text-muted);">
-                    El precio de NEXK se obtiene mediante el enrutamiento real de PancakeSwap en BNB Smart Chain.
+                    El precio de NEXK se obtiene mediante cotizaciones reales de PancakeSwap en BNB Smart Chain.
                 </p>
 
             </div>
@@ -1183,7 +1171,8 @@
                         type="color" 
                         id="adminColorMain" 
                         value="#38bdf8" 
-                        style="height: 40px;">
+                        style="height: 40px;"
+                    >
 
                 </div>
 
@@ -1205,11 +1194,7 @@
 
                 <div class="field">
                     <label>Color de Letras</label>
-                    <input 
-                        type="color" 
-                        id="adminBannerColor" 
-                        value="#ffffff" 
-                        style="height: 40px;">
+                    <input type="color" id="adminBannerColor" value="#ffffff" style="height: 40px;">
                 </div>
 
                 <div class="field">
@@ -1218,8 +1203,13 @@
 
                     <select id="adminBannerMove">
 
-                        <option value="no">Fijo</option>
-                        <option value="yes">Animado</option>
+                        <option value="no">
+                            Fijo
+                        </option>
+
+                        <option value="yes">
+                            Animado
+                        </option>
 
                     </select>
 
@@ -1248,10 +1238,7 @@
                     Gestiona las cuentas y vigila intentos de hackeo.
                 </p>
 
-                <div 
-                    id="listaUsuariosAdmin" 
-                    style="max-height: 250px; overflow-y: auto;">
-                </div>
+                <div id="listaUsuariosAdmin" style="max-height: 250px; overflow-y: auto;"></div>
 
             </div>
 
@@ -1275,7 +1262,8 @@
                     <input 
                         type="text" 
                         id="adminReplyMessage" 
-                        placeholder="Escribir respuesta...">
+                        placeholder="Escribir respuesta..."
+                    >
 
                     <button 
                         class="btn-auth" 
@@ -1310,95 +1298,50 @@
     </div>
 
     <!-- ========================================================= -->
-    <!-- FIREBASE + WEB3 NEXK -->
+    <!-- FIREBASE + WEB3 -->
     <!-- ========================================================= -->
 
     <script type="module">
 
-        import {
-            initializeApp
-        } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+        import { initializeApp } 
+        from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 
-        import {
-            getAuth,
-            createUserWithEmailAndPassword,
-            signInWithEmailAndPassword,
-            signOut,
-            onAuthStateChanged,
-            GoogleAuthProvider,
-            OAuthProvider,
-            signInWithPopup
-        } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signOut, 
+            onAuthStateChanged, 
+            GoogleAuthProvider, 
+            OAuthProvider, 
+            signInWithPopup 
+        } 
+        from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
-        import {
-            getFirestore,
-            doc,
-            setDoc,
-            getDoc,
-            onSnapshot,
-            updateDoc,
-            increment,
-            collection,
-            addDoc,
-            query,
-            orderBy,
-            serverTimestamp,
-            setLogLevel
-        } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-
-
-        /*
-         * ============================================================
-         * PANCAKESWAP SDK
-         * ============================================================
-         *
-         * Se cargan desde jsDelivr como módulos ES.
-         *
-         * Se utilizan:
-         * - Smart Router
-         * - Infinity Router
-         * - Universal Router
-         * - SDK de tokens
-         */
-
-        import {
-            ChainId,
-            Token,
-            Native,
-            TradeType,
-            Percent
-        } from "https://cdn.jsdelivr.net/npm/@pancakeswap/sdk@5.9.0/+esm";
-
-        import {
-            CurrencyAmount
-        } from "https://cdn.jsdelivr.net/npm/@pancakeswap/swap-sdk-core@1.6.0/+esm";
-
-        import {
-            SmartRouter,
-            InfinityRouter
-        } from "https://cdn.jsdelivr.net/npm/@pancakeswap/smart-router@7.6.1/+esm";
-
-        import {
-            PancakeSwapUniversalRouter,
-            getUniversalRouterAddress
-        } from "https://cdn.jsdelivr.net/npm/@pancakeswap/universal-router-sdk@1.5.0/+esm";
-
-        import {
-            createPublicClient,
-            http
-        } from "https://cdn.jsdelivr.net/npm/viem@2.37.13/+esm";
-
-        import {
-            bsc
-        } from "https://cdn.jsdelivr.net/npm/viem@2.37.13/chains/+esm";
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc, 
+            getDoc, 
+            onSnapshot, 
+            updateDoc, 
+            increment, 
+            collection, 
+            addDoc, 
+            query, 
+            orderBy, 
+            serverTimestamp, 
+            setLogLevel 
+        } 
+        from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 
         setLogLevel('silent');
 
 
-        /* ============================================================
+        /* =========================================================
            FIREBASE
-        ============================================================ */
+        ========================================================= */
 
         const firebaseConfig = {
             apiKey: "AIzaSyBJoAAzTcWn_K7gXydwwbesG_gERwBq8Us",
@@ -1406,58 +1349,51 @@
             projectId: "nexk-131a4"
         };
 
+
         const app = initializeApp(firebaseConfig);
+
         const auth = getAuth(app);
+
         const db = getFirestore(app);
 
         const googleProvider = new GoogleAuthProvider();
+
         const appleProvider = new OAuthProvider('apple.com');
 
 
-        /* ============================================================
+        /* =========================================================
            VARIABLES
-        ============================================================ */
+        ========================================================= */
 
         let usuarioActual = null;
+
         let tokensActualesUsuario = 0;
 
         /*
-         * IMPORTANTE:
-         * Ya NO hay un precio falso de 0.01 USD.
-         *
-         * El precio comienza en null y solo se muestra después
-         * de conseguir una cotización real.
+         * NO se utiliza un precio falso.
+         * 0 significa que todavía no hay cotización disponible.
          */
+        let PRECIO_TOKEN_USD = 0;
 
-        let PRECIO_TOKEN_USD = null;
-        let PRECIO_BNB_USD = null;
+        let PRECIO_BNB_USD = 0;
+
         let CAMBIO_24H_PORCENTAJE = 0;
 
         let walletDireccionConectada = null;
 
-        let NEXK_DECIMALS = 18;
-        let USDT_DECIMALS = 18;
+        let NEXK_DECIMALES = null;
 
-        let ultimaCotizacionCompra = null;
-        let ultimaCotizacionVenta = null;
+        let buyQuoteRequestId = 0;
 
-        let actualizandoPrecio = false;
-        let cotizacionCompraTimer = null;
-        let cotizacionVentaTimer = null;
+        let sellQuoteRequestId = 0;
 
 
-        /* ============================================================
+        /* =========================================================
            CONTRATOS
-        ============================================================ */
+        ========================================================= */
 
         const TOKEN_CONTRACT_ADDRESS =
             "0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5";
-
-        const PANCAKE_ROUTER_ADDRESS =
-            "0x10ED43335D0f0511c7826814731894B72813462D";
-
-        const PANCAKE_FACTORY_ADDRESS =
-            "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73";
 
         const WBNB_ADDRESS =
             "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
@@ -1465,61 +1401,59 @@
         const USDT_BSC_ADDRESS =
             "0x55d398326f99059fF775485246999027B3197955";
 
+
         /*
-         * Universal Router moderno de PancakeSwap Infinity en BSC.
+         * Se mantienen estas constantes para no romper
+         * otras partes de tu página.
+         *
+         * La compra/venta NEXK ya NO utiliza el router V2 antiguo.
          */
-        const PANCAKE_INFINITY_UNIVERSAL_ROUTER =
-            "0xd9C500DfF816a1Da21A48A732d3498Bf09dc9AEB";
+        const PANCAKE_ROUTER_ADDRESS =
+            "0x10ED43335D0f0511c7826814731894B72813462D";
 
-        const CHAIN_ID_BSC = 56;
+        const PANCAKE_FACTORY_ADDRESS =
+            "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73";
 
 
-        /* ============================================================
-           RPC
-        ============================================================ */
+        /* =========================================================
+           RPC BSC
+        ========================================================= */
 
         const BSC_RPC_NODES = [
+
             "https://bsc-dataseed.binance.org/",
+
             "https://bsc-dataseed1.defibit.io/",
+
             "https://bsc-dataseed1.ninicoin.io/",
+
             "https://rpc.ankr.com/bsc"
+
         ];
 
 
-        /* ============================================================
-           ABIs
-        ============================================================ */
+        /* =========================================================
+           ABI ERC20
+        ========================================================= */
 
         const ERC20_ABI = [
+
             "function balanceOf(address owner) view returns (uint256)",
+
             "function transfer(address to, uint256 amount) returns (bool)",
+
             "function approve(address spender, uint256 amount) returns (bool)",
+
             "function allowance(address owner, address spender) view returns (uint256)",
+
             "function decimals() view returns (uint8)"
+
         ];
 
 
-        const ROUTER_ABI = [
-            "function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) payable returns (uint[] memory amounts)",
-            "function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) returns (uint[] memory amounts)",
-            "function swapExactTokensForTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) returns (uint[] memory amounts)"
-        ];
-
-
-        const FACTORY_ABI = [
-            "function getPair(address tokenA, address tokenB) external view returns (address pair)"
-        ];
-
-
-        const PAIR_ABI = [
-            "function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)",
-            "function token0() external view returns (address)"
-        ];
-
-
-        /* ============================================================
-           PROVIDER BSC
-        ============================================================ */
+        /* =========================================================
+           PROVEEDOR BSC
+        ========================================================= */
 
         window.obtenerProveedorBSC = function() {
 
@@ -1530,56 +1464,62 @@
         };
 
 
-        /* ============================================================
-           VIEM PUBLIC CLIENT
-        ============================================================ */
-
-        const pancakePublicClient = createPublicClient({
-
-            chain: bsc,
-
-            transport: http(
-                BSC_RPC_NODES[0]
-            ),
-
-            batch: {
-                multicall: {
-                    batchSize: 1024 * 200
-                }
-            }
-
-        });
-
-
-        /* ============================================================
-           FORMATEAR MONEDA
-        ============================================================ */
+        /* =========================================================
+           FORMATO DE MONEDAS
+        ========================================================= */
 
         window.formatearMoneda = function(valor, maxDec = 8) {
 
-            if (
-                valor === null ||
-                valor === undefined ||
-                !Number.isFinite(Number(valor))
-            ) {
+            if (!isFinite(valor) || valor === 0) {
                 return "0.00";
             }
 
-            valor = Number(valor);
-
-            if (valor === 0) {
-                return "0.00";
+            if (valor < 0.000000001) {
+                return valor.toFixed(12);
             }
 
-            if (Math.abs(valor) < 0.000001) {
-                return valor.toFixed(maxDec);
+            if (valor < 0.000001) {
+                return valor.toFixed(10);
             }
 
-            if (Math.abs(valor) < 0.01) {
+            if (valor < 0.01) {
+                return valor.toFixed(8);
+            }
+
+            if (valor < 1) {
                 return valor.toFixed(6);
             }
 
-            if (Math.abs(valor) < 1) {
+            return valor.toLocaleString(
+                'en-US',
+                {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: maxDec
+                }
+            );
+
+        };
+
+
+        window.formatearPrecioNEXK = function(valor) {
+
+            if (!isFinite(valor) || valor <= 0) {
+                return "No disponible";
+            }
+
+            if (valor < 0.000000001) {
+                return valor.toFixed(15);
+            }
+
+            if (valor < 0.000001) {
+                return valor.toFixed(12);
+            }
+
+            if (valor < 0.01) {
+                return valor.toFixed(8);
+            }
+
+            if (valor < 1) {
                 return valor.toFixed(6);
             }
 
@@ -1590,606 +1530,483 @@
                     maximumFractionDigits: 6
                 }
             );
+
         };
 
 
-        /* ============================================================
-           OBTENER DECIMALES REALES DE NEXK Y USDT
-        ============================================================ */
+        /* =========================================================
+           DECIMALES NEXK
+        ========================================================= */
 
-        async function cargarDecimalesTokens() {
+        async function obtenerDecimalesNEXK(provider) {
+
+            if (NEXK_DECIMALES !== null) {
+                return NEXK_DECIMALES;
+            }
 
             try {
 
-                const provider = window.obtenerProveedorBSC();
-
-                const nexkContract = new ethers.Contract(
+                const token = new ethers.Contract(
                     TOKEN_CONTRACT_ADDRESS,
                     ERC20_ABI,
                     provider
                 );
 
-                const usdtContract = new ethers.Contract(
-                    USDT_BSC_ADDRESS,
-                    ERC20_ABI,
-                    provider
-                );
+                NEXK_DECIMALES = await token.decimals();
 
-                const [nexkDecimals, usdtDecimals] =
-                    await Promise.all([
-                        nexkContract.decimals(),
-                        usdtContract.decimals()
-                    ]);
-
-                NEXK_DECIMALS = Number(nexkDecimals);
-                USDT_DECIMALS = Number(usdtDecimals);
-
-                console.log(
-                    "NEXK decimals:",
-                    NEXK_DECIMALS
-                );
-
-                console.log(
-                    "USDT decimals:",
-                    USDT_DECIMALS
-                );
+                return NEXK_DECIMALES;
 
             } catch (error) {
 
                 /*
-                 * Solo se utiliza 18 si el contrato no responde.
-                 * No afecta el precio cuando la API funciona.
+                 * NEXK normalmente trabaja con 18 decimales.
+                 * Este fallback solamente se utiliza si el RPC
+                 * no responde al método decimals().
                  */
+                NEXK_DECIMALES = 18;
 
-                console.warn(
-                    "No se pudieron consultar los decimales:",
-                    error
-                );
-
+                return NEXK_DECIMALES;
             }
 
         }
 
 
-        /* ============================================================
-           API DE COTIZACIÓN PANCAKESWAP
-        ============================================================ */
+        /* =========================================================
+           ROUTING API PANCAKESWAP
+        ========================================================= */
 
-        async function obtenerCotizacionPancakeAPI(
-            tokenIn,
-            tokenOut,
+        window.obtenerCotizacionPancake = async function(
+            tokenInAddress,
+            tokenOutAddress,
             amountRaw
         ) {
 
-            const url =
-                new URL(
-                    "https://router.pancakeswap.finance/v0/quote"
-                );
+            const controller = new AbortController();
 
-            url.searchParams.set(
-                "tokenInAddress",
-                tokenIn
+            const timeout = setTimeout(
+                () => controller.abort(),
+                7000
             );
-
-            url.searchParams.set(
-                "tokenInChainId",
-                "56"
-            );
-
-            url.searchParams.set(
-                "tokenOutAddress",
-                tokenOut
-            );
-
-            url.searchParams.set(
-                "tokenOutChainId",
-                "56"
-            );
-
-            url.searchParams.set(
-                "amount",
-                amountRaw.toString()
-            );
-
-            url.searchParams.set(
-                "type",
-                "exactIn"
-            );
-
-            url.searchParams.set(
-                "maxHops",
-                "3"
-            );
-
-            url.searchParams.set(
-                "maxSplits",
-                "4"
-            );
-
-
-            const response = await fetch(
-                url.toString(),
-                {
-                    method: "GET",
-                    cache: "no-store"
-                }
-            );
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    "PancakeSwap Routing API respondió HTTP " +
-                    response.status
-                );
-
-            }
-
-
-            const data = await response.json();
-
-
-            if (
-                !data ||
-                !data.trade ||
-                data.trade.outputAmount === undefined ||
-                data.trade.outputAmount === null
-            ) {
-
-                throw new Error(
-                    "PancakeSwap no encontró una ruta para NEXK."
-                );
-
-            }
-
-
-            return data;
-
-        }
-
-
-        /* ============================================================
-           PRECIO REAL DE NEXK
-        ============================================================ */
-
-        window.actualizarPrecioTokenEnVivo = async function() {
-
-            if (actualizandoPrecio) {
-                return;
-            }
-
-            actualizandoPrecio = true;
 
             try {
 
-                await cargarDecimalesTokens();
+                const params = new URLSearchParams({
+
+                    tokenInAddress: tokenInAddress,
+
+                    tokenInChainId: "56",
+
+                    tokenOutAddress: tokenOutAddress,
+
+                    tokenOutChainId: "56",
+
+                    amount: amountRaw.toString(),
+
+                    type: "exactIn",
+
+                    maxHops: "3",
+
+                    maxSplits: "4"
+
+                });
+
+
+                const response = await fetch(
+                    "https://router.pancakeswap.finance/v0/quote?" +
+                    params.toString(),
+                    {
+                        method: "GET",
+                        signal: controller.signal,
+                        cache: "no-store"
+                    }
+                );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "PancakeSwap HTTP " + response.status
+                    );
+
+                }
+
+
+                const data = await response.json();
+
+
+                if (
+                    !data ||
+                    !data.trade ||
+                    !data.trade.outputAmount
+                ) {
+
+                    throw new Error(
+                        "No existe una ruta de intercambio disponible."
+                    );
+
+                }
+
+
+                return data.trade;
+
+            } finally {
+
+                clearTimeout(timeout);
+
+            }
+
+        };
+
+
+        /* =========================================================
+           PRECIO NEXK EN TIEMPO REAL
+        ========================================================= */
+
+        window.actualizarPrecioTokenEnVivo = async function() {
+
+            try {
+
+                const provider =
+                    window.obtenerProveedorBSC();
+
+                const decimales =
+                    await obtenerDecimalesNEXK(provider);
 
 
                 /*
-                 * Obtenemos una cotización REAL:
-                 *
-                 * NEXK -> USDT
-                 *
-                 * No utilizamos un precio fijo.
+                 * 1 NEXK -> USDT
                  */
 
-                const amountForPrice =
+                const oneNexkRaw =
                     ethers.utils.parseUnits(
-                        "0.001",
-                        NEXK_DECIMALS
-                    );
+                        "1",
+                        decimales
+                    ).toString();
 
 
-                const quote =
-                    await obtenerCotizacionPancakeAPI(
+                const tradeNexk =
+                    await window.obtenerCotizacionPancake(
                         TOKEN_CONTRACT_ADDRESS,
                         USDT_BSC_ADDRESS,
-                        amountForPrice
+                        oneNexkRaw
                     );
 
 
-                const outputUSDT =
-                    Number(
+                const usdtRecibido =
+                    parseFloat(
                         ethers.utils.formatUnits(
-                            quote.trade.outputAmount,
-                            USDT_DECIMALS
+                            tradeNexk.outputAmount,
+                            18
                         )
                     );
 
 
-                /*
-                 * 0.001 NEXK -> X USDT
-                 *
-                 * Precio por 1 NEXK:
-                 */
-
                 if (
-                    Number.isFinite(outputUSDT) &&
-                    outputUSDT > 0
+                    isFinite(usdtRecibido) &&
+                    usdtRecibido > 0
                 ) {
 
                     PRECIO_TOKEN_USD =
-                        outputUSDT / 0.001;
-
-                } else {
-
-                    throw new Error(
-                        "La cotización de NEXK devolvió 0."
-                    );
+                        usdtRecibido;
 
                 }
 
 
                 /*
-                 * Precio de BNB en USD.
-                 * Se utiliza solamente para mostrar equivalencias.
+                 * 0.001 BNB -> USDT
                  */
 
-                try {
+                const bnbRaw =
+                    ethers.utils.parseEther(
+                        "0.001"
+                    ).toString();
 
-                    const bnbResponse =
-                        await fetch(
-                            "https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT",
-                            {
-                                cache: "no-store"
-                            }
-                        );
 
-                    const bnbData =
-                        await bnbResponse.json();
+                const tradeBnb =
+                    await window.obtenerCotizacionPancake(
+                        "BNB",
+                        USDT_BSC_ADDRESS,
+                        bnbRaw
+                    );
 
-                    if (
-                        bnbData &&
-                        bnbData.price
-                    ) {
 
-                        PRECIO_BNB_USD =
-                            Number(
-                                bnbData.price
-                            );
+                const usdtPor001BNB =
+                    parseFloat(
+                        ethers.utils.formatUnits(
+                            tradeBnb.outputAmount,
+                            18
+                        )
+                    );
+
+
+                if (
+                    isFinite(usdtPor001BNB) &&
+                    usdtPor001BNB > 0
+                ) {
+
+                    PRECIO_BNB_USD =
+                        usdtPor001BNB / 0.001;
+
+                }
+
+
+                const tokenPrice =
+                    document.getElementById(
+                        'tokenPrice'
+                    );
+
+
+                if (tokenPrice) {
+
+                    if (PRECIO_TOKEN_USD > 0) {
+
+                        tokenPrice.innerText =
+                            "$" +
+                            window.formatearPrecioNEXK(
+                                PRECIO_TOKEN_USD
+                            ) +
+                            " USD";
+
+                    } else {
+
+                        tokenPrice.innerText =
+                            "No disponible";
 
                     }
 
-                } catch (bnbError) {
-
-                    console.warn(
-                        "No se pudo actualizar BNB/USD:",
-                        bnbError
-                    );
-
                 }
-
-
-                /*
-                 * Precio visible.
-                 */
-
-                const priceElement =
-                    document.getElementById(
-                        "tokenPrice"
-                    );
-
-
-                if (priceElement) {
-
-                    priceElement.innerText =
-                        "$" +
-                        window.formatearMoneda(
-                            PRECIO_TOKEN_USD,
-                            12
-                        ) +
-                        " USD";
-
-                }
-
-
-                /*
-                 * El precio es de NEXK -> USDT
-                 * y la ruta es seleccionada por PancakeSwap.
-                 */
-
-                console.log(
-                    "Precio real NEXK/USD:",
-                    PRECIO_TOKEN_USD
-                );
-
-
-                /*
-                 * No inventamos cambio 24h.
-                 * El precio de mercado se actualiza,
-                 * pero no se presenta una variación falsa.
-                 */
-
-                CAMBIO_24H_PORCENTAJE = 0;
 
 
                 window.recalcularBalanceUsuario();
 
-                await window.calcularCotizacionCompra();
+                window.calcularCotizacionCompra();
 
-                await window.calcularCotizacionVenta();
-
-
-            } catch (error) {
-
-                console.error(
-                    "Error obteniendo precio real de NEXK:",
-                    error
-                );
-
-
-                /*
-                 * MUY IMPORTANTE:
-                 * No ponemos $0.01.
-                 */
-
-                PRECIO_TOKEN_USD = null;
-
-
-                const priceElement =
-                    document.getElementById(
-                        "tokenPrice"
-                    );
-
-
-                if (priceElement) {
-
-                    priceElement.innerText =
-                        "Precio no disponible";
-
-                }
-
-            } finally {
-
-                actualizandoPrecio = false;
-
-            }
-
-        };
-
-
-        /* ============================================================
-           COTIZACIÓN DE COMPRA
-        ============================================================ */
-
-        window.calcularCotizacionCompra = async function() {
-
-            const currencyElement =
-                document.getElementById(
-                    "buyPayCurrency"
-                );
-
-            const amountElement =
-                document.getElementById(
-                    "buyPayAmount"
-                );
-
-
-            if (!currencyElement || !amountElement) {
-                return;
-            }
-
-
-            const moneda =
-                currencyElement.value;
-
-            const monto =
-                amountElement.value.trim();
-
-
-            if (
-                !monto ||
-                Number(monto) <= 0
-            ) {
-
-                document.getElementById(
-                    "quoteBuyTokens"
-                ).innerText =
-                    "0.00 NEXK";
-
-                return;
-
-            }
-
-
-            try {
-
-                const decimals =
-                    moneda === "USDT"
-                        ? USDT_DECIMALS
-                        : 18;
-
-
-                const amountRaw =
-                    ethers.utils.parseUnits(
-                        monto,
-                        decimals
-                    );
-
-
-                const tokenIn =
-                    moneda === "BNB"
-                        ? "BNB"
-                        : USDT_BSC_ADDRESS;
-
-
-                const quote =
-                    await obtenerCotizacionPancakeAPI(
-                        tokenIn,
-                        TOKEN_CONTRACT_ADDRESS,
-                        amountRaw
-                    );
-
-
-                const outputNEXK =
-                    Number(
-                        ethers.utils.formatUnits(
-                            quote.trade.outputAmount,
-                            NEXK_DECIMALS
-                        )
-                    );
-
-
-                let valorUSD = 0;
-
-
-                if (moneda === "USDT") {
-
-                    valorUSD =
-                        Number(monto);
-
-                } else if (
-                    moneda === "BNB" &&
-                    PRECIO_BNB_USD
-                ) {
-
-                    valorUSD =
-                        Number(monto) *
-                        PRECIO_BNB_USD;
-
-                }
-
-
-                if (
-                    outputNEXK > 0 &&
-                    Number.isFinite(outputNEXK)
-                ) {
-
-                    PRECIO_TOKEN_USD =
-                        valorUSD > 0
-                            ? valorUSD / outputNEXK
-                            : PRECIO_TOKEN_USD;
-
-                }
-
-
-                document.getElementById(
-                    "quoteBuyTokens"
-                ).innerText =
-                    window.formatearMoneda(
-                        outputNEXK,
-                        8
-                    ) +
-                    " NEXK";
-
-
-                document.getElementById(
-                    "quoteBuyUsd"
-                ).innerText =
-                    "$" +
-                    window.formatearMoneda(
-                        valorUSD,
-                        8
-                    ) +
-                    " USD";
-
-
-                document.getElementById(
-                    "buyRateUsd"
-                ).innerText =
-                    PRECIO_TOKEN_USD
-                        ? "$" +
-                          window.formatearMoneda(
-                              PRECIO_TOKEN_USD,
-                              12
-                          )
-                        : "$0.00";
-
-
-                document.getElementById(
-                    "buyRouteInfo"
-                ).innerText =
-                    "Cotización real de PancakeSwap • Impacto: " +
-                    (
-                        quote.trade.priceImpact || "0"
-                    ) +
-                    "%";
-
-
-                ultimaCotizacionCompra =
-                    {
-                        moneda,
-                        monto,
-                        amountRaw,
-                        quote,
-                        timestamp: Date.now()
-                    };
+                window.calcularCotizacionVenta();
 
 
             } catch (error) {
 
                 console.warn(
-                    "No hay cotización de compra:",
+                    "No se pudo actualizar la cotización NEXK:",
                     error
                 );
 
 
-                ultimaCotizacionCompra =
-                    null;
+                const tokenPrice =
+                    document.getElementById(
+                        'tokenPrice'
+                    );
 
 
-                document.getElementById(
-                    "quoteBuyTokens"
-                ).innerText =
-                    "Sin ruta disponible";
+                if (
+                    tokenPrice &&
+                    PRECIO_TOKEN_USD <= 0
+                ) {
 
+                    tokenPrice.innerText =
+                        "Sin cotización";
 
-                document.getElementById(
-                    "quoteBuyUsd"
-                ).innerText =
-                    "No disponible";
-
-
-                document.getElementById(
-                    "buyRouteInfo"
-                ).innerText =
-                    "PancakeSwap no encontró liquidez/ruta para esta cantidad.";
+                }
 
             }
 
         };
 
 
-        /* ============================================================
-           COTIZACIÓN DE VENTA
-        ============================================================ */
+        /* =========================================================
+           COTIZACIÓN DE COMPRA
+        ========================================================= */
 
-        window.calcularCotizacionVenta = async function() {
+        window.calcularCotizacionCompra = function() {
+
+            const monedaElement =
+                document.getElementById(
+                    'buyPayCurrency'
+                );
 
             const amountElement =
                 document.getElementById(
-                    "sellNexkAmount"
-                );
-
-            const currencyElement =
-                document.getElementById(
-                    "sellReceiveCurrency"
+                    'buyPayAmount'
                 );
 
 
-            if (!amountElement || !currencyElement) {
+            if (!monedaElement || !amountElement) {
                 return;
             }
 
 
-            const amount =
-                amountElement.value.trim();
-
             const moneda =
-                currencyElement.value;
+                monedaElement.value;
+
+
+            const monto =
+                parseFloat(
+                    amountElement.value
+                ) || 0;
+
+
+            const quoteTokens =
+                document.getElementById(
+                    'quoteBuyTokens'
+                );
+
+            const quoteUsd =
+                document.getElementById(
+                    'quoteBuyUsd'
+                );
+
+            const rateUsd =
+                document.getElementById(
+                    'buyRateUsd'
+                );
+
+
+            if (rateUsd) {
+
+                rateUsd.innerText =
+                    PRECIO_TOKEN_USD > 0
+                    ? "$" +
+                      window.formatearPrecioNEXK(
+                          PRECIO_TOKEN_USD
+                      )
+                    : "No disponible";
+
+            }
 
 
             if (
-                !amount ||
-                Number(amount) <= 0
+                !monto ||
+                monto <= 0
             ) {
 
+                if (quoteTokens) {
+                    quoteTokens.innerText =
+                        "0.00 NEXK";
+                }
+
+                if (quoteUsd) {
+                    quoteUsd.innerText =
+                        "$0.00 USD";
+                }
+
+                return;
+
+            }
+
+
+            /*
+             * El cálculo visual inmediato utiliza el último
+             * precio disponible.
+             *
+             * La cotización exacta se vuelve a consultar
+             * cuando el usuario pulsa Comprar.
+             */
+
+            if (moneda === "BNB") {
+
+                const usd =
+                    PRECIO_BNB_USD > 0
+                    ? monto * PRECIO_BNB_USD
+                    : 0;
+
+
+                const nexk =
+                    PRECIO_TOKEN_USD > 0
+                    ? usd / PRECIO_TOKEN_USD
+                    : 0;
+
+
+                if (quoteTokens) {
+
+                    quoteTokens.innerText =
+                        nexk > 0
+                        ? window.formatearMoneda(nexk) +
+                          " NEXK"
+                        : "Consultando...";
+
+                }
+
+
+                if (quoteUsd) {
+
+                    quoteUsd.innerText =
+                        usd > 0
+                        ? "$" +
+                          window.formatearMoneda(usd) +
+                          " USD"
+                        : "Cotización pendiente";
+
+                }
+
+            } else {
+
+                const usd = monto;
+
+                const nexk =
+                    PRECIO_TOKEN_USD > 0
+                    ? usd / PRECIO_TOKEN_USD
+                    : 0;
+
+
+                if (quoteTokens) {
+
+                    quoteTokens.innerText =
+                        nexk > 0
+                        ? window.formatearMoneda(nexk) +
+                          " NEXK"
+                        : "Consultando...";
+
+                }
+
+
+                if (quoteUsd) {
+
+                    quoteUsd.innerText =
+                        "$" +
+                        window.formatearMoneda(usd) +
+                        " USD";
+
+                }
+
+            }
+
+
+            window.consultarCotizacionCompraReal();
+
+        };
+
+
+        /* =========================================================
+           COTIZACIÓN REAL DE COMPRA
+        ========================================================= */
+
+        window.consultarCotizacionCompraReal = async function() {
+
+            const requestId =
+                ++buyQuoteRequestId;
+
+
+            const moneda =
                 document.getElementById(
-                    "quoteSellReceive"
-                ).innerText =
-                    moneda === "BNB"
-                        ? "0.00 BNB"
-                        : "0.00 USDT";
+                    'buyPayCurrency'
+                ).value;
+
+
+            const amountString =
+                document.getElementById(
+                    'buyPayAmount'
+                ).value.trim();
+
+
+            const amount =
+                parseFloat(amountString);
+
+
+            if (
+                !amountString ||
+                !isFinite(amount) ||
+                amount <= 0
+            ) {
 
                 return;
 
@@ -2198,256 +2015,648 @@
 
             try {
 
+                const provider =
+                    window.obtenerProveedorBSC();
+
+                const decimales =
+                    await obtenerDecimalesNEXK(
+                        provider
+                    );
+
+
+                let rawAmount;
+
+                let tokenIn;
+
+
+                if (moneda === "BNB") {
+
+                    tokenIn = "BNB";
+
+                    rawAmount =
+                        ethers.utils.parseEther(
+                            amountString
+                        ).toString();
+
+                } else {
+
+                    tokenIn =
+                        USDT_BSC_ADDRESS;
+
+                    rawAmount =
+                        ethers.utils.parseUnits(
+                            amountString,
+                            18
+                        ).toString();
+
+                }
+
+
+                const trade =
+                    await window.obtenerCotizacionPancake(
+                        tokenIn,
+                        TOKEN_CONTRACT_ADDRESS,
+                        rawAmount
+                    );
+
+
+                if (
+                    requestId !== buyQuoteRequestId
+                ) {
+
+                    return;
+
+                }
+
+
+                const tokens =
+                    parseFloat(
+                        ethers.utils.formatUnits(
+                            trade.outputAmount,
+                            decimales
+                        )
+                    );
+
+
+                const quoteBuyTokens =
+                    document.getElementById(
+                        'quoteBuyTokens'
+                    );
+
+
+                if (quoteBuyTokens) {
+
+                    quoteBuyTokens.innerText =
+                        window.formatearMoneda(tokens) +
+                        " NEXK";
+
+                }
+
+
+            } catch (error) {
+
+                if (
+                    requestId === buyQuoteRequestId
+                ) {
+
+                    const quoteBuyTokens =
+                        document.getElementById(
+                            'quoteBuyTokens'
+                        );
+
+                    if (quoteBuyTokens) {
+
+                        quoteBuyTokens.innerText =
+                            "Sin ruta disponible";
+
+                    }
+
+                }
+
+            }
+
+        };
+
+
+        /* =========================================================
+           COTIZACIÓN DE VENTA
+        ========================================================= */
+
+        window.calcularCotizacionVenta = function() {
+
+            const moneda =
+                document.getElementById(
+                    'sellReceiveCurrency'
+                ).value;
+
+
+            const cantidad =
+                parseFloat(
+                    document.getElementById(
+                        'sellNexkAmount'
+                    ).value
+                ) || 0;
+
+
+            const rateUsd =
+                document.getElementById(
+                    'sellRateUsd'
+                );
+
+
+            const quoteReceive =
+                document.getElementById(
+                    'quoteSellReceive'
+                );
+
+            const quoteUsd =
+                document.getElementById(
+                    'quoteSellUsd'
+                );
+
+
+            if (rateUsd) {
+
+                rateUsd.innerText =
+                    PRECIO_TOKEN_USD > 0
+                    ? "$" +
+                      window.formatearPrecioNEXK(
+                          PRECIO_TOKEN_USD
+                      )
+                    : "No disponible";
+
+            }
+
+
+            if (
+                !cantidad ||
+                cantidad <= 0
+            ) {
+
+                if (quoteReceive) {
+
+                    quoteReceive.innerText =
+                        moneda === "BNB"
+                        ? "0.00 BNB"
+                        : "0.00 USDT";
+
+                }
+
+                if (quoteUsd) {
+
+                    quoteUsd.innerText =
+                        "$0.00 USD";
+
+                }
+
+                return;
+
+            }
+
+
+            const usd =
+                PRECIO_TOKEN_USD > 0
+                ? cantidad * PRECIO_TOKEN_USD
+                : 0;
+
+
+            if (quoteUsd) {
+
+                quoteUsd.innerText =
+                    usd > 0
+                    ? "$" +
+                      window.formatearMoneda(usd) +
+                      " USD"
+                    : "Cotización pendiente";
+
+            }
+
+
+            if (moneda === "BNB") {
+
+                const bnb =
+                    PRECIO_BNB_USD > 0
+                    ? usd / PRECIO_BNB_USD
+                    : 0;
+
+
+                if (quoteReceive) {
+
+                    quoteReceive.innerText =
+                        bnb > 0
+                        ? window.formatearMoneda(
+                              bnb,
+                              8
+                          ) + " BNB"
+                        : "Consultando...";
+
+                }
+
+            } else {
+
+                if (quoteReceive) {
+
+                    quoteReceive.innerText =
+                        usd > 0
+                        ? window.formatearMoneda(
+                              usd,
+                              8
+                          ) + " USDT"
+                        : "Consultando...";
+
+                }
+
+            }
+
+
+            window.consultarCotizacionVentaReal();
+
+        };
+
+
+        /* =========================================================
+           COTIZACIÓN REAL DE VENTA
+        ========================================================= */
+
+        window.consultarCotizacionVentaReal = async function() {
+
+            const requestId =
+                ++sellQuoteRequestId;
+
+
+            const amountString =
+                document.getElementById(
+                    'sellNexkAmount'
+                ).value.trim();
+
+
+            const moneda =
+                document.getElementById(
+                    'sellReceiveCurrency'
+                ).value;
+
+
+            const cantidad =
+                parseFloat(amountString);
+
+
+            if (
+                !amountString ||
+                !isFinite(cantidad) ||
+                cantidad <= 0
+            ) {
+
+                return;
+
+            }
+
+
+            try {
+
+                const provider =
+                    window.obtenerProveedorBSC();
+
+                const decimales =
+                    await obtenerDecimalesNEXK(
+                        provider
+                    );
+
+
                 const amountRaw =
                     ethers.utils.parseUnits(
-                        amount,
-                        NEXK_DECIMALS
-                    );
+                        amountString,
+                        decimales
+                    ).toString();
 
 
                 const tokenOut =
                     moneda === "BNB"
-                        ? "BNB"
-                        : USDT_BSC_ADDRESS;
+                    ? "BNB"
+                    : USDT_BSC_ADDRESS;
 
 
-                const quote =
-                    await obtenerCotizacionPancakeAPI(
+                const trade =
+                    await window.obtenerCotizacionPancake(
                         TOKEN_CONTRACT_ADDRESS,
                         tokenOut,
                         amountRaw
                     );
 
 
-                const output =
-                    Number(
-                        ethers.utils.formatUnits(
-                            quote.trade.outputAmount,
-                            moneda === "BNB"
-                                ? 18
-                                : USDT_DECIMALS
-                        )
-                    );
-
-
-                let usdValue = 0;
-
-
-                if (moneda === "USDT") {
-
-                    usdValue =
-                        output;
-
-                } else if (
-                    moneda === "BNB" &&
-                    PRECIO_BNB_USD
-                ) {
-
-                    usdValue =
-                        output *
-                        PRECIO_BNB_USD;
-
-                }
-
-
-                document.getElementById(
-                    "quoteSellReceive"
-                ).innerText =
-                    window.formatearMoneda(
-                        output,
-                        moneda === "BNB"
-                            ? 8
-                            : 8
-                    ) +
-                    " " +
-                    moneda;
-
-
-                document.getElementById(
-                    "quoteSellUsd"
-                ).innerText =
-                    "$" +
-                    window.formatearMoneda(
-                        usdValue,
-                        8
-                    ) +
-                    " USD";
-
-
-                /*
-                 * Precio efectivo de esta venta.
-                 */
-
-                const numericAmount =
-                    Number(amount);
-
                 if (
-                    numericAmount > 0 &&
-                    usdValue > 0
+                    requestId !== sellQuoteRequestId
                 ) {
 
-                    PRECIO_TOKEN_USD =
-                        usdValue /
-                        numericAmount;
+                    return;
+
+                }
+
+
+                let resultado;
+
+
+                if (moneda === "BNB") {
+
+                    resultado =
+                        parseFloat(
+                            ethers.utils.formatEther(
+                                trade.outputAmount
+                            )
+                        );
+
+
+                    document.getElementById(
+                        'quoteSellReceive'
+                    ).innerText =
+                        window.formatearMoneda(
+                            resultado,
+                            8
+                        ) + " BNB";
+
+
+                } else {
+
+                    resultado =
+                        parseFloat(
+                            ethers.utils.formatUnits(
+                                trade.outputAmount,
+                                18
+                            )
+                        );
+
+
+                    document.getElementById(
+                        'quoteSellReceive'
+                    ).innerText =
+                        window.formatearMoneda(
+                            resultado,
+                            8
+                        ) + " USDT";
 
                 }
 
 
                 document.getElementById(
-                    "sellRateUsd"
+                    'quoteSellUsd'
                 ).innerText =
-                    PRECIO_TOKEN_USD
-                        ? "$" +
-                          window.formatearMoneda(
-                              PRECIO_TOKEN_USD,
-                              12
-                          )
-                        : "$0.00";
-
-
-                document.getElementById(
-                    "sellRouteInfo"
-                ).innerText =
-                    "Cotización real de PancakeSwap • Impacto: " +
-                    (
-                        quote.trade.priceImpact || "0"
-                    ) +
-                    "%";
-
-
-                ultimaCotizacionVenta =
-                    {
-                        moneda,
-                        amount,
-                        amountRaw,
-                        quote,
-                        timestamp: Date.now()
-                    };
+                    moneda === "USDT"
+                    ? "$" +
+                      window.formatearMoneda(
+                          resultado,
+                          8
+                      ) +
+                      " USD"
+                    : document.getElementById(
+                          'quoteSellUsd'
+                      ).innerText;
 
 
             } catch (error) {
 
-                console.warn(
-                    "No hay cotización de venta:",
-                    error
-                );
+                if (
+                    requestId === sellQuoteRequestId
+                ) {
 
+                    document.getElementById(
+                        'quoteSellReceive'
+                    ).innerText =
+                        "Sin ruta disponible";
 
-                ultimaCotizacionVenta =
-                    null;
-
-
-                document.getElementById(
-                    "quoteSellReceive"
-                ).innerText =
-                    "Sin ruta disponible";
-
-
-                document.getElementById(
-                    "quoteSellUsd"
-                ).innerText =
-                    "No disponible";
-
-
-                document.getElementById(
-                    "sellRouteInfo"
-                ).innerText =
-                    "PancakeSwap no encontró liquidez/ruta para esta cantidad.";
+                }
 
             }
 
         };
 
 
-        /* ============================================================
-           BALANCE DEL USUARIO
-        ============================================================ */
+        /* =========================================================
+           HISTORIAL ON-CHAIN
+        ========================================================= */
 
-        window.recalcularBalanceUsuario = function() {
+        window.cargarHistorialOnChainReal = async function(address) {
 
-            if (
-                PRECIO_TOKEN_USD === null ||
-                !Number.isFinite(PRECIO_TOKEN_USD)
-            ) {
-
+            const lista =
                 document.getElementById(
-                    "userBalanceUSD"
-                ).innerText =
-                    "Precio no disponible";
+                    'historialLista'
+                );
 
+
+            if (!address) {
                 return;
+            }
+
+
+            try {
+
+                lista.innerHTML =
+                    '<p style="color:var(--text-muted);text-align:center;">Cargando transacciones...</p>';
+
+
+                const url =
+                    `https://api.bscscan.com/api?module=account&action=tokentx&contractaddress=${TOKEN_CONTRACT_ADDRESS}&address=${address}&page=1&offset=20&sort=desc`;
+
+
+                const res =
+                    await fetch(url);
+
+
+                const data =
+                    await res.json();
+
+
+                if (
+                    data.status === "1" &&
+                    data.result &&
+                    data.result.length > 0
+                ) {
+
+                    lista.innerHTML = '';
+
+                    document.getElementById(
+                        'userOps'
+                    ).innerText =
+                        data.result.length.toString();
+
+
+                    data.result.forEach(tx => {
+
+                        const esRecibido =
+                            tx.to.toLowerCase() ===
+                            address.toLowerCase();
+
+
+                        const decimals =
+                            parseInt(
+                                tx.tokenDecimal || 18
+                            );
+
+
+                        const cantidad =
+                            parseFloat(
+                                ethers.utils.formatUnits(
+                                    tx.value,
+                                    decimals
+                                )
+                            );
+
+
+                        const fecha =
+                            new Date(
+                                parseInt(tx.timeStamp) *
+                                1000
+                            ).toLocaleString();
+
+
+                        const d =
+                            document.createElement(
+                                'div'
+                            );
+
+
+                        d.className =
+                            'historial-item';
+
+
+                        const tipoClase =
+                            esRecibido
+                            ? 'tipo-compra'
+                            : 'tipo-venta';
+
+
+                        const signo =
+                            esRecibido
+                            ? '+'
+                            : '-';
+
+
+                        const textoTipo =
+                            esRecibido
+                            ? 'RECIBIDO'
+                            : 'ENVIADO';
+
+
+                        d.innerHTML = `
+
+                            <div>
+
+                                <span class="historial-tipo ${tipoClase}">
+                                    ${textoTipo}
+                                </span>
+
+                                <div style="font-size:11px;color:var(--text-muted);">
+                                    ${fecha}
+                                </div>
+
+                            </div>
+
+                            <div style="font-weight:bold; color: ${esRecibido ? 'var(--green-up)' : 'var(--red-down)'};">
+                                ${signo}${window.formatearMoneda(cantidad)} NEXK
+                            </div>
+
+                        `;
+
+
+                        lista.appendChild(d);
+
+                    });
+
+
+                } else {
+
+                    lista.innerHTML =
+                        '<p style="color:var(--text-muted);text-align:center;">Sin transacciones registradas.</p>';
+
+                    document.getElementById(
+                        'userOps'
+                    ).innerText = "0";
+
+                }
+
+
+            } catch (err) {
+
+                lista.innerHTML =
+                    '<p style="color:var(--text-muted);text-align:center;">No se pudo cargar el historial.</p>';
 
             }
 
+        };
+
+
+        /* =========================================================
+           BALANCE
+        ========================================================= */
+
+        window.recalcularBalanceUsuario = function() { 
 
             const totalUSD =
                 tokensActualesUsuario *
                 PRECIO_TOKEN_USD;
 
 
-            const selectedCurrency =
+            const currencySelect =
                 document.getElementById(
-                    "currencySelect"
-                ).value;
+                    'currencySelect'
+                );
 
 
             const userBalanceElem =
                 document.getElementById(
-                    "userBalanceUSD"
+                    'userBalanceUSD'
                 );
 
 
             const profitElem =
                 document.getElementById(
-                    "userProfit"
+                    'userProfit'
                 );
 
 
-            if (selectedCurrency === "USD") {
+            if (
+                !currencySelect ||
+                !userBalanceElem ||
+                !profitElem
+            ) {
 
-                userBalanceElem.innerText =
-                    "$" +
-                    window.formatearMoneda(
-                        totalUSD
-                    ) +
-                    " USD";
-
-
-                profitElem.innerText =
-                    "0.00% ($0.00)";
+                return;
 
             }
 
 
-            else if (
-                selectedCurrency === "USDT"
+            const selectedCurrency =
+                currencySelect.value;
+
+
+            const gananciaUSD =
+                totalUSD *
+                (CAMBIO_24H_PORCENTAJE / 100);
+
+
+            if (selectedCurrency === 'USD') {
+
+                userBalanceElem.innerText =
+                    '$' +
+                    window.formatearMoneda(
+                        totalUSD
+                    ) +
+                    ' USD';
+
+
+                profitElem.innerText =
+                    `${CAMBIO_24H_PORCENTAJE >= 0 ? '+' : ''}${CAMBIO_24H_PORCENTAJE.toFixed(2)}% ($${window.formatearMoneda(gananciaUSD)})`;
+
+
+            } else if (
+                selectedCurrency === 'USDT'
             ) {
 
                 userBalanceElem.innerText =
                     window.formatearMoneda(
                         totalUSD
                     ) +
-                    " USDT";
+                    ' USDT';
 
 
                 profitElem.innerText =
-                    "0.00% (" +
-                    window.formatearMoneda(
-                        totalUSD * 0
-                    ) +
-                    " USDT)";
-
-            }
+                    `${CAMBIO_24H_PORCENTAJE >= 0 ? '+' : ''}${CAMBIO_24H_PORCENTAJE.toFixed(2)}% (${window.formatearMoneda(gananciaUSD)} USDT)`;
 
 
-            else if (
-                selectedCurrency === "BNB"
+            } else if (
+                selectedCurrency === 'BNB'
             ) {
 
                 const totalBNB =
                     PRECIO_BNB_USD > 0
-                        ? totalUSD / PRECIO_BNB_USD
-                        : 0;
+                    ? totalUSD /
+                      PRECIO_BNB_USD
+                    : 0;
+
+
+                const gananciaBNB =
+                    PRECIO_BNB_USD > 0
+                    ? gananciaUSD /
+                      PRECIO_BNB_USD
+                    : 0;
 
 
                 userBalanceElem.innerText =
@@ -2455,25 +2664,26 @@
                         totalBNB,
                         8
                     ) +
-                    " BNB";
+                    ' BNB';
 
 
                 profitElem.innerText =
-                    "0.00% (0.00 BNB)";
+                    `${CAMBIO_24H_PORCENTAJE >= 0 ? '+' : ''}${CAMBIO_24H_PORCENTAJE.toFixed(2)}% (${window.formatearMoneda(gananciaBNB, 8)} BNB)`;
 
             }
 
         };
 
 
-        /* ============================================================
-           ASEGURAR BNB
-        ============================================================ */
+        /* =========================================================
+           RED BNB
+        ========================================================= */
 
         window.asegurarRedBNB = async function() {
 
             if (
-                typeof window.ethereum !== "undefined"
+                typeof window.ethereum !==
+                'undefined'
             ) {
 
                 try {
@@ -2481,12 +2691,11 @@
                     await window.ethereum.request({
 
                         method:
-                            "wallet_switchEthereumChain",
+                            'wallet_switchEthereumChain',
 
                         params: [
                             {
-                                chainId:
-                                    "0x38"
+                                chainId: '0x38'
                             }
                         ]
 
@@ -2495,7 +2704,8 @@
                 } catch (switchError) {
 
                     if (
-                        switchError.code === 4902
+                        switchError.code ===
+                        4902
                     ) {
 
                         try {
@@ -2503,24 +2713,25 @@
                             await window.ethereum.request({
 
                                 method:
-                                    "wallet_addEthereumChain",
+                                    'wallet_addEthereumChain',
 
                                 params: [
+
                                     {
 
                                         chainId:
-                                            "0x38",
+                                            '0x38',
 
                                         chainName:
-                                            "BNB Smart Chain Mainnet",
+                                            'BNB Smart Chain Mainnet',
 
                                         nativeCurrency: {
 
                                             name:
-                                                "BNB",
+                                                'BNB',
 
                                             symbol:
-                                                "BNB",
+                                                'BNB',
 
                                             decimals:
                                                 18
@@ -2532,10 +2743,11 @@
 
                                         blockExplorerUrls:
                                             [
-                                                "https://bscscan.com/"
+                                                'https://bscscan.com/'
                                             ]
 
                                     }
+
                                 ]
 
                             });
@@ -2551,1549 +2763,1016 @@
         };
 
 
-        /* ============================================================
-           APROBACIÓN UNIVERSAL ROUTER
-        ============================================================ */
+        /* =========================================================
+           ENVÍO DE TOKENS
+        ========================================================= */
 
-        async function aprobarTokenParaUniversalRouter(
-            tokenAddress,
-            owner,
-            signer
-        ) {
+        window.ejecutarEnvioTokensWeb3 = async function() {
 
-            const token =
-                new ethers.Contract(
-                    tokenAddress,
-                    ERC20_ABI,
-                    signer
+            const destino =
+                document.getElementById(
+                    'sendDestinationAddress'
+                ).value.trim();
+
+
+            const cantidadStr =
+                document.getElementById(
+                    'sendTokenAmount'
+                ).value.trim();
+
+
+            const cantidad =
+                parseFloat(
+                    cantidadStr
                 );
 
-
-            const allowance =
-                await token.allowance(
-                    owner,
-                    PANCAKE_INFINITY_UNIVERSAL_ROUTER
-                );
-
-
-            const amountToApprove =
-                ethers.constants.MaxUint256;
-
-
-            /*
-             * Solo solicita aprobación si es necesaria.
-             */
 
             if (
-                allowance.lt(
-                    ethers.utils.parseUnits(
-                        "1000000000",
-                        18
-                    )
+                !destino ||
+                !ethers.utils.isAddress(
+                    destino
                 )
             ) {
 
-                alert(
-                    "Debes aprobar " +
-                    (
-                        tokenAddress.toLowerCase() ===
-                        USDT_BSC_ADDRESS.toLowerCase()
-                            ? "USDT"
-                            : "NEXK"
-                    ) +
-                    " para PancakeSwap."
+                return alert(
+                    "Ingresa una dirección de destino válida (0x...)."
                 );
-
-
-                const approveTx =
-                    await token.approve(
-                        PANCAKE_INFINITY_UNIVERSAL_ROUTER,
-                        amountToApprove
-                    );
-
-
-                await approveTx.wait();
-
-            }
-
-        }
-
-
-        /* ============================================================
-           CREAR TOKENS PARA SMART ROUTER
-        ============================================================ */
-
-        function crearTokenNEXK() {
-
-            return new Token(
-                ChainId.BSC,
-                TOKEN_CONTRACT_ADDRESS,
-                NEXK_DECIMALS,
-                "NEXK",
-                "NEXK Token"
-            );
-
-        }
-
-
-        function crearTokenUSDT() {
-
-            return new Token(
-                ChainId.BSC,
-                USDT_BSC_ADDRESS,
-                USDT_DECIMALS,
-                "USDT",
-                "Tether USD"
-            );
-
-        }
-
-
-        /* ============================================================
-           OBTENER RUTA REAL DE PANCAKESWAP
-        ============================================================ */
-
-        async function obtenerTradeReal(
-            monedaEntrada,
-            amountRaw,
-            walletAddress
-        ) {
-
-            const NEXK =
-                crearTokenNEXK();
-
-            const USDT =
-                crearTokenUSDT();
-
-            const BNB =
-                Native.onChain(
-                    ChainId.BSC
-                );
-
-
-            let currencyIn;
-            let currencyOut;
-
-
-            if (monedaEntrada === "BNB") {
-
-                currencyIn = BNB;
-                currencyOut = NEXK;
-
-            }
-
-            else if (monedaEntrada === "USDT") {
-
-                currencyIn = USDT;
-                currencyOut = NEXK;
-
-            }
-
-            else if (monedaEntrada === "NEXK") {
-
-                currencyIn = NEXK;
-
-                /*
-                 * En este caso amountRaw es NEXK.
-                 * El destino se determina en el parámetro siguiente.
-                 */
-
-            }
-
-
-            const amountIn =
-                CurrencyAmount.fromRawAmount(
-                    currencyIn,
-                    amountRaw
-                );
-
-
-            /*
-             * Candidate pools:
-             *
-             * V2
-             * StableSwap
-             * V3 / Infinity
-             */
-
-            const candidatePromises = [];
-
-
-            try {
-
-                candidatePromises.push(
-                    SmartRouter.getV2CandidatePools({
-
-                        onChainProvider:
-                            () => pancakePublicClient,
-
-                        currencyA:
-                            currencyIn,
-
-                        currencyB:
-                            currencyOut
-
-                    })
-                );
-
-            } catch (e) {}
-
-
-            try {
-
-                candidatePromises.push(
-                    SmartRouter.getStableCandidatePools({
-
-                        onChainProvider:
-                            () => pancakePublicClient,
-
-                        currencyA:
-                            currencyIn,
-
-                        currencyB:
-                            currencyOut
-
-                    })
-                );
-
-            } catch (e) {}
-
-
-            try {
-
-                candidatePromises.push(
-                    SmartRouter.getV3CandidatePools({
-
-                        onChainProvider:
-                            () => pancakePublicClient,
-
-                        subgraphProvider:
-                            undefined,
-
-                        currencyA:
-                            currencyIn,
-
-                        currencyB:
-                            currencyOut
-
-                    })
-                );
-
-            } catch (e) {}
-
-
-            /*
-             * Infinity candidate pools.
-             */
-
-            try {
-
-                candidatePromises.push(
-                    InfinityRouter.getV3CandidatePools({
-
-                        clientProvider:
-                            () => pancakePublicClient,
-
-                        currencyA:
-                            currencyIn,
-
-                        currencyB:
-                            currencyOut
-
-                    })
-                );
-
-            } catch (e) {}
-
-
-            const results =
-                await Promise.allSettled(
-                    candidatePromises
-                );
-
-
-            const pools = [];
-
-
-            for (
-                const result
-                of results
-            ) {
-
-                if (
-                    result.status === "fulfilled" &&
-                    Array.isArray(result.value)
-                ) {
-
-                    pools.push(
-                        ...result.value
-                    );
-
-                }
 
             }
 
 
             if (
-                pools.length === 0
+                !cantidadStr ||
+                isNaN(cantidad) ||
+                cantidad <= 0
             ) {
 
-                throw new Error(
-                    "PancakeSwap no encontró pools para esta operación."
+                return alert(
+                    "Ingresa una cantidad válida de tokens a enviar."
                 );
 
             }
 
 
-            /*
-             * InfinityRouter busca la mejor operación
-             * incluyendo pools Infinity.
-             */
+            if (
+                typeof window.ethereum ===
+                'undefined'
+            ) {
 
-            const trade =
-                await InfinityRouter.getBestTrade(
-
-                    amountIn,
-
-                    currencyOut,
-
-                    TradeType.EXACT_INPUT,
-
-                    {
-
-                        gasPriceWei:
-                            () =>
-                                pancakePublicClient.getGasPrice(),
-
-                        candidatePools:
-                            pools
-
-                    }
-
-                );
-
-
-            if (!trade) {
-
-                throw new Error(
-                    "No existe una ruta de intercambio disponible."
+                return alert(
+                    "Abre esta página desde tu billetera (MetaMask o Trust Wallet)."
                 );
 
             }
 
 
-            return trade;
+            try {
 
-        }
-
-
-        /* ============================================================
-           EJECUTAR COMPRA REAL
-        ============================================================ */
-
-        window.ejecutarCompraTokensWeb3 =
-            async function() {
-
-                const moneda =
-                    document.getElementById(
-                        "buyPayCurrency"
-                    ).value;
+                await window.asegurarRedBNB();
 
 
-                const montoStr =
-                    document.getElementById(
-                        "buyPayAmount"
-                    ).value.trim();
-
-
-                if (
-                    !montoStr ||
-                    Number(montoStr) <= 0
-                ) {
-
-                    return alert(
-                        "Introduce un monto de compra válido."
-                    );
-
-                }
-
-
-                if (
-                    typeof window.ethereum ===
-                    "undefined"
-                ) {
-
-                    return alert(
-                        "Abre esta página desde MetaMask o Trust Wallet."
-                    );
-
-                }
-
-
-                try {
-
-                    await window.asegurarRedBNB();
-
-
-                    const provider =
-                        new ethers.providers.Web3Provider(
-                            window.ethereum
-                        );
-
-
-                    await provider.send(
-                        "eth_requestAccounts",
-                        []
+                const provider =
+                    new ethers.providers.Web3Provider(
+                        window.ethereum
                     );
 
 
-                    const signer =
-                        provider.getSigner();
+                await provider.send(
+                    "eth_requestAccounts",
+                    []
+                );
 
 
-                    const walletUser =
-                        await signer.getAddress();
+                const signer =
+                    provider.getSigner();
 
 
-                    await cargarDecimalesTokens();
+                const walletUser =
+                    await signer.getAddress();
 
 
-                    /*
-                     * Convertimos el monto a unidades reales.
-                     */
-
-                    const amountIn =
-                        moneda === "BNB"
-                            ? ethers.utils.parseEther(
-                                  montoStr
-                              )
-                            : ethers.utils.parseUnits(
-                                  montoStr,
-                                  USDT_DECIMALS
-                              );
-
-
-                    /*
-                     * Recalculamos la ruta justo antes
-                     * de enviar.
-                     *
-                     * Esto evita utilizar una cotización vieja.
-                     */
-
-                    alert(
-                        "Buscando la mejor ruta real en PancakeSwap..."
-                    );
-
-
-                    let trade;
-
-
-                    if (moneda === "BNB") {
-
-                        trade =
-                            await obtenerTradeReal(
-                                "BNB",
-                                amountIn.toString(),
-                                walletUser
-                            );
-
-                    } else {
-
-                        /*
-                         * USDT necesita aprobación.
-                         */
-
-                        await aprobarTokenParaUniversalRouter(
-                            USDT_BSC_ADDRESS,
-                            walletUser,
-                            signer
-                        );
-
-
-                        trade =
-                            await obtenerTradeReal(
-                                "USDT",
-                                amountIn.toString(),
-                                walletUser
-                            );
-
-                    }
-
-
-                    /*
-                     * 1% de slippage.
-                     *
-                     * Se utiliza el trade real,
-                     * NO el precio de pantalla.
-                     */
-
-                    const slippage =
-                        new Percent(
-                            100,
-                            10000
-                        );
-
-
-                    const deadline =
-                        BigInt(
-                            Math.floor(
-                                Date.now() / 1000
-                            ) + 60 * 20
-                        );
-
-
-                    /*
-                     * Universal Router de PancakeSwap.
-                     */
-
-                    const encoded =
-                        PancakeSwapUniversalRouter
-                            .swapERC20CallParameters(
-                                trade,
-                                {
-
-                                    slippageTolerance:
-                                        slippage,
-
-                                    recipient:
-                                        walletUser,
-
-                                    deadlineOrPreviousBlockhash:
-                                        deadline
-
-                                }
-                            );
-
-
-                    const calldata =
-                        encoded.calldata;
-
-
-                    const value =
-                        BigInt(
-                            encoded.value.toString()
-                        );
-
-
-                    /*
-                     * Simulación básica antes de enviar.
-                     */
-
-                    try {
-
-                        await pancakePublicClient.call({
-
-                            to:
-                                PANCAKE_INFINITY_UNIVERSAL_ROUTER,
-
-                            data:
-                                calldata,
-
-                            value:
-                                value,
-
-                            account:
-                                walletUser
-
-                        });
-
-                    } catch (simulationError) {
-
-                        console.warn(
-                            "La simulación devolvió una advertencia:",
-                            simulationError
-                        );
-
-                    }
-
-
-                    alert(
-                        "Confirma la compra en tu billetera..."
-                    );
-
-
-                    const tx =
-                        await signer.sendTransaction({
-
-                            to:
-                                PANCAKE_INFINITY_UNIVERSAL_ROUTER,
-
-                            data:
-                                calldata,
-
-                            value:
-                                ethers.BigNumber.from(
-                                    value.toString()
-                                )
-
-                        });
-
-
-                    alert(
-                        "Compra enviada. Esperando confirmación..."
-                    );
-
-
-                    await tx.wait();
-
-
-                    alert(
-                        "¡Compra de NEXK completada correctamente en BNB Smart Chain!"
-                    );
-
-
-                    window.cerrarModal(
-                        "buyTokensModal"
-                    );
-
-
-                    document.getElementById(
-                        "buyPayAmount"
-                    ).value = "";
-
-
-                    await window.consultarSaldoOnChain(
-                        walletUser
-                    );
-
-
-                    await window.actualizarPrecioTokenEnVivo();
-
-
-                } catch (error) {
-
-                    console.error(
-                        "Error en compra NEXK:",
-                        error
-                    );
-
-
-                    const mensaje =
-                        error?.reason ||
-                        error?.shortMessage ||
-                        error?.message ||
-                        "La operación fue cancelada o no pudo ejecutarse.";
-
-
-                    alert(
-                        "No se pudo completar la compra:\n\n" +
-                        mensaje
-                    );
-
-                }
-
-            };
-
-
-        /* ============================================================
-           EJECUTAR VENTA REAL
-        ============================================================ */
-
-        window.ejecutarVentaTokensWeb3 =
-            async function() {
-
-                const moneda =
-                    document.getElementById(
-                        "sellReceiveCurrency"
-                    ).value;
-
-
-                const cantidadStr =
-                    document.getElementById(
-                        "sellNexkAmount"
-                    ).value.trim();
-
-
-                if (
-                    !cantidadStr ||
-                    Number(cantidadStr) <= 0
-                ) {
-
-                    return alert(
-                        "Introduce una cantidad válida de NEXK."
-                    );
-
-                }
-
-
-                if (
-                    typeof window.ethereum ===
-                    "undefined"
-                ) {
-
-                    return alert(
-                        "Abre esta página desde MetaMask o Trust Wallet."
-                    );
-
-                }
-
-
-                try {
-
-                    await window.asegurarRedBNB();
-
-
-                    const provider =
-                        new ethers.providers.Web3Provider(
-                            window.ethereum
-                        );
-
-
-                    await provider.send(
-                        "eth_requestAccounts",
-                        []
-                    );
-
-
-                    const signer =
-                        provider.getSigner();
-
-
-                    const walletUser =
-                        await signer.getAddress();
-
-
-                    await cargarDecimalesTokens();
-
-
-                    const amountIn =
-                        ethers.utils.parseUnits(
-                            cantidadStr,
-                            NEXK_DECIMALS
-                        );
-
-
-                    /*
-                     * Primero comprobamos el balance.
-                     */
-
-                    const tokenContract =
-                        new ethers.Contract(
-                            TOKEN_CONTRACT_ADDRESS,
-                            ERC20_ABI,
-                            provider
-                        );
-
-
-                    const balance =
-                        await tokenContract.balanceOf(
-                            walletUser
-                        );
-
-
-                    if (
-                        balance.lt(amountIn)
-                    ) {
-
-                        return alert(
-                            "No tienes suficiente NEXK en tu billetera."
-                        );
-
-                    }
-
-
-                    /*
-                     * Aprobamos NEXK al Universal Router.
-                     */
-
-                    await aprobarTokenParaUniversalRouter(
+                const contract =
+                    new ethers.Contract(
                         TOKEN_CONTRACT_ADDRESS,
-                        walletUser,
+                        ERC20_ABI,
                         signer
                     );
 
 
-                    alert(
-                        "Buscando la mejor ruta real para vender NEXK..."
+                const decimales =
+                    await obtenerDecimalesNEXK(
+                        provider
                     );
 
 
-                    const NEXK =
-                        crearTokenNEXK();
-
-
-                    const USDT =
-                        crearTokenUSDT();
-
-
-                    const BNB =
-                        Native.onChain(
-                            ChainId.BSC
-                        );
-
-
-                    const amountCurrency =
-                        CurrencyAmount.fromRawAmount(
-                            NEXK,
-                            amountIn.toString()
-                        );
-
-
-                    let currencyOut;
-
-
-                    if (
-                        moneda === "BNB"
-                    ) {
-
-                        currencyOut =
-                            BNB;
-
-                    } else {
-
-                        currencyOut =
-                            USDT;
-
-                    }
-
-
-                    /*
-                     * Candidate pools.
-                     */
-
-                    const poolPromises = [];
-
-
-                    try {
-
-                        poolPromises.push(
-                            SmartRouter.getV2CandidatePools({
-
-                                onChainProvider:
-                                    () => pancakePublicClient,
-
-                                currencyA:
-                                    NEXK,
-
-                                currencyB:
-                                    currencyOut
-
-                            })
-                        );
-
-                    } catch (e) {}
-
-
-                    try {
-
-                        poolPromises.push(
-                            SmartRouter.getStableCandidatePools({
-
-                                onChainProvider:
-                                    () => pancakePublicClient,
-
-                                currencyA:
-                                    NEXK,
-
-                                currencyB:
-                                    currencyOut
-
-                            })
-                        );
-
-                    } catch (e) {}
-
-
-                    try {
-
-                        poolPromises.push(
-                            SmartRouter.getV3CandidatePools({
-
-                                onChainProvider:
-                                    () => pancakePublicClient,
-
-                                subgraphProvider:
-                                    undefined,
-
-                                currencyA:
-                                    NEXK,
-
-                                currencyB:
-                                    currencyOut
-
-                            })
-                        );
-
-                    } catch (e) {}
-
-
-                    try {
-
-                        poolPromises.push(
-                            InfinityRouter.getV3CandidatePools({
-
-                                clientProvider:
-                                    () => pancakePublicClient,
-
-                                currencyA:
-                                    NEXK,
-
-                                currencyB:
-                                    currencyOut
-
-                            })
-                        );
-
-                    } catch (e) {}
-
-
-                    const poolResults =
-                        await Promise.allSettled(
-                            poolPromises
-                        );
-
-
-                    const pools = [];
-
-
-                    for (
-                        const result
-                        of poolResults
-                    ) {
-
-                        if (
-                            result.status === "fulfilled" &&
-                            Array.isArray(result.value)
-                        ) {
-
-                            pools.push(
-                                ...result.value
-                            );
-
-                        }
-
-                    }
-
-
-                    if (
-                        pools.length === 0
-                    ) {
-
-                        throw new Error(
-                            "No hay pools disponibles para NEXK/" +
-                            moneda
-                        );
-
-                    }
-
-
-                    /*
-                     * Mejor ruta.
-                     */
-
-                    const trade =
-                        await InfinityRouter.getBestTrade(
-
-                            amountCurrency,
-
-                            currencyOut,
-
-                            TradeType.EXACT_INPUT,
-
-                            {
-
-                                gasPriceWei:
-                                    () =>
-                                        pancakePublicClient.getGasPrice(),
-
-                                candidatePools:
-                                    pools
-
-                            }
-
-                        );
-
-
-                    if (!trade) {
-
-                        throw new Error(
-                            "PancakeSwap no encontró una ruta de venta."
-                        );
-
-                    }
-
-
-                    /*
-                     * Slippage 1%.
-                     */
-
-                    const slippage =
-                        new Percent(
-                            100,
-                            10000
-                        );
-
-
-                    const deadline =
-                        BigInt(
-                            Math.floor(
-                                Date.now() / 1000
-                            ) + 60 * 20
-                        );
-
-
-                    /*
-                     * Calldata real del Universal Router.
-                     */
-
-                    const encoded =
-                        PancakeSwapUniversalRouter
-                            .swapERC20CallParameters(
-                                trade,
-                                {
-
-                                    slippageTolerance:
-                                        slippage,
-
-                                    recipient:
-                                        walletUser,
-
-                                    deadlineOrPreviousBlockhash:
-                                        deadline
-
-                                }
-                            );
-
-
-                    const calldata =
-                        encoded.calldata;
-
-
-                    const value =
-                        BigInt(
-                            encoded.value.toString()
-                        );
-
-
-                    /*
-                     * Simulación.
-                     */
-
-                    try {
-
-                        await pancakePublicClient.call({
-
-                            to:
-                                PANCAKE_INFINITY_UNIVERSAL_ROUTER,
-
-                            data:
-                                calldata,
-
-                            value:
-                                value,
-
-                            account:
-                                walletUser
-
-                        });
-
-                    } catch (simulationError) {
-
-                        console.warn(
-                            "Advertencia de simulación:",
-                            simulationError
-                        );
-
-                    }
-
-
-                    alert(
-                        "Confirma la venta de NEXK en tu billetera..."
+                const parsedAmount =
+                    ethers.utils.parseUnits(
+                        cantidadStr,
+                        decimales
                     );
 
 
-                    const tx =
-                        await signer.sendTransaction({
-
-                            to:
-                                PANCAKE_INFINITY_UNIVERSAL_ROUTER,
-
-                            data:
-                                calldata,
-
-                            value:
-                                ethers.BigNumber.from(
-                                    value.toString()
-                                )
-
-                        });
+                alert(
+                    "Confirma el envío en tu billetera..."
+                );
 
 
-                    alert(
-                        "Venta enviada. Esperando confirmación..."
+                const tx =
+                    await contract.transfer(
+                        destino,
+                        parsedAmount
                     );
 
 
-                    await tx.wait();
+                alert(
+                    "Procesando envío en la cadena BNB Smart Chain..."
+                );
 
 
-                    alert(
-                        "¡Venta de NEXK completada correctamente en BNB Smart Chain!"
-                    );
+                await tx.wait();
 
 
-                    window.cerrarModal(
-                        "sellTokensModal"
-                    );
+                alert(
+                    "¡Envío completado exitosamente!"
+                );
 
 
-                    document.getElementById(
-                        "sellNexkAmount"
-                    ).value = "";
+                window.cerrarModal(
+                    'sendTokensModal'
+                );
 
 
-                    await window.consultarSaldoOnChain(
-                        walletUser
-                    );
+                document.getElementById(
+                    'sendDestinationAddress'
+                ).value = '';
 
 
-                    await window.actualizarPrecioTokenEnVivo();
+                document.getElementById(
+                    'sendTokenAmount'
+                ).value = '';
 
 
-                } catch (error) {
-
-                    console.error(
-                        "Error en venta NEXK:",
-                        error
-                    );
+                window.consultarSaldoOnChain(
+                    walletUser
+                );
 
 
-                    const mensaje =
-                        error?.reason ||
-                        error?.shortMessage ||
-                        error?.message ||
-                        "La operación fue cancelada o no pudo ejecutarse.";
+            } catch (error) {
+
+                console.error(
+                    "Error en envío:",
+                    error
+                );
 
 
-                    alert(
-                        "No se pudo completar la venta:\n\n" +
-                        mensaje
-                    );
-
-                }
-
-            };
-
-
-        /* ============================================================
-           ENVÍO DIRECTO DE NEXK
-        ============================================================ */
-
-        window.ejecutarEnvioTokensWeb3 =
-            async function() {
-
-                const destino =
-                    document.getElementById(
-                        "sendDestinationAddress"
-                    ).value.trim();
-
-
-                const cantidadStr =
-                    document.getElementById(
-                        "sendTokenAmount"
-                    ).value.trim();
-
-
-                const cantidad =
-                    parseFloat(
-                        cantidadStr
-                    );
-
-
-                if (
-                    !destino ||
-                    !ethers.utils.isAddress(
-                        destino
+                alert(
+                    "No se pudo completar el envío: " +
+                    (
+                        error.reason ||
+                        error.message ||
+                        "Error RPC o firma cancelada."
                     )
-                ) {
+                );
 
-                    return alert(
-                        "Ingresa una dirección de destino válida (0x...)."
+            }
+
+        };
+
+
+        /* =========================================================
+           COMPRAR NEXK
+           
+           IMPORTANTE:
+           Primero se consulta una cotización REAL y fresca.
+           Después se abre PancakeSwap con la operación preparada.
+           La firma final ocurre en MetaMask/Trust Wallet.
+        ========================================================= */
+
+        window.ejecutarCompraTokensWeb3 = async function() {
+
+            const moneda =
+                document.getElementById(
+                    'buyPayCurrency'
+                ).value;
+
+
+            const montoGastoStr =
+                document.getElementById(
+                    'buyPayAmount'
+                ).value.trim();
+
+
+            const montoGasto =
+                parseFloat(
+                    montoGastoStr
+                );
+
+
+            if (
+                !montoGastoStr ||
+                isNaN(montoGasto) ||
+                montoGasto <= 0
+            ) {
+
+                return alert(
+                    "Introduce un monto de compra válido."
+                );
+
+            }
+
+
+            if (
+                typeof window.ethereum ===
+                'undefined'
+            ) {
+
+                return alert(
+                    "Abre esta página desde el navegador interno de tu billetera."
+                );
+
+            }
+
+
+            try {
+
+                await window.asegurarRedBNB();
+
+
+                const provider =
+                    new ethers.providers.Web3Provider(
+                        window.ethereum
                     );
 
-                }
+
+                await provider.send(
+                    "eth_requestAccounts",
+                    []
+                );
 
 
-                if (
-                    !cantidadStr ||
-                    isNaN(cantidad) ||
-                    cantidad <= 0
-                ) {
-
-                    return alert(
-                        "Ingresa una cantidad válida de tokens a enviar."
-                    );
-
-                }
+                const walletUser =
+                    await provider
+                        .getSigner()
+                        .getAddress();
 
 
-                if (
-                    typeof window.ethereum ===
-                    "undefined"
-                ) {
-
-                    return alert(
-                        "Abre esta página desde tu billetera."
-                    );
-
-                }
-
-
-                try {
-
-                    await window.asegurarRedBNB();
-
-
-                    const provider =
-                        new ethers.providers.Web3Provider(
-                            window.ethereum
-                        );
-
-
-                    await provider.send(
-                        "eth_requestAccounts",
-                        []
+                const decimales =
+                    await obtenerDecimalesNEXK(
+                        provider
                     );
 
 
-                    const signer =
-                        provider.getSigner();
+                let tokenIn;
+
+                let rawAmount;
 
 
-                    const walletUser =
-                        await signer.getAddress();
+                if (moneda === "BNB") {
+
+                    tokenIn =
+                        "BNB";
 
 
-                    await cargarDecimalesTokens();
+                    rawAmount =
+                        ethers.utils.parseEther(
+                            montoGastoStr
+                        ).toString();
+
+                } else {
+
+                    tokenIn =
+                        USDT_BSC_ADDRESS;
 
 
-                    const contract =
-                        new ethers.Contract(
-                            TOKEN_CONTRACT_ADDRESS,
-                            ERC20_ABI,
-                            signer
-                        );
-
-
-                    const parsedAmount =
+                    rawAmount =
                         ethers.utils.parseUnits(
-                            cantidadStr,
-                            NEXK_DECIMALS
-                        );
+                            montoGastoStr,
+                            18
+                        ).toString();
+
+                }
 
 
-                    alert(
-                        "Confirma el envío en tu billetera..."
+                /*
+                 * Cotización fresca antes de ejecutar.
+                 */
+
+                const trade =
+                    await window.obtenerCotizacionPancake(
+                        tokenIn,
+                        TOKEN_CONTRACT_ADDRESS,
+                        rawAmount
                     );
 
 
-                    const tx =
-                        await contract.transfer(
-                            destino,
-                            parsedAmount
-                        );
-
-
-                    alert(
-                        "Procesando envío en BNB Smart Chain..."
-                    );
-
-
-                    await tx.wait();
-
-
-                    alert(
-                        "¡Envío completado exitosamente!"
-                    );
-
-
-                    window.cerrarModal(
-                        "sendTokensModal"
-                    );
-
-
-                    document.getElementById(
-                        "sendDestinationAddress"
-                    ).value = "";
-
-
-                    document.getElementById(
-                        "sendTokenAmount"
-                    ).value = "";
-
-
-                    window.consultarSaldoOnChain(
-                        walletUser
-                    );
-
-
-                } catch (error) {
-
-                    console.error(
-                        "Error en envío:",
-                        error
-                    );
-
-
-                    alert(
-                        "No se pudo completar el envío: " +
-                        (
-                            error.reason ||
-                            error.message ||
-                            "Error RPC o firma cancelada."
+                const tokensEstimados =
+                    parseFloat(
+                        ethers.utils.formatUnits(
+                            trade.outputAmount,
+                            decimales
                         )
                     );
 
+
+                if (
+                    !isFinite(tokensEstimados) ||
+                    tokensEstimados <= 0
+                ) {
+
+                    throw new Error(
+                        "PancakeSwap no encontró liquidez para esta operación."
+                    );
+
                 }
 
-            };
 
-
-        /* ============================================================
-           BALANCE ON-CHAIN
-        ============================================================ */
-
-        window.consultarSaldoOnChain =
-            async function(address) {
-
-                try {
-
-                    walletDireccionConectada =
-                        address;
-
-
-                    const provider =
-                        window.obtenerProveedorBSC();
-
-
-                    const contract =
-                        new ethers.Contract(
-                            TOKEN_CONTRACT_ADDRESS,
-                            ERC20_ABI,
-                            provider
-                        );
-
-
-                    const rawBalance =
-                        await contract.balanceOf(
-                            address
-                        );
-
-
-                    /*
-                     * Utilizamos los decimales reales.
-                     */
-
-                    const formattedBalance =
-                        parseFloat(
-                            ethers.utils.formatUnits(
-                                rawBalance,
-                                NEXK_DECIMALS
-                            )
-                        );
-
-
-                    tokensActualesUsuario =
-                        formattedBalance;
-
-
-                    document.getElementById(
-                        "userTokens"
-                    ).innerText =
+                const confirmar =
+                    confirm(
+                        "Cotización actual:\n\n" +
+                        "Entrada: " +
+                        montoGastoStr +
+                        " " +
+                        moneda +
+                        "\n" +
+                        "NEXK estimados: " +
                         window.formatearMoneda(
-                            formattedBalance
+                            tokensEstimados
                         ) +
-                        " NEXK";
-
-
-                    window.recalcularBalanceUsuario();
-
-
-                    window.cargarHistorialOnChainReal(
-                        address
+                        "\n\n" +
+                        "Se abrirá PancakeSwap para confirmar la operación en tu billetera.\n\n" +
+                        "¿Continuar?"
                     );
 
 
-                } catch (error) {
-
-                    console.error(
-                        "Error consultando balance:",
-                        error
-                    );
-
-                }
-
-            };
-
-
-        /* ============================================================
-           HISTORIAL BSC
-        ============================================================ */
-
-        window.cargarHistorialOnChainReal =
-            async function(address) {
-
-                const lista =
-                    document.getElementById(
-                        "historialLista"
-                    );
-
-
-                if (!address) {
+                if (!confirmar) {
                     return;
                 }
 
 
-                try {
-
-                    lista.innerHTML =
-                        '<p style="color:var(--text-muted);text-align:center;">Cargando transacciones...</p>';
-
-
-                    const url =
-                        `https://api.bscscan.com/api?module=account&action=tokentx&contractaddress=${TOKEN_CONTRACT_ADDRESS}&address=${address}&page=1&offset=20&sort=desc`;
+                const inputCurrency =
+                    moneda === "BNB"
+                    ? "BNB"
+                    : USDT_BSC_ADDRESS;
 
 
-                    const res =
-                        await fetch(
-                            url
-                        );
+                const pancakeUrl =
+                    "https://pancakeswap.finance/swap" +
+                    "?chain=bsc" +
+                    "&inputCurrency=" +
+                    encodeURIComponent(
+                        inputCurrency
+                    ) +
+                    "&outputCurrency=" +
+                    encodeURIComponent(
+                        TOKEN_CONTRACT_ADDRESS
+                    ) +
+                    "&exactAmount=" +
+                    encodeURIComponent(
+                        montoGastoStr
+                    ) +
+                    "&exactField=input";
 
 
-                    const data =
-                        await res.json();
+                const nuevaVentana =
+                    window.open(
+                        pancakeUrl,
+                        "_blank"
+                    );
 
 
-                    if (
-                        data.status === "1" &&
-                        data.result &&
-                        data.result.length > 0
-                    ) {
+                if (!nuevaVentana) {
 
-                        lista.innerHTML = "";
-
-
-                        document.getElementById(
-                            "userOps"
-                        ).innerText =
-                            data.result.length.toString();
-
-
-                        data.result.forEach(
-                            tx => {
-
-                                const esRecibido =
-                                    tx.to.toLowerCase() ===
-                                    address.toLowerCase();
-
-
-                                const cantidad =
-                                    parseFloat(
-                                        ethers.utils.formatUnits(
-                                            tx.value,
-                                            parseInt(
-                                                tx.tokenDecimal ||
-                                                NEXK_DECIMALS
-                                            )
-                                        )
-                                    ).toFixed(2);
-
-
-                                const fecha =
-                                    new Date(
-                                        parseInt(
-                                            tx.timeStamp
-                                        ) * 1000
-                                    ).toLocaleString();
-
-
-                                const d =
-                                    document.createElement(
-                                        "div"
-                                    );
-
-
-                                d.className =
-                                    "historial-item";
-
-
-                                const tipoClase =
-                                    esRecibido
-                                        ? "tipo-compra"
-                                        : "tipo-venta";
-
-
-                                const signo =
-                                    esRecibido
-                                        ? "+"
-                                        : "-";
-
-
-                                const textoTipo =
-                                    esRecibido
-                                        ? "RECIBIDO"
-                                        : "ENVIADO";
-
-
-                                d.innerHTML = `
-
-                                    <div>
-
-                                        <span class="historial-tipo ${tipoClase}">
-                                            ${textoTipo}
-                                        </span>
-
-                                        <div style="font-size:11px;color:var(--text-muted);">
-                                            ${fecha}
-                                        </div>
-
-                                    </div>
-
-                                    <div style="font-weight:bold; color: ${
-                                        esRecibido
-                                            ? "var(--green-up)"
-                                            : "var(--red-down)"
-                                    };">
-                                        ${signo}${cantidad} NEXK
-                                    </div>
-                                `;
-
-
-                                lista.appendChild(
-                                    d
-                                );
-
-                            }
-                        );
-
-                    } else {
-
-                        lista.innerHTML =
-                            '<p style="color:var(--text-muted);text-align:center;">Sin transacciones registradas.</p>';
-
-
-                        document.getElementById(
-                            "userOps"
-                        ).innerText =
-                            "0";
-
-                    }
-
-
-                } catch (err) {
-
-                    lista.innerHTML =
-                        '<p style="color:var(--text-muted);text-align:center;">No se pudo cargar el historial.</p>';
+                    window.location.href =
+                        pancakeUrl;
 
                 }
 
-            };
+
+            } catch (error) {
+
+                console.error(
+                    "Error en cotización de compra:",
+                    error
+                );
 
 
-        /* ============================================================
-           AUTENTICACIÓN FIREBASE
-           SE MANTIENE LA LÓGICA ORIGINAL
-        ============================================================ */
+                alert(
+                    "No se pudo preparar la compra: " +
+                    (
+                        error.reason ||
+                        error.message ||
+                        "No existe una ruta disponible."
+                    )
+                );
+
+            }
+
+        };
+
+
+        /* =========================================================
+           VENDER NEXK
+        ========================================================= */
+
+        window.ejecutarVentaTokensWeb3 = async function() {
+
+            const moneda =
+                document.getElementById(
+                    'sellReceiveCurrency'
+                ).value;
+
+
+            const nexkAmountStr =
+                document.getElementById(
+                    'sellNexkAmount'
+                ).value.trim();
+
+
+            const nexkAmount =
+                parseFloat(
+                    nexkAmountStr
+                );
+
+
+            if (
+                !nexkAmountStr ||
+                isNaN(nexkAmount) ||
+                nexkAmount <= 0
+            ) {
+
+                return alert(
+                    "Introduce una cantidad válida de NEXK."
+                );
+
+            }
+
+
+            if (
+                typeof window.ethereum ===
+                'undefined'
+            ) {
+
+                return alert(
+                    "Abre esta página desde tu billetera."
+                );
+
+            }
+
+
+            try {
+
+                await window.asegurarRedBNB();
+
+
+                const provider =
+                    new ethers.providers.Web3Provider(
+                        window.ethereum
+                    );
+
+
+                await provider.send(
+                    "eth_requestAccounts",
+                    []
+                );
+
+
+                const walletUser =
+                    await provider
+                        .getSigner()
+                        .getAddress();
+
+
+                const decimales =
+                    await obtenerDecimalesNEXK(
+                        provider
+                    );
+
+
+                const amountRaw =
+                    ethers.utils.parseUnits(
+                        nexkAmountStr,
+                        decimales
+                    ).toString();
+
+
+                const tokenOut =
+                    moneda === "BNB"
+                    ? "BNB"
+                    : USDT_BSC_ADDRESS;
+
+
+                /*
+                 * Cotización fresca antes de ejecutar.
+                 */
+
+                const trade =
+                    await window.obtenerCotizacionPancake(
+                        TOKEN_CONTRACT_ADDRESS,
+                        tokenOut,
+                        amountRaw
+                    );
+
+
+                let resultado;
+
+
+                if (moneda === "BNB") {
+
+                    resultado =
+                        parseFloat(
+                            ethers.utils.formatEther(
+                                trade.outputAmount
+                            )
+                        );
+
+                } else {
+
+                    resultado =
+                        parseFloat(
+                            ethers.utils.formatUnits(
+                                trade.outputAmount,
+                                18
+                            )
+                        );
+
+                }
+
+
+                if (
+                    !isFinite(resultado) ||
+                    resultado <= 0
+                ) {
+
+                    throw new Error(
+                        "PancakeSwap no encontró una ruta de salida para NEXK."
+                    );
+
+                }
+
+
+                const confirmar =
+                    confirm(
+                        "Cotización actual:\n\n" +
+                        "NEXK a vender: " +
+                        nexkAmountStr +
+                        "\n" +
+                        "Recibirás aproximadamente: " +
+                        window.formatearMoneda(
+                            resultado,
+                            8
+                        ) +
+                        " " +
+                        moneda +
+                        "\n\n" +
+                        "Se abrirá PancakeSwap para confirmar la operación en tu billetera.\n\n" +
+                        "¿Continuar?"
+                    );
+
+
+                if (!confirmar) {
+                    return;
+                }
+
+
+                const outputCurrency =
+                    moneda === "BNB"
+                    ? "BNB"
+                    : USDT_BSC_ADDRESS;
+
+
+                const pancakeUrl =
+                    "https://pancakeswap.finance/swap" +
+                    "?chain=bsc" +
+                    "&inputCurrency=" +
+                    encodeURIComponent(
+                        TOKEN_CONTRACT_ADDRESS
+                    ) +
+                    "&outputCurrency=" +
+                    encodeURIComponent(
+                        outputCurrency
+                    ) +
+                    "&exactAmount=" +
+                    encodeURIComponent(
+                        nexkAmountStr
+                    ) +
+                    "&exactField=input";
+
+
+                const nuevaVentana =
+                    window.open(
+                        pancakeUrl,
+                        "_blank"
+                    );
+
+
+                if (!nuevaVentana) {
+
+                    window.location.href =
+                        pancakeUrl;
+
+                }
+
+
+            } catch (error) {
+
+                console.error(
+                    "Error en cotización de venta:",
+                    error
+                );
+
+
+                alert(
+                    "No se pudo preparar la venta: " +
+                    (
+                        error.reason ||
+                        error.message ||
+                        "No existe una ruta disponible."
+                    )
+                );
+
+            }
+
+        };
+
+
+        /* =========================================================
+           CONSULTAR BALANCE
+        ========================================================= */
+
+        window.consultarSaldoOnChain = async function(address) {
+
+            try {
+
+                walletDireccionConectada =
+                    address;
+
+
+                const provider =
+                    window.obtenerProveedorBSC();
+
+
+                const contract =
+                    new ethers.Contract(
+                        TOKEN_CONTRACT_ADDRESS,
+                        ERC20_ABI,
+                        provider
+                    );
+
+
+                const rawBalance =
+                    await contract.balanceOf(
+                        address
+                    );
+
+
+                const decimales =
+                    await obtenerDecimalesNEXK(
+                        provider
+                    );
+
+
+                const formattedBalance =
+                    parseFloat(
+                        ethers.utils.formatUnits(
+                            rawBalance,
+                            decimales
+                        )
+                    );
+
+
+                tokensActualesUsuario =
+                    formattedBalance;
+
+
+                document.getElementById(
+                    'userTokens'
+                ).innerText =
+                    window.formatearMoneda(
+                        formattedBalance
+                    ) +
+                    ' NEXK';
+
+
+                window.recalcularBalanceUsuario();
+
+                window.cargarHistorialOnChainReal(
+                    address
+                );
+
+
+            } catch (error) {
+
+                console.warn(
+                    "No se pudo consultar balance:",
+                    error
+                );
+
+            }
+
+        };
+
+
+        /* =========================================================
+           FIREBASE AUTH
+        ========================================================= */
+
+        async function guardarUsuarioFirestore(user) {
+
+            if (!user) {
+                return;
+            }
+
+
+            try {
+
+                const userRef =
+                    doc(
+                        db,
+                        "usuarios",
+                        user.uid
+                    );
+
+
+                const snap =
+                    await getDoc(
+                        userRef
+                    );
+
+
+                if (!snap.exists()) {
+
+                    await setDoc(
+                        userRef,
+                        {
+                            uid: user.uid,
+                            email: user.email || "",
+                            nombre: user.displayName || "",
+                            creado: serverTimestamp(),
+                            bloqueado: false
+                        }
+                    );
+
+                }
+
+            } catch (error) {
+
+                console.warn(
+                    "No se pudo guardar usuario:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        window.ejecutarRegistro = async function() {
+
+            const email =
+                document.getElementById(
+                    'authEmail'
+                ).value.trim();
+
+
+            const password =
+                document.getElementById(
+                    'authPassword'
+                ).value;
+
+
+            if (!email || !password) {
+
+                return alert(
+                    "Introduce correo y contraseña."
+                );
+
+            }
+
+
+            if (password.length < 6) {
+
+                return alert(
+                    "La contraseña debe tener al menos 6 caracteres."
+                );
+
+            }
+
+
+            try {
+
+                const credential =
+                    await createUserWithEmailAndPassword(
+                        auth,
+                        email,
+                        password
+                    );
+
+
+                await guardarUsuarioFirestore(
+                    credential.user
+                );
+
+
+                cerrarAuthModal();
+
+
+                alert(
+                    "Cuenta creada correctamente."
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Error registro:",
+                    error
+                );
+
+
+                alert(
+                    "No se pudo crear la cuenta: " +
+                    (
+                        error.message ||
+                        "Error de Firebase"
+                    )
+                );
+
+            }
+
+        };
+
+
+        window.ejecutarLogin = async function() {
+
+            const email =
+                document.getElementById(
+                    'authEmail'
+                ).value.trim();
+
+
+            const password =
+                document.getElementById(
+                    'authPassword'
+                ).value;
+
+
+            if (!email || !password) {
+
+                return alert(
+                    "Introduce correo y contraseña."
+                );
+
+            }
+
+
+            try {
+
+                await signInWithEmailAndPassword(
+                    auth,
+                    email,
+                    password
+                );
+
+
+                cerrarAuthModal();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Error login:",
+                    error
+                );
+
+
+                alert(
+                    "No se pudo iniciar sesión: " +
+                    (
+                        error.message ||
+                        "Correo o contraseña incorrectos."
+                    )
+                );
+
+            }
+
+        };
+
+
+        async function iniciarGoogle() {
+
+            try {
+
+                const result =
+                    await signInWithPopup(
+                        auth,
+                        googleProvider
+                    );
+
+
+                await guardarUsuarioFirestore(
+                    result.user
+                );
+
+
+                cerrarAuthModal();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Error Google:",
+                    error
+                );
+
+
+                alert(
+                    "No se pudo iniciar con Google: " +
+                    (
+                        error.message ||
+                        "Operación cancelada."
+                    )
+                );
+
+            }
+
+        }
+
+
+        async function iniciarApple() {
+
+            try {
+
+                const result =
+                    await signInWithPopup(
+                        auth,
+                        appleProvider
+                    );
+
+
+                await guardarUsuarioFirestore(
+                    result.user
+                );
+
+
+                cerrarAuthModal();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Error Apple:",
+                    error
+                );
+
+
+                alert(
+                    "No se pudo iniciar con Apple: " +
+                    (
+                        error.message ||
+                        "Operación cancelada."
+                    )
+                );
+
+            }
+
+        }
+
+
+        document.getElementById(
+            'btnGoogleWelcome'
+        ).addEventListener(
+            'click',
+            iniciarGoogle
+        );
+
+
+        document.getElementById(
+            'btnGoogleModal'
+        ).addEventListener(
+            'click',
+            iniciarGoogle
+        );
+
+
+        document.getElementById(
+            'btnAppleWelcome'
+        ).addEventListener(
+            'click',
+            iniciarApple
+        );
+
+
+        document.getElementById(
+            'btnAppleModal'
+        ).addEventListener(
+            'click',
+            iniciarApple
+        );
+
+
+        /* =========================================================
+           AUTH STATE
+        ========================================================= */
 
         onAuthStateChanged(
             auth,
@@ -4111,30 +3790,57 @@
                     );
 
 
-                    document.getElementById(
-                        "welcomeSection"
-                    ).style.display =
-                        "none";
+                    await guardarUsuarioFirestore(
+                        user
+                    );
 
 
                     document.getElementById(
-                        "appContent"
+                        'welcomeSection'
                     ).style.display =
-                        "block";
+                        'none';
+
+
+                    document.getElementById(
+                        'appContent'
+                    ).style.display =
+                        'block';
+
+
+                    document.getElementById(
+                        'authBtn'
+                    ).innerText =
+                        'Cuenta';
+
+
+                    document.getElementById(
+                        'helpBtn'
+                    ).style.display =
+                        'block';
+
+
+                    document.getElementById(
+                        'userDisplay'
+                    ).innerText =
+                        user.email ||
+                        user.displayName ||
+                        "Usuario";
 
 
                     if (
                         typeof window.ethereum !==
-                        "undefined"
+                        'undefined'
                     ) {
 
                         try {
 
                             const accounts =
-                                await window.ethereum.request({
-                                    method:
-                                        "eth_accounts"
-                                });
+                                await window.ethereum.request(
+                                    {
+                                        method:
+                                            'eth_accounts'
+                                    }
+                                );
 
 
                             if (
@@ -4147,26 +3853,26 @@
 
 
                                 document.getElementById(
-                                    "userDisplay"
+                                    'userDisplay'
                                 ).innerText =
-                                    walletDireccionConectada.substring(
+                                    accounts[0].substring(
                                         0,
                                         6
                                     ) +
                                     "..." +
-                                    walletDireccionConectada.substring(
+                                    accounts[0].substring(
                                         38
                                     );
 
 
                                 document.getElementById(
-                                    "walletWarningBanner"
+                                    'walletWarningBanner'
                                 ).style.display =
-                                    "none";
+                                    'none';
 
 
                                 window.consultarSaldoOnChain(
-                                    walletDireccionConectada
+                                    accounts[0]
                                 );
 
                             }
@@ -4175,15 +3881,12 @@
 
                     }
 
-                } else {
 
-                    /*
-                     * ESTA PARTE SE CONSERVA PARA AUTLOGIN/WALLETS.
-                     */
+                } else {
 
                     if (
                         typeof window.ethereum !==
-                            "undefined" ||
+                        'undefined' ||
                         localStorage.getItem(
                             "nexk_sesion_activa"
                         ) === "true" ||
@@ -4193,29 +3896,31 @@
                     ) {
 
                         document.getElementById(
-                            "welcomeSection"
+                            'welcomeSection'
                         ).style.display =
-                            "none";
+                            'none';
 
 
                         document.getElementById(
-                            "appContent"
+                            'appContent'
                         ).style.display =
-                            "block";
+                            'block';
 
 
                         if (
                             typeof window.ethereum !==
-                            "undefined"
+                            'undefined'
                         ) {
 
                             try {
 
                                 const accounts =
-                                    await window.ethereum.request({
-                                        method:
-                                            "eth_requestAccounts"
-                                    });
+                                    await window.ethereum.request(
+                                        {
+                                            method:
+                                                'eth_accounts'
+                                        }
+                                    );
 
 
                                 if (
@@ -4228,26 +3933,26 @@
 
 
                                     document.getElementById(
-                                        "userDisplay"
+                                        'userDisplay'
                                     ).innerText =
-                                        walletDireccionConectada.substring(
+                                        accounts[0].substring(
                                             0,
                                             6
                                         ) +
                                         "..." +
-                                        walletDireccionConectada.substring(
+                                        accounts[0].substring(
                                             38
                                         );
 
 
                                     document.getElementById(
-                                        "walletWarningBanner"
+                                        'walletWarningBanner'
                                     ).style.display =
-                                        "none";
+                                        'none';
 
 
                                     window.consultarSaldoOnChain(
-                                        walletDireccionConectada
+                                        accounts[0]
                                     );
 
                                 }
@@ -4266,15 +3971,33 @@
 
 
                     document.getElementById(
-                        "appContent"
+                        'appContent'
                     ).style.display =
-                        "none";
+                        'none';
 
 
                     document.getElementById(
-                        "welcomeSection"
+                        'welcomeSection'
                     ).style.display =
-                        "block";
+                        'block';
+
+
+                    document.getElementById(
+                        'authBtn'
+                    ).innerText =
+                        'Ingresar';
+
+
+                    document.getElementById(
+                        'helpBtn'
+                    ).style.display =
+                        'none';
+
+
+                    document.getElementById(
+                        'userDisplay'
+                    ).innerText =
+                        'Invitado';
 
                 }
 
@@ -4282,81 +4005,85 @@
         );
 
 
-        /* ============================================================
-           ONLOAD
-        ============================================================ */
+        /* =========================================================
+           CARGA INICIAL
+           
+           IMPORTANTE:
+           Las llamadas de red NO bloquean la carga de la página.
+        ========================================================= */
 
-        window.onload = async () => {
+        window.addEventListener(
+            'load',
+            () => {
 
-            if (
-                localStorage.getItem(
-                    "nexk_sesion_activa"
-                ) === "true" ||
-                window.location.search.includes(
-                    "autologin=true"
-                ) ||
-                typeof window.ethereum !==
-                    "undefined"
-            ) {
+                if (
+                    localStorage.getItem(
+                        "nexk_sesion_activa"
+                    ) === "true" ||
+                    window.location.search.includes(
+                        "autologin=true"
+                    ) ||
+                    typeof window.ethereum !==
+                    'undefined'
+                ) {
 
-                document.getElementById(
-                    "welcomeSection"
-                ).style.display =
-                    "none";
-
-
-                document.getElementById(
-                    "appContent"
-                ).style.display =
-                    "block";
-
-            } else {
-
-                document.getElementById(
-                    "appContent"
-                ).style.display =
-                    "none";
+                    document.getElementById(
+                        'welcomeSection'
+                    ).style.display =
+                        'none';
 
 
-                document.getElementById(
-                    "welcomeSection"
-                ).style.display =
-                    "block";
+                    document.getElementById(
+                        'appContent'
+                    ).style.display =
+                        'block';
+
+                } else {
+
+                    document.getElementById(
+                        'appContent'
+                    ).style.display =
+                        'none';
+
+
+                    document.getElementById(
+                        'welcomeSection'
+                    ).style.display =
+                        'block';
+
+                }
+
+
+                /*
+                 * Nunca esperamos estas consultas para mostrar
+                 * la página.
+                 */
+
+                window.asegurarRedBNB()
+                    .catch(() => {});
+
+
+                window.actualizarPrecioTokenEnVivo()
+                    .catch(() => {});
+
+
+                setInterval(
+                    () => {
+
+                        window.actualizarPrecioTokenEnVivo()
+                            .catch(() => {});
+
+                    },
+                    15000
+                );
 
             }
+        );
 
 
-            await cargarDecimalesTokens();
-
-
-            await window.asegurarRedBNB();
-
-
-            /*
-             * Primer precio real.
-             */
-
-            await window.actualizarPrecioTokenEnVivo();
-
-
-            /*
-             * Actualización cada 15 segundos.
-             *
-             * No usamos 12 segundos para evitar
-             * demasiadas solicitudes al router.
-             */
-
-            setInterval(
-                window.actualizarPrecioTokenEnVivo,
-                15000
-            );
-
-        };
-
-
-        /* ============================================================
+        /* =========================================================
            FIRESTORE CONFIG
-        ============================================================ */
+        ========================================================= */
 
         const docRefConfig =
             doc(
@@ -4370,402 +4097,573 @@
             docRefConfig,
             (snap) => {
 
-                if (
-                    snap.exists()
-                ) {
+                if (snap.exists()) {
 
                     const d =
                         snap.data();
 
 
-                    if (
-                        d.colorBotones
-                    ) {
+                    if (d.colorBotones) {
 
-                        document.documentElement.style.setProperty(
-                            "--primary-cyan",
-                            d.colorBotones
-                        );
+                        document.documentElement
+                            .style
+                            .setProperty(
+                                '--primary-cyan',
+                                d.colorBotones
+                            );
 
                     }
 
 
-                    document.getElementById(
-                        "realTradeSection"
-                    ).style.display =
-                        d.tradingHabilitado !==
-                        "no"
-                            ? "block"
-                            : "none";
+                    const tradeSection =
+                        document.getElementById(
+                            'realTradeSection'
+                        );
+
+
+                    if (tradeSection) {
+
+                        tradeSection.style.display =
+                            d.tradingHabilitado !== "no"
+                            ? 'block'
+                            : 'none';
+
+                    }
 
                 }
 
-            }
+            },
+            () => {}
         );
 
 
-        /* ============================================================
+        /* =========================================================
            HISTORIAL
-        ============================================================ */
+        ========================================================= */
 
-        window.toggleHistorial =
-            function() {
+        window.toggleHistorial = function() {
 
-                const div =
-                    document.getElementById(
-                        "historialLista"
-                    );
+            const div =
+                document.getElementById(
+                    'historialLista'
+                );
 
 
-                div.style.display =
-                    div.style.display === "none"
-                        ? "block"
-                        : "none";
+            div.style.display =
+                div.style.display === 'none'
+                ? 'block'
+                : 'none';
 
-            };
+        };
 
 
     </script>
 
 
     <!-- ========================================================= -->
-    <!-- FUNCIONES DE INTERFAZ / WALLET -->
+    <!-- FUNCIONES DE INTERFAZ -->
     <!-- ========================================================= -->
 
     <script>
 
-        window.abrirAuthModal =
-            function() {
+        /*
+         * Variable global para mantener compatibilidad
+         * con la conexión de billetera existente.
+         */
+        var walletDireccionConectada = null;
 
+
+        window.abrirAuthModal = function() {
+
+            document
+                .getElementById('authModal')
+                .classList
+                .add('show');
+
+        };
+
+
+        window.cerrarAuthModal = function() {
+
+            document
+                .getElementById('authModal')
+                .classList
+                .remove('show');
+
+        };
+
+
+        window.abrirHelpModal = function() {
+
+            document
+                .getElementById('helpModal')
+                .classList
+                .add('show');
+
+        };
+
+
+        window.cerrarHelpModal = function() {
+
+            document
+                .getElementById('helpModal')
+                .classList
+                .remove('show');
+
+        };
+
+
+        window.abrirLoginAdminModal = function() {
+
+            document
+                .getElementById('adminAuthModal')
+                .classList
+                .add('show');
+
+        };
+
+
+        window.cerrarAdminModal = function() {
+
+            document
+                .getElementById('adminModal')
+                .classList
+                .remove('show');
+
+        };
+
+
+        window.cerrarModal = function(id) {
+
+            const elemento =
+                document.getElementById(id);
+
+
+            if (elemento) {
+
+                elemento.classList.remove(
+                    'show'
+                );
+
+            }
+
+        };
+
+
+        /* =========================================================
+           ADMIN
+        ========================================================= */
+
+        window.validarCredencialesAdmin = function() {
+
+            const u =
                 document.getElementById(
-                    "authModal"
-                ).classList.add(
-                    "show"
-                );
-
-            };
+                    'adminUserInput'
+                ).value;
 
 
-        window.cerrarAuthModal =
-            function() {
-
+            const p =
                 document.getElementById(
-                    "authModal"
-                ).classList.remove(
-                    "show"
-                );
+                    'adminPassInput'
+                ).value;
 
-            };
 
-
-        window.abrirHelpModal =
-            function() {
-
-                document.getElementById(
-                    "helpModal"
-                ).classList.add(
-                    "show"
-                );
-
-            };
-
-
-        window.cerrarHelpModal =
-            function() {
-
-                document.getElementById(
-                    "helpModal"
-                ).classList.remove(
-                    "show"
-                );
-
-            };
-
-
-        window.abrirLoginAdminModal =
-            function() {
-
-                document.getElementById(
-                    "adminAuthModal"
-                ).classList.add(
-                    "show"
-                );
-
-            };
-
-
-        window.cerrarAdminModal =
-            function() {
-
-                document.getElementById(
-                    "adminModal"
-                ).classList.remove(
-                    "show"
-                );
-
-            };
-
-
-        window.cerrarModal =
-            function(id) {
-
-                document.getElementById(
-                    id
-                ).classList.remove(
-                    "show"
-                );
-
-            };
-
-
-        window.validarCredencialesAdmin =
-            function() {
-
-                const u =
-                    document.getElementById(
-                        "adminUserInput"
-                    ).value;
-
-
-                const p =
-                    document.getElementById(
-                        "adminPassInput"
-                    ).value;
-
-
-                if (
-                    u === "admin" &&
-                    p === "admin123"
-                ) {
-
-                    cerrarModal(
-                        "adminAuthModal"
-                    );
-
-
-                    document.getElementById(
-                        "adminModal"
-                    ).classList.add(
-                        "show"
-                    );
-
-                } else {
-
-                    alert(
-                        "Credenciales incorrectas"
-                    );
-
-                }
-
-            };
-
-
-        window.abrirModalComprarTokens =
-            function() {
-
-                document.getElementById(
-                    "buyTokensModal"
-                ).classList.add(
-                    "show"
-                );
-
-
-                if (
-                    window.calcularCotizacionCompra
-                ) {
-
-                    window.calcularCotizacionCompra();
-
-                }
-
-            };
-
-
-        window.abrirModalVenderTokens =
-            function() {
-
-                document.getElementById(
-                    "sellTokensModal"
-                ).classList.add(
-                    "show"
-                );
-
-
-                if (
-                    window.calcularCotizacionVenta
-                ) {
-
-                    window.calcularCotizacionVenta();
-
-                }
-
-            };
-
-
-        window.abrirWalletChoiceModal =
-            function() {
-
-                document.getElementById(
-                    "walletChoiceModal"
-                ).classList.add(
-                    "show"
-                );
-
-            };
-
-
-        window.abrirModalEnviarTokens =
-            function() {
-
-                document.getElementById(
-                    "sendTokensModal"
-                ).classList.add(
-                    "show"
-                );
-
-            };
-
-
-        /* ============================================================
-           PANCAKESWAP DIRECTO
-        ============================================================ */
-
-        window.abrirPancakeSwapDirecto =
-            function() {
-
-                window.open(
-                    "https://pancakeswap.finance/swap?chain=bsc&outputCurrency=0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5",
-                    "_blank"
-                );
-
-            };
-
-
-        /* ============================================================
-           CONEXIÓN TRUST WALLET / METAMASK
-           ESTA FUNCIÓN SE MANTIENE SIN CAMBIAR
-        ============================================================ */
-
-        window.vincularTokenWeb3 =
-            async function(walletType) {
+            if (
+                u === "admin" &&
+                p === "admin123"
+            ) {
 
                 cerrarModal(
-                    "walletChoiceModal"
+                    'adminAuthModal'
                 );
 
-                if (
-                    typeof window.ethereum !==
-                    "undefined"
-                ) {
 
-                    try {
+                document.getElementById(
+                    'adminModal'
+                ).classList.add(
+                    'show'
+                );
 
-                        if (
-                            window.asegurarRedBNB
-                        ) {
+            } else {
 
-                            await window.asegurarRedBNB();
+                alert(
+                    "Credenciales incorrectas"
+                );
+
+            }
+
+        };
+
+
+        /* =========================================================
+           MODALES COMPRA / VENTA
+        ========================================================= */
+
+        window.abrirModalComprarTokens = function() {
+
+            document
+                .getElementById(
+                    'buyTokensModal'
+                )
+                .classList
+                .add('show');
+
+
+            if (
+                window.calcularCotizacionCompra
+            ) {
+
+                window.calcularCotizacionCompra();
+
+            }
+
+        };
+
+
+        window.abrirModalVenderTokens = function() {
+
+            document
+                .getElementById(
+                    'sellTokensModal'
+                )
+                .classList
+                .add('show');
+
+
+            if (
+                window.calcularCotizacionVenta
+            ) {
+
+                window.calcularCotizacionVenta();
+
+            }
+
+        };
+
+
+        window.abrirWalletChoiceModal = function() {
+
+            document
+                .getElementById(
+                    'walletChoiceModal'
+                )
+                .classList
+                .add('show');
+
+        };
+
+
+        window.abrirModalEnviarTokens = function() {
+
+            document
+                .getElementById(
+                    'sendTokensModal'
+                )
+                .classList
+                .add('show');
+
+        };
+
+
+        /* =========================================================
+           PANCAKESWAP
+        ========================================================= */
+
+        window.abrirPancakeSwapDirecto = function() {
+
+            const url =
+                "https://pancakeswap.finance/swap" +
+                "?chain=bsc" +
+                "&inputCurrency=BNB" +
+                "&outputCurrency=" +
+                encodeURIComponent(
+                    "0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5"
+                );
+
+
+            const nuevaVentana =
+                window.open(
+                    url,
+                    '_blank'
+                );
+
+
+            if (!nuevaVentana) {
+
+                window.location.href =
+                    url;
+
+            }
+
+        };
+
+
+        /* =========================================================
+           GENERADOR DE CONTRASEÑA
+        ========================================================= */
+
+        window.generarPasswordAzar = function() {
+
+            const caracteres =
+                "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%";
+
+
+            let password = "";
+
+
+            for (
+                let i = 0;
+                i < 12;
+                i++
+            ) {
+
+                password +=
+                    caracteres.charAt(
+                        Math.floor(
+                            Math.random() *
+                            caracteres.length
+                        )
+                    );
+
+            }
+
+
+            document.getElementById(
+                'authPassword'
+            ).value =
+                password;
+
+        };
+
+
+        /* =========================================================
+           CONEXIÓN DE BILLETERA
+           
+           SE MANTIENE LA FUNCIÓN ORIGINAL.
+        ========================================================= */
+
+        window.vincularTokenWeb3 = async function(walletType) {
+          cerrarModal('walletChoiceModal');
+          
+          if (typeof window.ethereum !== 'undefined') {
+            try {
+              if (window.asegurarRedBNB) await window.asegurarRedBNB();
+              const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+              if (accounts && accounts.length > 0) {
+                walletDireccionConectada = accounts[0];
+                document.getElementById('userDisplay').innerText = walletDireccionConectada.substring(0, 6) + "..." + walletDireccionConectada.substring(38);
+                document.getElementById('walletWarningBanner').style.display = 'none';
+                window.consultarSaldoOnChain(walletDireccionConectada);
+                return;
+              }
+            } catch (error) {
+              alert("Debes autorizar la conexión con tu billetera.");
+            }
+          } else {
+            localStorage.setItem("nexk_sesion_activa", "true");
+            const baseUrl = window.location.origin + window.location.pathname;
+            const targetUrl = `${baseUrl}?autologin=true`;
+            
+            if (walletType === 'metamask') {
+              window.location.href = `https://metamask.app.link/dapp/${targetUrl.replace(/^https?:\/\//, '')}`;
+            } else if (walletType === 'trustwallet') {
+              window.location.href = `https://link.trustwallet.com/open_url?coin_id=60&url=${encodeURIComponent(targetUrl)}`;
+            }
+          }
+        };
+
+
+        /* =========================================================
+           CAMBIO DE PESTAÑAS ADMIN
+        ========================================================= */
+
+        window.cambiarPestañaAdmin = function(
+            tabId,
+            boton
+        ) {
+
+            document
+                .querySelectorAll(
+                    '.tab-content'
+                )
+                .forEach(
+                    tab => {
+                        tab.classList.remove(
+                            'active'
+                        );
+                    }
+                );
+
+
+            document
+                .querySelectorAll(
+                    '.tab-btn'
+                )
+                .forEach(
+                    btn => {
+                        btn.classList.remove(
+                            'active'
+                        );
+                    }
+                );
+
+
+            const tab =
+                document.getElementById(
+                    tabId
+                );
+
+
+            if (tab) {
+
+                tab.classList.add(
+                    'active'
+                );
+
+            }
+
+
+            if (boton) {
+
+                boton.classList.add(
+                    'active'
+                );
+
+            }
+
+        };
+
+
+        /* =========================================================
+           CERRAR MODALES AL TOCAR FONDO
+        ========================================================= */
+
+        document
+            .querySelectorAll('.modal')
+            .forEach(
+                modal => {
+
+                    modal.addEventListener(
+                        'click',
+                        function(event) {
+
+                            if (
+                                event.target ===
+                                modal
+                            ) {
+
+                                modal.classList
+                                    .remove(
+                                        'show'
+                                    );
+
+                            }
 
                         }
+                    );
+
+                }
+            );
 
 
-                        const accounts =
-                            await window.ethereum.request({
-                                method:
-                                    "eth_requestAccounts"
-                            });
+        /* =========================================================
+           CAMBIO DE CUENTA / RED DE WALLET
+        ========================================================= */
+
+        if (
+            typeof window.ethereum !==
+            'undefined'
+        ) {
+
+            window.ethereum.on(
+                'accountsChanged',
+                function(accounts) {
+
+                    if (
+                        accounts &&
+                        accounts.length > 0
+                    ) {
+
+                        walletDireccionConectada =
+                            accounts[0];
 
 
-                        if (
-                            accounts &&
-                            accounts.length > 0
-                        ) {
-
-                            walletDireccionConectada =
-                                accounts[0];
-
-
-                            document.getElementById(
-                                "userDisplay"
-                            ).innerText =
-                                walletDireccionConectada.substring(
-                                    0,
-                                    6
-                                ) +
-                                "..." +
-                                walletDireccionConectada.substring(
-                                    38
-                                );
-
-
-                            document.getElementById(
-                                "walletWarningBanner"
-                            ).style.display =
-                                "none";
-
-
-                            window.consultarSaldoOnChain(
-                                walletDireccionConectada
+                        document.getElementById(
+                            'userDisplay'
+                        ).innerText =
+                            accounts[0].substring(
+                                0,
+                                6
+                            ) +
+                            "..." +
+                            accounts[0].substring(
+                                38
                             );
 
 
-                            return;
+                        document.getElementById(
+                            'walletWarningBanner'
+                        ).style.display =
+                            'none';
+
+
+                        if (
+                            window.consultarSaldoOnChain
+                        ) {
+
+                            window.consultarSaldoOnChain(
+                                accounts[0]
+                            );
 
                         }
 
-                    } catch (error) {
+                    } else {
 
-                        alert(
-                            "Debes autorizar la conexión con tu billetera."
+                        document.getElementById(
+                            'walletWarningBanner'
+                        ).style.display =
+                            'flex';
+
+                        document.getElementById(
+                            'userDisplay'
+                        ).innerText =
+                            'Billetera desconectada';
+
+                    }
+
+                }
+            );
+
+
+            window.ethereum.on(
+                'chainChanged',
+                function() {
+
+                    if (
+                        window.actualizarPrecioTokenEnVivo
+                    ) {
+
+                        window.actualizarPrecioTokenEnVivo()
+                            .catch(() => {});
+
+                    }
+
+
+                    if (
+                        walletDireccionConectada &&
+                        window.consultarSaldoOnChain
+                    ) {
+
+                        window.consultarSaldoOnChain(
+                            walletDireccionConectada
                         );
 
                     }
 
-                } else {
-
-                    /*
-                     * ESTA PARTE ES LA MISMA:
-                     * Trust Wallet / MetaMask deep link.
-                     */
-
-                    localStorage.setItem(
-                        "nexk_sesion_activa",
-                        "true"
-                    );
-
-
-                    const baseUrl =
-                        window.location.origin +
-                        window.location.pathname;
-
-
-                    const targetUrl =
-                        `${baseUrl}?autologin=true`;
-
-
-                    if (
-                        walletType ===
-                        "metamask"
-                    ) {
-
-                        window.location.href =
-                            `https://metamask.app.link/dapp/${targetUrl.replace(/^https?:\/\//, "")}`;
-
-                    }
-
-                    else if (
-                        walletType ===
-                        "trustwallet"
-                    ) {
-
-                        window.location.href =
-                            `https://link.trustwallet.com/open_url?coin_id=60&url=${encodeURIComponent(targetUrl)}`;
-
-                    }
-
                 }
+            );
 
-            };
+        }
 
     </script>
 
