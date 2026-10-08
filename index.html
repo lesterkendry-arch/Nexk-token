@@ -411,7 +411,6 @@
           "function transfer(address to, uint amount) returns (bool)"
       ];
       const BSC_RPC_URL = "https://bsc-dataseed.binance.org/";
-      const COINREMITTER_API_KEY = "wkey_MBiyQDiooBNVl8K";
 
       window.onload = async () => {
           const statsRef = doc(db, "configuracion", "estadisticas");
@@ -589,7 +588,7 @@
           }
       };
 
-      // 1. COMPRA SEGURA VÍA COINREMITTER CON URL CORREGIDA (api.coinremitter.com)
+      // 1. COMPRA VÍA VERCEL SERVERLESS FUNCTION
       async function iniciarProcesoCompraCoinremitter() {
         if (!usuarioActual) return alert("Inicia sesión primero");
         const cantidadTokens = parseFloat(document.getElementById('tradeAmount').value);
@@ -598,18 +597,17 @@
         const montoUSD = (cantidadTokens * PRECIO_TOKEN_USD).toFixed(2);
         
         try {
-          const proxyUrl = "https://corsproxy.io/?";
-          const targetUrl = "https://api.coinremitter.com/api/v3/BNB/create-invoice";
-
-          const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
+          const response = await fetch('/api/coinremitter', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              api_key: COINREMITTER_API_KEY,
-              amount: montoUSD,
-              currency: "USD",
-              name: "Compra NEXK Tokens",
-              description: `Compra de ${cantidadTokens} NEXK por ${usuarioActual.email || usuarioActual.uid}`
+              action: "create-invoice",
+              payload: {
+                amount: montoUSD,
+                currency: "USD",
+                name: "Compra NEXK Tokens",
+                description: `Compra de ${cantidadTokens} NEXK por ${usuarioActual.email || usuarioActual.uid}`
+              }
             })
           });
 
@@ -625,12 +623,12 @@
             alert("Error al generar la orden de pago: " + (data.msg || "Inténtalo de nuevo."));
           }
         } catch (error) {
-          console.error("Error al conectar con Coinremitter:", error);
+          console.error("Error al conectar con el servidor Vercel:", error);
           alert("Ocurrió un problema de conexión al procesar el pago.");
         }
       };
 
-      // 2. VERIFICACIÓN DE PAGO CON ENDPOINT CORREGIDO (api.coinremitter.com)
+      // 2. VERIFICACIÓN DE PAGO VÍA VERCEL SERVERLESS FUNCTION
       window.verificarPagoPendiente = async function() {
         if (!usuarioActual) return alert("Inicia sesión primero");
         const invoiceId = localStorage.getItem('pending_invoice_id');
@@ -641,15 +639,14 @@
         }
 
         try {
-          const proxyUrl = "https://corsproxy.io/?";
-          const targetUrl = "https://api.coinremitter.com/api/v3/get-invoice";
-
-          const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
+          const response = await fetch('/api/coinremitter', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              api_key: COINREMITTER_API_KEY,
-              invoice_id: invoiceId
+              action: "get-invoice",
+              payload: {
+                invoice_id: invoiceId
+              }
             })
           });
 
