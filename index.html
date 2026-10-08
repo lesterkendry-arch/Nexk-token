@@ -604,7 +604,6 @@
               action: "create-invoice",
               payload: {
                 amount: montoUSD,
-                currency: "USD",
                 name: "Compra NEXK Tokens",
                 description: `Compra de ${cantidadTokens} NEXK por ${usuarioActual.email || usuarioActual.uid}`
               }
@@ -612,15 +611,17 @@
           });
 
           const data = await response.json();
+          console.log("Respuesta de Coinremitter:", data);
 
-          if (data.flag === 1 && data.data && data.data.url_invoice) {
+          if (data && data.flag === 1 && data.data && data.data.url_invoice) {
             localStorage.setItem('pending_invoice_id', data.data.invoice_id);
             localStorage.setItem('pending_tokens', cantidadTokens);
 
             alert("Factura creada. Realiza el pago. Cuando termines, regresa aquí y pulsa 'Verificar Estado de mi Pago'.");
             window.location.href = data.data.url_invoice;
           } else {
-            alert("Error al generar la orden de pago: " + (data.msg || "Inténtalo de nuevo."));
+            const errorMsg = data.msg || data.message || "No se pudo generar la factura.";
+            alert("Error al generar la orden de pago: " + errorMsg);
           }
         } catch (error) {
           console.error("Error al conectar con el servidor Vercel:", error);
@@ -652,7 +653,7 @@
 
           const data = await response.json();
 
-          if (data.flag === 1 && data.data && (data.data.status === 1 || data.data.status_code === 1)) {
+          if (data && data.flag === 1 && data.data && (data.data.status === 1 || data.data.status_code === 1)) {
             const userRef = doc(db, "usuarios", usuarioActual.uid);
             
             await updateDoc(userRef, { 
