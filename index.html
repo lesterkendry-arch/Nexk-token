@@ -91,7 +91,7 @@
         .field input, .field select { width: 100%; padding: 10px; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 6px; }
         .btn-gen { background: var(--border-color); color: var(--primary-cyan); border: 1px solid var(--primary-cyan); padding: 6px; font-size: 11px; border-radius: 4px; cursor: pointer; margin-top: 4px; }
 
-        /* VISTA DE RESUMEN DE COTIZACIÓN */
+        /* VISTA DE RESUMEN DE COTIZACIÓN DE PRECIOS EXACTOS */
         .quote-box {
             background: var(--bg-dark);
             border: 1px dashed var(--primary-cyan);
@@ -124,8 +124,6 @@
         .tab-btn.active { background: var(--primary-cyan); color: #000; border-color: var(--primary-cyan); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        
-        .admin-user-card { background: var(--bg-dark); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
 
         .chart-container { position: relative; margin-top: 15px; height: 500px; width: 100%; border-radius: 12px; overflow: hidden; background: #090d16; border: 1px solid var(--border-color); }
         .chart-container iframe { width: 100%; height: 100%; border: none; }
@@ -180,7 +178,7 @@
                     </div>
 
                     <div class="stat-box">
-                        <span>Valor Estimado</span>
+                        <span>Valor Estimado Real</span>
                         <h4 id="userBalanceUSD">$0.00 USD</h4>
                         <select id="currencySelect" class="currency-selector" onchange="recalcularBalanceUsuario()">
                             <option value="USD">💵 Mostrar en USD</option>
@@ -215,7 +213,7 @@
                         🥞 Abrir en PancakeSwap
                     </button>
                     <button class="btn-action web3-btn" style="background: #f3ba2f; color: #000; border: none; font-weight: bold;" onclick="abrirWalletChoiceModal()">
-                        🦊 Añadir / Conectar Billetera Web3
+                        🦊 Añadir a MetaMask / Trust Wallet
                     </button>
                     <button class="btn-action btn-send" onclick="abrirModalEnviarTokens()">
                         📤 Enviar Tokens a Otra Billetera
@@ -265,7 +263,6 @@
             <div class="field">
                 <label>Moneda de Pago:</label>
                 <select id="buyPayCurrency" onchange="calcularCotizacionCompra()">
-                    <option value="USD">💵 USD (Dólares)</option>
                     <option value="BNB">🟡 BNB Smart Chain</option>
                     <option value="USDT">🪙 USDT (BSC)</option>
                 </select>
@@ -273,13 +270,14 @@
 
             <div class="field">
                 <label>Monto a Gastar:</label>
-                <input type="number" id="buyPayAmount" placeholder="Ej. 2.00" oninput="calcularCotizacionCompra()">
+                <input type="number" id="buyPayAmount" placeholder="Ej. 0.05" oninput="calcularCotizacionCompra()">
             </div>
 
-            <!-- CUADRO DE COTIZACIÓN RESUMEN -->
+            <!-- CUADRO DE COTIZACIÓN RESUMEN RECALCULADO -->
             <div class="quote-box">
                 <div>Tokens a Recibir: <strong id="quoteBuyTokens" style="color: var(--primary-cyan);">0.00 NEXK</strong></div>
                 <div>Costo Total Estimado: <span id="quoteBuyUsd" style="color: var(--text-muted);">$0.00 USD</span></div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">1 NEXK = <span id="buyRateUsd">$0.00</span> USD</div>
             </div>
 
             <button class="btn-auth" style="width:100%; margin-top:10px; background: var(--green-up); color: #fff;" onclick="ejecutarCompraTokensWeb3()">Aprobar y Comprar</button>
@@ -301,16 +299,16 @@
             <div class="field">
                 <label>Recibirás en:</label>
                 <select id="sellReceiveCurrency" onchange="calcularCotizacionVenta()">
-                    <option value="USD">💵 Dólares (USD)</option>
                     <option value="BNB">🟡 BNB Smart Chain</option>
                     <option value="USDT">🪙 USDT (BSC)</option>
                 </select>
             </div>
 
-            <!-- CUADRO DE COTIZACIÓN RESUMEN -->
+            <!-- CUADRO DE COTIZACIÓN RESUMEN RECALCULADO -->
             <div class="quote-box">
-                <div>Recibirás Aprox: <strong id="quoteSellReceive" style="color: var(--green-up);">0.00 USD</strong></div>
+                <div>Recibirás Aprox: <strong id="quoteSellReceive" style="color: var(--green-up);">0.00 BNB</strong></div>
                 <div>Valor en Dólares: <span id="quoteSellUsd" style="color: var(--text-muted);">$0.00 USD</span></div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">1 NEXK = <span id="sellRateUsd">$0.00</span> USD</div>
             </div>
 
             <button class="btn-auth" style="width:100%; margin-top:10px; background: var(--red-down); color: #fff;" onclick="ejecutarVentaTokensWeb3()">Aprobar y Vender</button>
@@ -339,8 +337,8 @@
     <!-- MODAL SELECCIONAR BILLETERA -->
     <div id="walletChoiceModal" class="modal">
         <div class="modal-content" style="text-align: center;">
-            <h3>⚠️ Conecta tu Billetera Web3</h3>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Para operar dentro de NEXK Token debes conectar tu MetaMask o Trust Wallet:</p>
+            <h3>Conecta tu Billetera</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Selecciona tu billetera para vincular y sincronizar tus tokens NEXK:</p>
             
             <button class="wallet-option-btn btn-metamask-choice" onclick="vincularTokenWeb3('metamask')">
                 🦊 MetaMask
@@ -473,7 +471,7 @@
         </div>
     </div>
 
-    <!-- FIREBASE & LÓGICA INTEGRADA -->
+    <!-- FIREBASE & LÓGICA INTEGRADA (CORREGIDA CON CÁLCULO PRECISO) -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
       import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
@@ -485,13 +483,10 @@
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const db = getFirestore(app);
-      
-      const googleProvider = new GoogleAuthProvider();
-      const appleProvider = new OAuthProvider('apple.com');
 
       let usuarioActual = null;
       let tokensActualesUsuario = 0;
-      let PRECIO_TOKEN_USD = 0.05; // Precio fallback base
+      let PRECIO_TOKEN_USD = 0; 
       let PRECIO_BNB_USD = 600; 
       let CAMBIO_24H_PORCENTAJE = 0;
       let walletDireccionConectada = null;
@@ -517,19 +512,15 @@
 
       const BSC_RPC_URL = "https://bsc-dataseed.binance.org/";
 
-      // LOGIN CON GOOGLE
-      window.loginConGoogle = async function() {
-        try {
-          await signInWithPopup(auth, googleProvider);
-        } catch (error) {
-          alert("Error al iniciar con Google: " + error.message);
-        }
+      // FORMATEADOR DE PRECISION PARA EVITAR CIFRAS INFLADAS O REDONDEOS A CERO
+      window.formatearMoneda = function(valor, maxDec = 6) {
+        if (isNaN(valor) || valor === 0) return "0.00";
+        if (valor < 0.0001) return valor.toFixed(maxDec);
+        if (valor < 1) return valor.toFixed(4);
+        return valor.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
       };
 
-      document.getElementById('btnGoogleWelcome')?.addEventListener('click', window.loginConGoogle);
-      document.getElementById('btnGoogleModal')?.addEventListener('click', window.loginConGoogle);
-
-      // ACTUALIZAR PRECIOS EN TIEMPO REAL
+      // OBTENER PRECIO EXACTO EN VIVO
       window.actualizarPrecioTokenEnVivo = async function() {
         try {
           const resBnb = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT");
@@ -550,14 +541,18 @@
             if (!isNaN(precioUSD) && precioUSD > 0) {
               PRECIO_TOKEN_USD = precioUSD;
               CAMBIO_24H_PORCENTAJE = cambio24h;
+              document.getElementById('tokenPrice').innerText = `$${window.formatearMoneda(precioUSD)} USD`;
+              window.recalcularBalanceUsuario();
+              return;
             }
           }
         } catch (e) {}
 
-        document.getElementById('tokenPrice').innerText = `$${PRECIO_TOKEN_USD.toFixed(4)} USD`;
-        window.recalcularBalanceUsuario();
-        window.calcularCotizacionCompra();
-        window.calcularCotizacionVenta();
+        if (PRECIO_TOKEN_USD === 0) {
+          const adminBackup = parseFloat(document.getElementById('adminPrice')?.value || 1.45);
+          PRECIO_TOKEN_USD = adminBackup;
+          document.getElementById('tokenPrice').innerText = `$${window.formatearMoneda(PRECIO_TOKEN_USD)} USD`;
+        }
       };
 
       // CALCULAR COTIZACIÓN DINÁMICA DE COMPRA
@@ -565,17 +560,21 @@
         const moneda = document.getElementById('buyPayCurrency').value;
         const montoGasto = parseFloat(document.getElementById('buyPayAmount').value) || 0;
         
+        if (document.getElementById('buyRateUsd')) {
+            document.getElementById('buyRateUsd').innerText = `$${window.formatearMoneda(PRECIO_TOKEN_USD)}`;
+        }
+
         let valorTotalUSD = 0;
         if (moneda === 'BNB') {
           valorTotalUSD = montoGasto * PRECIO_BNB_USD;
-        } else if (moneda === 'USD' || moneda === 'USDT') {
-          valorTotalUSD = montoGasto; // 1:1 USD / USDT
+        } else {
+          valorTotalUSD = montoGasto; // USDT
         }
 
         const tokensNEXKEst = PRECIO_TOKEN_USD > 0 ? (valorTotalUSD / PRECIO_TOKEN_USD) : 0;
 
-        document.getElementById('quoteBuyTokens').innerText = `${tokensNEXKEst.toFixed(2)} NEXK`;
-        document.getElementById('quoteBuyUsd').innerText = `$${valorTotalUSD.toFixed(2)} USD`;
+        document.getElementById('quoteBuyTokens').innerText = `${window.formatearMoneda(tokensNEXKEst)} NEXK`;
+        document.getElementById('quoteBuyUsd').innerText = `$${window.formatearMoneda(valorTotalUSD)} USD`;
       };
 
       // CALCULAR COTIZACIÓN DINÁMICA DE VENTA
@@ -583,20 +582,22 @@
         const moneda = document.getElementById('sellReceiveCurrency').value;
         const cantidadNexk = parseFloat(document.getElementById('sellNexkAmount').value) || 0;
 
+        if (document.getElementById('sellRateUsd')) {
+            document.getElementById('sellRateUsd').innerText = `$${window.formatearMoneda(PRECIO_TOKEN_USD)}`;
+        }
+
         const valorTotalUSD = cantidadNexk * PRECIO_TOKEN_USD;
 
         let aRecibirText = "";
         if (moneda === 'BNB') {
           const recibirBNB = PRECIO_BNB_USD > 0 ? (valorTotalUSD / PRECIO_BNB_USD) : 0;
-          aRecibirText = `${recibirBNB.toFixed(4)} BNB`;
-        } else if (moneda === 'USDT') {
-          aRecibirText = `${valorTotalUSD.toFixed(2)} USDT`;
+          aRecibirText = `${window.formatearMoneda(recibirBNB, 6)} BNB`;
         } else {
-          aRecibirText = `$${valorTotalUSD.toFixed(2)} USD`;
+          aRecibirText = `${window.formatearMoneda(valorTotalUSD)} USDT`;
         }
 
         document.getElementById('quoteSellReceive').innerText = aRecibirText;
-        document.getElementById('quoteSellUsd').innerText = `$${valorTotalUSD.toFixed(2)} USD`;
+        document.getElementById('quoteSellUsd').innerText = `$${window.formatearMoneda(valorTotalUSD)} USD`;
       };
 
       window.cargarHistorialOnChainReal = async function(address) {
@@ -644,6 +645,7 @@
         }
       };
 
+      // CÁLCULO PRECISO DE PORTAFOLIO PRINCIPAL
       window.recalcularBalanceUsuario = function() { 
         const totalUSD = tokensActualesUsuario * PRECIO_TOKEN_USD;
         const selectedCurrency = document.getElementById('currencySelect').value;
@@ -653,16 +655,16 @@
         const gananciaUSD = totalUSD * (CAMBIO_24H_PORCENTAJE / 100);
 
         if (selectedCurrency === 'USD') {
-            userBalanceElem.innerText = '$' + totalUSD.toFixed(2) + ' USD';
-            profitElem.innerText = `${CAMBIO_24H_PORCENTAJE >= 0 ? '+' : ''}${CAMBIO_24H_PORCENTAJE.toFixed(2)}% ($${gananciaUSD.toFixed(2)})`;
+            userBalanceElem.innerText = '$' + window.formatearMoneda(totalUSD) + ' USD';
+            profitElem.innerText = `${CAMBIO_24H_PORCENTAJE >= 0 ? '+' : ''}${CAMBIO_24H_PORCENTAJE.toFixed(2)}% ($${window.formatearMoneda(gananciaUSD)})`;
         } else if (selectedCurrency === 'USDT') {
-            userBalanceElem.innerText = totalUSD.toFixed(2) + ' USDT';
-            profitElem.innerText = `${CAMBIO_24H_PORCENTAJE >= 0 ? '+' : ''}${CAMBIO_24H_PORCENTAJE.toFixed(2)}% (${gananciaUSD.toFixed(2)} USDT)`;
+            userBalanceElem.innerText = window.formatearMoneda(totalUSD) + ' USDT';
+            profitElem.innerText = `${CAMBIO_24H_PORCENTAJE >= 0 ? '+' : ''}${CAMBIO_24H_PORCENTAJE.toFixed(2)}% (${window.formatearMoneda(gananciaUSD)} USDT)`;
         } else if (selectedCurrency === 'BNB') {
             const totalBNB = PRECIO_BNB_USD > 0 ? (totalUSD / PRECIO_BNB_USD) : 0;
             const gananciaBNB = PRECIO_BNB_USD > 0 ? (gananciaUSD / PRECIO_BNB_USD) : 0;
-            userBalanceElem.innerText = totalBNB.toFixed(4) + ' BNB';
-            profitElem.innerText = `${CAMBIO_24H_PORCENTAJE >= 0 ? '+' : ''}${CAMBIO_24H_PORCENTAJE.toFixed(2)}% (${gananciaBNB.toFixed(4)} BNB)`;
+            userBalanceElem.innerText = window.formatearMoneda(totalBNB, 6) + ' BNB';
+            profitElem.innerText = `${CAMBIO_24H_PORCENTAJE >= 0 ? '+' : ''}${CAMBIO_24H_PORCENTAJE.toFixed(2)}% (${window.formatearMoneda(gananciaBNB, 6)} BNB)`;
         }
       };
 
@@ -810,8 +812,17 @@
       window.onload = async () => {
           await window.asegurarRedBNB();
           await window.actualizarPrecioTokenEnVivo();
-          setInterval(window.actualizarPrecioTokenEnVivo, 10000);
+          setInterval(window.actualizarPrecioTokenEnVivo, 12000);
       };
+
+      const docRefConfig = doc(db, "configuracion", "general");
+      onSnapshot(docRefConfig, (snap) => {
+        if (snap.exists()) {
+          const d = snap.data();
+          if(d.colorBotones) document.documentElement.style.setProperty('--primary-cyan', d.colorBotones);
+          document.getElementById('realTradeSection').style.display = d.tradingHabilitado !== "no" ? 'block' : 'none';
+        }
+      });
 
       window.consultarSaldoOnChain = async function(address) {
         try {
@@ -822,13 +833,12 @@
           const formattedBalance = parseFloat(ethers.utils.formatUnits(rawBalance, 18));
           
           tokensActualesUsuario = formattedBalance;
-          document.getElementById('userTokens').innerText = formattedBalance.toFixed(2) + ' NEXK';
+          document.getElementById('userTokens').innerText = window.formatearMoneda(formattedBalance) + ' NEXK';
           window.recalcularBalanceUsuario();
           window.cargarHistorialOnChainReal(address);
         } catch (error) {}
       };
 
-      // DETECTAR INICIO DE SESIÓN Y FORZAR MODAL DE WALLET REAL (CORREGIDO)
       onAuthStateChanged(auth, async (user) => {
         if (user) {
           usuarioActual = user;
@@ -836,14 +846,8 @@
           document.getElementById('welcomeSection').style.display = 'none';
           document.getElementById('appContent').style.display = 'block';
 
-          // Verificar si ya hay una wallet conectada
           if (window.ethereum && window.ethereum.selectedAddress) {
             window.consultarSaldoOnChain(window.ethereum.selectedAddress);
-          } else {
-            // SI NO TIENE WALLET CONECTADA AL ENTRAR, LE DISPARAMOS EL CARTEL INMEDIATAMENTE
-            setTimeout(() => {
-              window.abrirWalletChoiceModal();
-            }, 500);
           }
         } else {
           usuarioActual = null;
@@ -897,15 +901,15 @@
       window.cerrarModal = function(id) { document.getElementById(id).classList.remove('show'); };
 
       window.abrirModalComprarTokens = function() { 
-        document.getElementById('buyTokensModal').classList.add('show'); 
-        if(window.calcularCotizacionCompra) window.calcularCotizacionCompra();
+        document.getElementById('buyTokensModal').classList.add('show');
+        if (window.calcularCotizacionCompra) window.calcularCotizacionCompra();
       };
       
       window.abrirModalVenderTokens = function() { 
-        document.getElementById('sellTokensModal').classList.add('show'); 
-        if(window.calcularCotizacionVenta) window.calcularCotizacionVenta();
+        document.getElementById('sellTokensModal').classList.add('show');
+        if (window.calcularCotizacionVenta) window.calcularCotizacionVenta();
       };
-      
+
       window.abrirWalletChoiceModal = function() { document.getElementById('walletChoiceModal').classList.add('show'); };
       window.abrirModalEnviarTokens = function() { document.getElementById('sendTokensModal').classList.add('show'); };
 
@@ -917,7 +921,7 @@
         if (typeof window.ethereum !== 'undefined') {
           try {
             if (window.asegurarRedBNB) await window.asegurarRedBNB();
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             if (accounts && accounts.length > 0) {
               mostrarPerfilDirecto(accounts[0]);
             }
@@ -936,7 +940,6 @@
 
       window.vincularTokenWeb3 = async function(walletType) {
         cerrarModal('walletChoiceModal');
-        const tokenAddress = '0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5';
         if (typeof window.ethereum !== 'undefined') {
           try {
             if (window.asegurarRedBNB) await window.asegurarRedBNB();
