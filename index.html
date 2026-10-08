@@ -1146,10 +1146,17 @@
       onAuthStateChanged(auth, async (user) => {
         if (user) {
           usuarioActual = user;
+          localStorage.setItem("nexk_sesion_activa", "true");
           document.getElementById('welcomeSection').style.display = 'none';
           await window.verificarBilleteraPostLogin();
         } else {
           usuarioActual = null;
+          // Si estamos dentro de la billetera y ya había sesión previa guardada, saltamos el login de Firebase
+          if (typeof window.ethereum !== 'undefined' && localStorage.getItem("nexk_sesion_activa") === "true") {
+            document.getElementById('welcomeSection').style.display = 'none';
+            await window.verificarBilleteraPostLogin();
+            return;
+          }
           // Al abrir la página sin sesión, muestra la pantalla de bienvenida con correo/google/apple
           document.getElementById('appContent').style.display = 'none';
           document.getElementById('mandatoryWalletModal').classList.remove('show');
