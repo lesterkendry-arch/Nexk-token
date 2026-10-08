@@ -730,14 +730,13 @@
 
       let usuarioActual = null;
       let tokensActualesUsuario = 0;
-      let PRECIO_TOKEN_USD = 0.01;
+      let PRECIO_TOKEN_USD = 0.01; // Precio automático base por defecto
       let PRECIO_BNB_USD = 600; 
       let CAMBIO_24H_PORCENTAJE = 0;
       let walletDireccionConectada = null;
 
       const TOKEN_CONTRACT_ADDRESS = "0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5";
-      // ========== DIRECCIÓN CORREGIDA DEL ROUTER DE PANCAKESWAP ==========
-      const PANCAKE_ROUTER_ADDRESS = "0x10ED43C718714eb63d5aA57B78B54704E256024E";
+      const PANCAKE_ROUTER_ADDRESS = "0x10ED43335D0f0511c7826814731894B72813462D";
       const PANCAKE_FACTORY_ADDRESS = "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73";
       const WBNB_ADDRESS = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
       const USDT_BSC_ADDRESS = "0x55d398326f99059fF775485246999027B3197955";
@@ -760,8 +759,7 @@
       const ROUTER_ABI = [
           "function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) payable returns (uint[] memory amounts)",
           "function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) returns (uint[] memory amounts)",
-          "function swapExactTokensForTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) returns (uint[] memory amounts)",
-          "function getAmountsOut(uint amountIn, address[] calldata path) view returns (uint[] memory amounts)"
+          "function swapExactTokensForTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) returns (uint[] memory amounts)"
       ];
 
       const FACTORY_ABI = [
@@ -826,111 +824,48 @@
         } catch (e) {}
 
         if (document.getElementById('tokenPrice')) {
-          document.getElementById('tokenPrice').innerText = `\[ {window.formatearMoneda(PRECIO_TOKEN_USD)} USD`;
+          document.getElementById('tokenPrice').innerText = `$${window.formatearMoneda(PRECIO_TOKEN_USD)} USD`;
         }
         window.recalcularBalanceUsuario();
         window.calcularCotizacionCompra();
         window.calcularCotizacionVenta();
       };
 
-      // ========== COTIZACIÓN REAL CON GETAMOUNTSOUT ==========
-      window.calcularCotizacionCompra = async function() {
+      window.calcularCotizacionCompra = function() {
         const moneda = document.getElementById('buyPayCurrency').value;
         const montoGasto = parseFloat(document.getElementById('buyPayAmount').value) || 0;
         
         if (document.getElementById('buyRateUsd')) {
-          document.getElementById('buyRateUsd').innerText = ` \]{window.formatearMoneda(PRECIO_TOKEN_USD)}`;
+          document.getElementById('buyRateUsd').innerText = `$${window.formatearMoneda(PRECIO_TOKEN_USD)}`;
         }
 
-        if (montoGasto <= 0) {
-          document.getElementById('quoteBuyTokens').innerText = `0.00 NEXK`;
-          document.getElementById('quoteBuyUsd').innerText = `$0.00 USD`;
-          return;
-        }
+        let valorTotalUSD = (moneda === 'BNB') ? (montoGasto * PRECIO_BNB_USD) : montoGasto;
+        const tokensNEXKEst = PRECIO_TOKEN_USD > 0 ? (valorTotalUSD / PRECIO_TOKEN_USD) : 0;
 
-        try {
-          const provider = window.obtenerProveedorBSC();
-          const router = new ethers.Contract(PANCAKE_ROUTER_ADDRESS, ROUTER_ABI, provider);
-          
-          let amountIn, path;
-          if (moneda === 'BNB') {
-            amountIn = ethers.utils.parseEther(montoGasto.toString());
-            path = [WBNB_ADDRESS, TOKEN_CONTRACT_ADDRESS];
-          } else {
-            amountIn = ethers.utils.parseUnits(montoGasto.toString(), 18);
-            path = [USDT_BSC_ADDRESS, WBNB_ADDRESS, TOKEN_CONTRACT_ADDRESS]; // Ruta segura por WBNB
-          }
-
-          const amounts = await router.getAmountsOut(amountIn, path);
-          const tokensOut = parseFloat(ethers.utils.formatUnits(amounts[amounts.length - 1], 18));
-          
-          const valorTotalUSD = (moneda === 'BNB') ? (montoGasto * PRECIO_BNB_USD) : montoGasto;
-
-          document.getElementById('quoteBuyTokens').innerText = `${window.formatearMoneda(tokensOut)} NEXK`;
-          document.getElementById('quoteBuyUsd').innerText = `\[ {window.formatearMoneda(valorTotalUSD)} USD`;
-        } catch (e) {
-          // Fallback a cálculo simple si falla getAmountsOut
-          let valorTotalUSD = (moneda === 'BNB') ? (montoGasto * PRECIO_BNB_USD) : montoGasto;
-          const tokensNEXKEst = PRECIO_TOKEN_USD > 0 ? (valorTotalUSD / PRECIO_TOKEN_USD) : 0;
-          document.getElementById('quoteBuyTokens').innerText = `${window.formatearMoneda(tokensNEXKEst)} NEXK`;
-          document.getElementById('quoteBuyUsd').innerText = ` \]{window.formatearMoneda(valorTotalUSD)} USD`;
-        }
+        document.getElementById('quoteBuyTokens').innerText = `${window.formatearMoneda(tokensNEXKEst)} NEXK`;
+        document.getElementById('quoteBuyUsd').innerText = `$${window.formatearMoneda(valorTotalUSD)} USD`;
       };
 
-      window.calcularCotizacionVenta = async function() {
+      window.calcularCotizacionVenta = function() {
         const moneda = document.getElementById('sellReceiveCurrency').value;
         const cantidadNexk = parseFloat(document.getElementById('sellNexkAmount').value) || 0;
 
         if (document.getElementById('sellRateUsd')) {
-          document.getElementById('sellRateUsd').innerText = `\[ {window.formatearMoneda(PRECIO_TOKEN_USD)}`;
+          document.getElementById('sellRateUsd').innerText = `$${window.formatearMoneda(PRECIO_TOKEN_USD)}`;
         }
 
-        if (cantidadNexk <= 0) {
-          document.getElementById('quoteSellReceive').innerText = `0.00 ${moneda}`;
-          document.getElementById('quoteSellUsd').innerText = `$0.00 USD`;
-          return;
+        const valorTotalUSD = cantidadNexk * PRECIO_TOKEN_USD;
+
+        let aRecibirText = "";
+        if (moneda === 'BNB') {
+          const recibirBNB = PRECIO_BNB_USD > 0 ? (valorTotalUSD / PRECIO_BNB_USD) : 0;
+          aRecibirText = `${window.formatearMoneda(recibirBNB, 6)} BNB`;
+        } else {
+          aRecibirText = `${window.formatearMoneda(valorTotalUSD)} USDT`;
         }
 
-        try {
-          const provider = window.obtenerProveedorBSC();
-          const router = new ethers.Contract(PANCAKE_ROUTER_ADDRESS, ROUTER_ABI, provider);
-          
-          const amountIn = ethers.utils.parseUnits(cantidadNexk.toString(), 18);
-          let path;
-          
-          if (moneda === 'BNB') {
-            path = [TOKEN_CONTRACT_ADDRESS, WBNB_ADDRESS];
-          } else {
-            path = [TOKEN_CONTRACT_ADDRESS, WBNB_ADDRESS, USDT_BSC_ADDRESS]; // Ruta segura
-          }
-
-          const amounts = await router.getAmountsOut(amountIn, path);
-          const amountOut = parseFloat(ethers.utils.formatUnits(amounts[amounts.length - 1], 18));
-          
-          const valorTotalUSD = cantidadNexk * PRECIO_TOKEN_USD;
-
-          let aRecibirText = "";
-          if (moneda === 'BNB') {
-            aRecibirText = `${window.formatearMoneda(amountOut, 6)} BNB`;
-          } else {
-            aRecibirText = `${window.formatearMoneda(amountOut)} USDT`;
-          }
-
-          document.getElementById('quoteSellReceive').innerText = aRecibirText;
-          document.getElementById('quoteSellUsd').innerText = ` \]{window.formatearMoneda(valorTotalUSD)} USD`;
-        } catch (e) {
-          // Fallback
-          const valorTotalUSD = cantidadNexk * PRECIO_TOKEN_USD;
-          let aRecibirText = "";
-          if (moneda === 'BNB') {
-            const recibirBNB = PRECIO_BNB_USD > 0 ? (valorTotalUSD / PRECIO_BNB_USD) : 0;
-            aRecibirText = `${window.formatearMoneda(recibirBNB, 6)} BNB`;
-          } else {
-            aRecibirText = `${window.formatearMoneda(valorTotalUSD)} USDT`;
-          }
-          document.getElementById('quoteSellReceive').innerText = aRecibirText;
-          document.getElementById('quoteSellUsd').innerText = `\[ {window.formatearMoneda(valorTotalUSD)} USD`;
-        }
+        document.getElementById('quoteSellReceive').innerText = aRecibirText;
+        document.getElementById('quoteSellUsd').innerText = `$${window.formatearMoneda(valorTotalUSD)} USD`;
       };
 
       window.cargarHistorialOnChainReal = async function(address) {
@@ -939,7 +874,7 @@
 
         try {
           lista.innerHTML = '<p style="color:var(--text-muted);text-align:center;">Cargando transacciones...</p>';
-          const url = `https://api.bscscan.com/api?module=account&action=tokentx&contractaddress=\( {TOKEN_CONTRACT_ADDRESS}&address= \){address}&page=1&offset=20&sort=desc`;
+          const url = `https://api.bscscan.com/api?module=account&action=tokentx&contractaddress=${TOKEN_CONTRACT_ADDRESS}&address=${address}&page=1&offset=20&sort=desc`;
           const res = await fetch(url);
           const data = await res.json();
 
@@ -960,11 +895,11 @@
 
               d.innerHTML = `
                 <div>
-                  <span class="historial-tipo \( {tipoClase}"> \){textoTipo}</span>
+                  <span class="historial-tipo ${tipoClase}">${textoTipo}</span>
                   <div style="font-size:11px;color:var(--text-muted);">${fecha}</div>
                 </div>
                 <div style="font-weight:bold; color: ${esRecibido ? 'var(--green-up)' : 'var(--red-down)'};">
-                  \( {signo} \){cantidad} NEXK
+                  ${signo}${cantidad} NEXK
                 </div>
               `;
               lista.appendChild(d);
@@ -988,15 +923,15 @@
 
         if (selectedCurrency === 'USD') {
             userBalanceElem.innerText = '$' + window.formatearMoneda(totalUSD) + ' USD';
-            profitElem.innerText = `\( {CAMBIO_24H_PORCENTAJE >= 0 ? '+' : ''} \){CAMBIO_24H_PORCENTAJE.toFixed(2)}% ( \]{window.formatearMoneda(gananciaUSD)})`;
+            profitElem.innerText = `${CAMBIO_24H_PORCENTAJE >= 0 ? '+' : ''}${CAMBIO_24H_PORCENTAJE.toFixed(2)}% ($${window.formatearMoneda(gananciaUSD)})`;
         } else if (selectedCurrency === 'USDT') {
             userBalanceElem.innerText = window.formatearMoneda(totalUSD) + ' USDT';
-            profitElem.innerText = `\( {CAMBIO_24H_PORCENTAJE >= 0 ? '+' : ''} \){CAMBIO_24H_PORCENTAJE.toFixed(2)}% (${window.formatearMoneda(gananciaUSD)} USDT)`;
+            profitElem.innerText = `${CAMBIO_24H_PORCENTAJE >= 0 ? '+' : ''}${CAMBIO_24H_PORCENTAJE.toFixed(2)}% (${window.formatearMoneda(gananciaUSD)} USDT)`;
         } else if (selectedCurrency === 'BNB') {
             const totalBNB = PRECIO_BNB_USD > 0 ? (totalUSD / PRECIO_BNB_USD) : 0;
             const gananciaBNB = PRECIO_BNB_USD > 0 ? (gananciaUSD / PRECIO_BNB_USD) : 0;
             userBalanceElem.innerText = window.formatearMoneda(totalBNB, 6) + ' BNB';
-            profitElem.innerText = `\( {CAMBIO_24H_PORCENTAJE >= 0 ? '+' : ''} \){CAMBIO_24H_PORCENTAJE.toFixed(2)}% (${window.formatearMoneda(gananciaBNB, 6)} BNB)`;
+            profitElem.innerText = `${CAMBIO_24H_PORCENTAJE >= 0 ? '+' : ''}${CAMBIO_24H_PORCENTAJE.toFixed(2)}% (${window.formatearMoneda(gananciaBNB, 6)} BNB)`;
         }
       };
 
@@ -1067,7 +1002,6 @@
         }
       };
 
-      // ========== COMPRA REAL CORREGIDA ==========
       window.ejecutarCompraTokensWeb3 = async function() {
         const moneda = document.getElementById('buyPayCurrency').value;
         const montoGastoStr = document.getElementById('buyPayAmount').value.trim();
@@ -1078,7 +1012,7 @@
         }
 
         if (typeof window.ethereum === 'undefined') {
-            return alert("Abre esta página desde el navegador interno de tu billetera (MetaMask o Trust Wallet).");
+            return alert("Abre esta página desde el navegador interno de tu billetera.");
         }
 
         try {
@@ -1094,32 +1028,29 @@
             if (moneda === 'BNB') {
                 const amountIn = ethers.utils.parseEther(montoGastoStr);
                 const path = [WBNB_ADDRESS, TOKEN_CONTRACT_ADDRESS];
-                
-                // Obtener cotización real para slippage
-                const amounts = await router.getAmountsOut(amountIn, path);
-                const amountOutMin = amounts[1].mul(90).div(100); // 10% slippage
+                const valorTotalUSD = montoGasto * PRECIO_BNB_USD;
+                const tokensEst = PRECIO_TOKEN_USD > 0 ? (valorTotalUSD / PRECIO_TOKEN_USD) : 0;
+                const amountOutMin = ethers.utils.parseUnits((tokensEst * 0.90).toFixed(18), 18);
 
                 alert("Confirma la transacción en tu billetera...");
                 const tx = await router.swapExactETHForTokens(amountOutMin, path, walletUser, deadline, { value: amountIn });
                 alert("Procesando compra...");
                 await tx.wait();
             } else {
-                // Compra con USDT (ruta por WBNB)
                 const usdtContract = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, signer);
                 const amountIn = ethers.utils.parseUnits(montoGastoStr, 18);
-                const path = [USDT_BSC_ADDRESS, WBNB_ADDRESS, TOKEN_CONTRACT_ADDRESS];
-
-                const amounts = await router.getAmountsOut(amountIn, path);
-                const amountOutMin = amounts[amounts.length - 1].mul(90).div(100);
+                const path = [USDT_BSC_ADDRESS, TOKEN_CONTRACT_ADDRESS];
+                const tokensEst = PRECIO_TOKEN_USD > 0 ? (montoGasto / PRECIO_TOKEN_USD) : 0;
+                const amountOutMin = ethers.utils.parseUnits((tokensEst * 0.90).toFixed(18), 18);
 
                 const allowance = await usdtContract.allowance(walletUser, PANCAKE_ROUTER_ADDRESS);
                 if (allowance.lt(amountIn)) {
-                    alert("Autoriza el uso de USDT a PancakeSwap en tu billetera...");
+                    alert("Autoriza el uso de USDT a PancakeSwap.");
                     const approveTx = await usdtContract.approve(PANCAKE_ROUTER_ADDRESS, ethers.constants.MaxUint256);
                     await approveTx.wait();
                 }
 
-                alert("Confirma la compra con USDT en tu billetera...");
+                alert("Confirma la compra con USDT...");
                 const tx = await router.swapExactTokensForTokens(amountIn, amountOutMin, path, walletUser, deadline);
                 await tx.wait();
             }
@@ -1135,7 +1066,6 @@
         }
       };
 
-      // ========== VENTA REAL CORREGIDA ==========
       window.ejecutarVentaTokensWeb3 = async function() {
         const moneda = document.getElementById('sellReceiveCurrency').value;
         const nexkAmountStr = document.getElementById('sellNexkAmount').value.trim();
@@ -1146,7 +1076,7 @@
         }
 
         if (typeof window.ethereum === 'undefined') {
-            return alert("Abre esta página desde tu billetera (MetaMask o Trust Wallet).");
+            return alert("Abre esta página desde tu billetera.");
         }
 
         try {
@@ -1164,25 +1094,24 @@
 
             const allowance = await tokenContract.allowance(walletUser, PANCAKE_ROUTER_ADDRESS);
             if (allowance.lt(amountIn)) {
-                alert("Aprobar venta de tokens NEXK en tu billetera...");
+                alert("Aprobar venta de tokens NEXK...");
                 const approveTx = await tokenContract.approve(PANCAKE_ROUTER_ADDRESS, ethers.constants.MaxUint256);
                 await approveTx.wait();
             }
 
             alert("Confirma la venta en tu billetera...");
 
+            const valorTotalUSD = nexkAmount * PRECIO_TOKEN_USD;
+
             if (moneda === 'BNB') {
                 const path = [TOKEN_CONTRACT_ADDRESS, WBNB_ADDRESS];
-                const amounts = await router.getAmountsOut(amountIn, path);
-                const amountOutMin = amounts[1].mul(90).div(100);
-                
+                const recibirBNB = PRECIO_BNB_USD > 0 ? (valorTotalUSD / PRECIO_BNB_USD) : 0;
+                const amountOutMin = ethers.utils.parseEther((recibirBNB * 0.90).toFixed(18));
                 const tx = await router.swapExactTokensForETH(amountIn, amountOutMin, path, walletUser, deadline);
                 await tx.wait();
             } else {
-                const path = [TOKEN_CONTRACT_ADDRESS, WBNB_ADDRESS, USDT_BSC_ADDRESS];
-                const amounts = await router.getAmountsOut(amountIn, path);
-                const amountOutMin = amounts[amounts.length - 1].mul(90).div(100);
-                
+                const path = [TOKEN_CONTRACT_ADDRESS, USDT_BSC_ADDRESS];
+                const amountOutMin = ethers.utils.parseUnits((valorTotalUSD * 0.90).toFixed(18), 18);
                 const tx = await router.swapExactTokensForTokens(amountIn, amountOutMin, path, walletUser, deadline);
                 await tx.wait();
             }
