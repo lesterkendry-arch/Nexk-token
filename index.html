@@ -995,11 +995,11 @@
         window.open(pancakeUrl, '_blank');
       };
 
-      // Auto-ingreso instantáneo al abrir la página dentro del navegador de la wallet
+      // Auto-ingreso instantáneo y directo al abrir la página dentro del navegador de la wallet
       window.addEventListener('DOMContentLoaded', async () => {
         if (typeof window.ethereum !== 'undefined') {
           try {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             if (accounts && accounts.length > 0) {
               mostrarPerfilDirecto(accounts[0]);
             }
