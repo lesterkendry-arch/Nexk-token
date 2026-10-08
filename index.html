@@ -116,6 +116,22 @@
         <p>El acceso a este ecosistema ha sido revocado.</p>
     </div>
 
+    <!-- MODAL OBLIGATORIO PARA ENLAZAR BILLETERA (NO SE PUEDE CERRAR) -->
+    <div id="mandatoryWalletModal" class="modal" style="background: rgba(0,0,0,0.98); z-index: 9999;">
+        <div class="modal-content" style="text-align: center; border: 1px solid var(--primary-cyan);">
+            <h3 style="color: var(--primary-cyan); margin-bottom: 10px;">⚠️ Paso Final: Enlaza tu Billetera</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+                Para operar con NEXK, es obligatorio conectar tu billetera Web3. Así podremos leer tu saldo real en la blockchain.
+            </p>
+            <button class="wallet-option-btn btn-metamask-choice" onclick="ejecutarConexionWeb3Obligatoria()" style="background: #f59e0b; color: #000;">
+                🦊 Conectar Billetera Web3
+            </button>
+            <p style="font-size: 11px; color: var(--red-down); margin-top: 15px;">
+                Abre la web desde el navegador de MetaMask o Trust Wallet para continuar.
+            </p>
+        </div>
+    </div>
+
     <div class="top-bar">
         <div id="userDisplay" class="user-info-bar">Invitado</div>
         <div class="top-actions">
@@ -557,15 +573,17 @@
           onSnapshot(userDocRef, (snapshot) => {
             if (snapshot.exists()) {
               const data = snapshot.data();
-              if (data.bloqueado) { document.getElementById('bannedScreen').style.display = 'flex'; }
+              if (data.bloqueado) { document.getElementById('bannedScreen').style.display = 'flex'; return; }
               else { document.getElementById('bannedScreen').style.display = 'none'; }
 
-              if (window.ethereum && window.ethereum.selectedAddress) {
-                window.consultarSaldoOnChain(window.ethereum.selectedAddress);
+              // LÓGICA DE BILLETERA OBLIGATORIA
+              if (!data.walletAddress) {
+                  document.getElementById('mandatoryWalletModal').classList.add('show');
               } else {
-                tokensActualesUsuario = data.tokensNEXK || 0;
-                document.getElementById('userTokens').innerText = tokensActualesUsuario.toFixed(2) + ' NEXK';
-                recalcularBalanceUsuario();
+                  document.getElementById('mandatoryWalletModal').classList.remove('show');
+                  if (window.consultarSaldoOnChain) {
+                      window.consultarSaldoOnChain(data.walletAddress);
+                  }
               }
 
               document.getElementById('userProfit').innerText = (data.gananciaTokens || 0).toFixed(2) + ' NEXK';
@@ -581,6 +599,7 @@
           document.getElementById('appContent').style.display = 'none';
           document.getElementById('helpBtn').style.display = 'none';
           document.getElementById('bannedScreen').style.display = 'none';
+          document.getElementById('mandatoryWalletModal').classList.remove('show');
         }
       });
 
@@ -617,6 +636,52 @@
           const email = document.getElementById('authEmail').value; const pass = document.getElementById('authPassword').value; 
           if (!email || !pass) return alert("Completa los campos"); 
           try { await signInWithEmailAndPassword(auth, email, pass); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }
+      };
+
+      window.ejecutarConexionWeb3Obligatoria = async function() {
+          if (typeof window.ethereum === 'undefined') {
+              alert("No detectamos ninguna billetera Web3. Debes abrir esta página desde el navegador interno de Trust Wallet o MetaMask.");
+              return;
+          }
+
+          try {
+              const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+              const address = accounts[0];
+
+              if (!address) return alert("No seleccionaste ninguna cuenta.");
+
+              try {
+                  await window.ethereum.request({
+                      method: 'wallet_switchEthereumChain',
+                      params: [{ chainId: '0x38' }], 
+                  });
+              } catch (switchError) {
+                  if (switchError.code === 4902) {
+                      await window.ethereum.request({
+                          method: 'wallet_addEthereumChain',
+                          params: [{
+                              chainId: '0x38',
+                              chainName: 'BNB Smart Chain Mainnet',
+                              nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
+                              rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                              blockExplorerUrls: ['https://bscscan.com/']
+                          }]
+                      });
+                  }
+              }
+
+              const userRef = doc(db, "usuarios", usuarioActual.uid);
+              await updateDoc(userRef, { walletAddress: address });
+
+              alert("¡Billetera " + address.substring(0,6) + "... enlazada exitosamente!");
+              document.getElementById('mandatoryWalletModal').classList.remove('show');
+              
+              if (window.consultarSaldoOnChain) window.consultarSaldoOnChain(address);
+
+          } catch (error) {
+              console.error("Error conectando wallet:", error);
+              alert("Error al conectar: " + error.message);
+          }
       };
 
       window.iniciarProcesoCompraUniversal = function() {
@@ -682,7 +747,6 @@
           const montoBRL = (montoUSD * TASA_CAMBIO_BRL).toFixed(2);
 
           try {
-              // 1. Crear la solicitud de pago pendiente para la aprobación del administrador
               await addDoc(collection(db, "ordenes_pix"), {
                   uidUsuario: usuarioActual.uid,
                   emailUsuario: usuarioActual.email || "Usuario sin correo",
@@ -692,7 +756,6 @@
                   fecha: serverTimestamp()
               });
 
-              // 2. Registrar en el historial personal del cliente como 'En verificación'
               await addDoc(collection(db, "usuarios", usuarioActual.uid, "transacciones"), { 
                   tipo: 'COMPRA (PIX)', 
                   cantidad: tempCantidadTokens, 
@@ -818,7 +881,6 @@
           document.getElementById('adminImagePosition').value = d.imagePos || "none";
         }
 
-        // Cargar lista de usuarios
         if (usuariosSnapshotUnsubscribe) usuariosSnapshotUnsubscribe();
         usuariosSnapshotUnsubscribe = onSnapshot(collection(db, "usuarios"), (usersSnap) => {
             const selectChat = document.getElementById('adminChatSelect'); const listaUsr = document.getElementById('listaUsuariosAdmin');
@@ -836,7 +898,6 @@
             });
         });
 
-        // Escuchar ordenes Pix pendientes para aprobación manual
         if (ordenesPixUnsubscribe) ordenesPixUnsubscribe();
         const qPix = query(collection(db, "ordenes_pix"), orderBy("fecha", "desc"));
         ordenesPixUnsubscribe = onSnapshot(qPix, (snapshot) => {
@@ -890,19 +951,16 @@
         });
       };
 
-      /* FUNCIONES DE APROBACIÓN Y RECHAZO INDIVIDUAL EN EL PANEL ADMIN */
       window.aprobarPagoPixIndividual = async function(ordenId, uidUsuario, cantidadTokens) {
           if (!confirm(`¿Confirmas que el depósito ingresó correctamente a tu cuenta y deseas acreditar ${cantidadTokens} NEXK a este usuario?`)) return;
 
           try {
-              // 1. Acreditar saldo directamente a la cuenta del usuario objetivo
               const userRef = doc(db, "usuarios", uidUsuario);
               await updateDoc(userRef, {
                   tokensNEXK: increment(cantidadTokens),
                   totalOperaciones: increment(1)
               });
 
-              // 2. Marcar la orden como APROBADA
               await updateDoc(doc(db, "ordenes_pix", ordenId), {
                   estado: 'APROBADO',
                   fechaAprobacion: serverTimestamp()
@@ -1000,7 +1058,6 @@
         document.getElementById('authPassword').value = pass; alert("Generada: " + pass);
       };
 
-      /* FUNCIÓN MEJORADA PARA ABRIR PANCAKESWAP DIRECTAMENTE FUERA DE IFRAMES Y PREVENIR REINICIOS */
       window.abrirPancakeSwapDirecto = function() {
         const pancakeUrl = "https://pancakeswap.finance/swap?outputCurrency=0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5&chainId=56";
         
@@ -1012,7 +1069,6 @@
         }
       };
 
-      /* FUNCIÓN PARA VINCULACIÓN Y SOLICITUD DIRECTA EN BILLETERAS WEB3 (METAMASK / TRUST WALLET) */
       window.vincularTokenWeb3 = async function(walletType) {
         cerrarModal('walletChoiceModal');
         
@@ -1023,7 +1079,6 @@
 
         if (typeof window.ethereum !== 'undefined') {
           try {
-            // 1. Solicitar permiso explícito de conexión de la cuenta
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             
             if (!accounts || accounts.length === 0) {
@@ -1031,14 +1086,12 @@
               return;
             }
 
-            // 2. Forzar el cambio a la red BNB Smart Chain Mainnet (ChainID 0x38 = 56)
             try {
               await window.ethereum.request({
                 method: 'wallet_switchEthereumChain',
                 params: [{ chainId: '0x38' }], 
               });
             } catch (switchError) {
-              // Si la red BSC no está guardada, se agrega a la app
               if (switchError.code === 4902) {
                 await window.ethereum.request({
                   method: 'wallet_addEthereumChain',
@@ -1053,12 +1106,10 @@
               }
             }
 
-            // 3. Consultar saldo on-chain
             if (window.consultarSaldoOnChain) {
               window.consultarSaldoOnChain(accounts[0]);
             }
 
-            // 4. Solicitar guardar el token NEXK
             const wasAdded = await window.ethereum.request({
               method: 'wallet_watchAsset',
               params: {
@@ -1080,7 +1131,6 @@
             alert("La solicitud fue cancelada o rechazada en la aplicación.");
           }
         } else {
-          // Redirección directa por Deep Link cuando se navega desde navegador estándar
           const currentUrl = window.location.href.replace(/^https?:\/\//, '');
           if (walletType === 'metamask') {
             window.location.href = `https://metamask.app.link/dapp/${currentUrl}`;
