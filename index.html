@@ -576,7 +576,7 @@
         </div>
     </div>
 
-    <!-- MODAL SELECCIONAR BILLETERA (BOTONES ORIGINALES CON SUS FUNCIONES INTACTAS) -->
+    <!-- MODAL SELECCIONAR BILLETERA -->
     <div id="walletChoiceModal" class="modal">
         <div class="modal-content" style="text-align: center;">
             <h3>Conecta tu Billetera</h3>
@@ -1131,7 +1131,7 @@
             } catch (e) {}
           }
         } else {
-          usuarioActual = null;
+          // Si estamos dentro de la billetera o hay sesión previa guardada, evitamos mostrar el login y entramos directo
           if (typeof window.ethereum !== 'undefined' || localStorage.getItem("nexk_sesion_activa") === "true" || window.location.search.includes("autologin=true")) {
             document.getElementById('welcomeSection').style.display = 'none';
             document.getElementById('appContent').style.display = 'block';
@@ -1148,14 +1148,21 @@
             }
             return;
           }
+          usuarioActual = null;
           document.getElementById('appContent').style.display = 'none';
           document.getElementById('welcomeSection').style.display = 'block';
         }
       });
 
       window.onload = async () => {
-          document.getElementById('appContent').style.display = 'none';
-          document.getElementById('welcomeSection').style.display = 'block';
+          // Si viene con marca de sesión activa o autologin, saltamos de inmediato el welcome por seguridad
+          if (localStorage.getItem("nexk_sesion_activa") === "true" || window.location.search.includes("autologin=true") || typeof window.ethereum !== 'undefined') {
+              document.getElementById('welcomeSection').style.display = 'none';
+              document.getElementById('appContent').style.display = 'block';
+          } else {
+              document.getElementById('appContent').style.display = 'none';
+              document.getElementById('welcomeSection').style.display = 'block';
+          }
           await window.asegurarRedBNB();
           await window.actualizarPrecioTokenEnVivo();
           setInterval(window.actualizarPrecioTokenEnVivo, 12000);
