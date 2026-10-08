@@ -161,8 +161,7 @@
                     <div class="field">
                         <label>Método de Pago / Moneda</label>
                         <select id="paymentCurrency">
-                            <option value="USD">Tarjeta de Crédito / Débito (USD $)</option>
-                            <option value="BRL">Pix / Transferencia Brasil (BRL R$)</option>
+                            <option value="USD">Coinremitter (BNB / Cripto)</option>
                         </select>
                     </div>
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
@@ -384,10 +383,11 @@
       let historialUnsubscribe = null;
       let usuariosSnapshotUnsubscribe = null;
 
-      // DATOS DEL CONTRATO BSC REAL
+      // DATOS DEL CONTRATO BSC REAL Y COINREMITTER
       const TOKEN_CONTRACT_ADDRESS = "0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5";
       const ERC20_ABI = ["function balanceOf(address owner) view returns (uint256)"];
       const BSC_RPC_URL = "https://bsc-dataseed.binance.org/";
+      const COINREMITTER_API_KEY = "Wkey_MBiyQDiooBNVl8K";
 
       window.onload = async () => {
           const statsRef = doc(db, "configuracion", "estadisticas");
@@ -547,16 +547,40 @@
           try { await signInWithEmailAndPassword(auth, email, pass); window.cerrarAuthModal(); } catch (e) { alert("Error: " + e.message); }
       };
 
-      window.iniciarProcesoCompra = function() {
+      // INTEGRACIÓN CON COINREMITTER
+      window.iniciarProcesoCompra = async function() {
         if (!usuarioActual) return alert("Inicia sesión primero");
-        const c = parseFloat(document.getElementById('tradeAmount').value);
-        if (isNaN(c) || c <= 0) return alert("Cantidad inválida");
+        const cantidadTokens = parseFloat(document.getElementById('tradeAmount').value);
+        if (isNaN(cantidadTokens) || cantidadTokens <= 0) return alert("Cantidad inválida");
         
-        const montoUSD = (c * PRECIO_TOKEN_USD).toFixed(2);
-        const apiKey = "MzE3RjdGQzI5MTc4Q0REMzA0Njg5RDM4OTc3NEFENDU=";
-        const paymentoUrl = `https://app.paymento.io/checkout?apiKey=${apiKey}&amount=${montoUSD}&currency=USD`;
+        const montoUSD = (cantidadTokens * PRECIO_TOKEN_USD).toFixed(2);
         
-        window.location.href = paymentoUrl;
+        try {
+          const response = await fetch("https://coinremitter.com/api/v3/BNB/create-invoice", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              api_key: COINREMITTER_API_KEY,
+              amount: montoUSD,
+              currency: "USD",
+              name: "Compra NEXK Tokens",
+              description: `Compra de ${cantidadTokens} NEXK por ${usuarioActual.email || usuarioActual.uid}`
+            })
+          });
+
+          const data = await response.json();
+
+          if (data.flag === 1 && data.data && data.data.url_invoice) {
+            window.location.href = data.data.url_invoice;
+          } else {
+            alert("Error al generar la orden de pago: " + (data.msg || "Inténtalo de nuevo."));
+          }
+        } catch (error) {
+          console.error("Error al conectar con Coinremitter:", error);
+          alert("Ocurrió un problema de conexión al procesar el pago.");
+        }
       };
 
       window.confirmarPagoCompra = async function() {
