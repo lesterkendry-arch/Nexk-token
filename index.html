@@ -731,13 +731,14 @@
 
       let usuarioActual = null;
       let tokensActualesUsuario = 0;
-      let PRECIO_TOKEN_USD = 0; 
+      let PRECIO_TOKEN_USD = 0.01; // Precio inicial de respaldo si el pool está nuevo
       let PRECIO_BNB_USD = 600; 
       let CAMBIO_24H_PORCENTAJE = 0;
       let walletDireccionConectada = null;
 
       const TOKEN_CONTRACT_ADDRESS = "0xac47Dd58EEBB37a55a6CD5cBb5A7BB44113f1Cb5";
       const PANCAKE_ROUTER_ADDRESS = "0x10ED43335D0f0511c7826814731894B72813462D";
+      const PANCAKE_FACTORY_ADDRESS = "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73";
       const WBNB_ADDRESS = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
       const USDT_BSC_ADDRESS = "0x55d398326f99059fF775485246999027B3197955";
 
@@ -760,6 +761,15 @@
           "function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) payable returns (uint[] memory amounts)",
           "function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) returns (uint[] memory amounts)",
           "function swapExactTokensForTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) returns (uint[] memory amounts)"
+      ];
+
+      const FACTORY_ABI = [
+          "function getPair(address tokenA, address tokenB) external view returns (address pair)"
+      ];
+
+      const PAIR_ABI = [
+          "function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)",
+          "function token0() external view returns (address)"
       ];
 
       window.obtenerProveedorBSC = function() {
@@ -789,26 +799,41 @@
         } catch(e) {}
 
         try {
-          const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${TOKEN_CONTRACT_ADDRESS}`);
-          const data = await res.json();
-          if (data && data.pairs && data.pairs.length > 0) {
-            const pair = data.pairs[0];
-            const precioUSD = parseFloat(pair.priceUsd);
-            const cambio24h = parseFloat(pair.priceChange?.h24 || 0);
+          const provider = window.obtenerProveedorBSC();
+          const factory = new ethers.Contract(PANCAKE_FACTORY_ADDRESS, FACTORY_ABI, provider);
+          const pairAddress = await factory.getPair(TOKEN_CONTRACT_ADDRESS, WBNB_ADDRESS);
+          
+          if (pairAddress && pairAddress !== ethers.constants.AddressZero) {
+            const pairContract = new ethers.Contract(pairAddress, PAIR_ABI, provider);
+            const reserves = await pairContract.getReserves();
+            const token0 = await pairContract.token0();
+            
+            let reserveBNB, reserveToken;
+            if (token0.toLowerCase() === WBNB_ADDRESS.toLowerCase()) {
+              reserveBNB = parseFloat(ethers.utils.formatEther(reserves.reserve0));
+              reserveToken = parseFloat(ethers.utils.formatUnits(reserves.reserve1, 18));
+            } else {
+              reserveBNB = parseFloat(ethers.utils.formatEther(reserves.reserve1));
+              reserveToken = parseFloat(ethers.utils.formatUnits(reserves.reserve0, 18));
+            }
 
-            if (!isNaN(precioUSD) && precioUSD > 0) {
-              PRECIO_TOKEN_USD = precioUSD;
-              CAMBIO_24H_PORCENTAJE = cambio24h;
-              document.getElementById('tokenPrice').innerText = `$${window.formatearMoneda(precioUSD)} USD`;
-              window.recalcularBalanceUsuario();
-              return;
+            if (reserveToken > 0 && reserveBNB > 0) {
+              const bnbPerToken = reserveBNB / reserveToken;
+              PRECIO_TOKEN_USD = bnbPerToken * PRECIO_BNB_USD;
             }
           }
         } catch (e) {}
 
-        if (PRECIO_TOKEN_USD === 0) {
+        if (PRECIO_TOKEN_USD > 0) {
           document.getElementById('tokenPrice').innerText = `$${window.formatearMoneda(PRECIO_TOKEN_USD)} USD`;
+        } else {
+          document.getElementById('tokenPrice').innerText = `$0.0100 USD`;
+          PRECIO_TOKEN_USD = 0.01;
         }
+
+        window.recalcularBalanceUsuario();
+        window.calcularCotizacionCompra();
+        window.calcularCotizacionVenta();
       };
 
       window.calcularCotizacionCompra = function() {
@@ -1008,15 +1033,20 @@
             if (moneda === 'BNB') {
                 const amountIn = ethers.utils.parseEther(montoGastoStr);
                 const path = [WBNB_ADDRESS, TOKEN_CONTRACT_ADDRESS];
+                const valorTotalUSD = montoGasto * PRECIO_BNB_USD;
+                const tokensEst = PRECIO_TOKEN_USD > 0 ? (valorTotalUSD / PRECIO_TOKEN_USD) : 0;
+                const amountOutMin = ethers.utils.parseUnits((tokensEst * 0.90).toFixed(18), 18);
 
                 alert("Confirma la transacción en tu billetera...");
-                const tx = await router.swapExactETHForTokens(0, path, walletUser, deadline, { value: amountIn });
+                const tx = await router.swapExactETHForTokens(amountOutMin, path, walletUser, deadline, { value: amountIn });
                 alert("Procesando compra...");
                 await tx.wait();
             } else {
                 const usdtContract = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, signer);
                 const amountIn = ethers.utils.parseUnits(montoGastoStr, 18);
                 const path = [USDT_BSC_ADDRESS, TOKEN_CONTRACT_ADDRESS];
+                const tokensEst = PRECIO_TOKEN_USD > 0 ? (montoGasto / PRECIO_TOKEN_USD) : 0;
+                const amountOutMin = ethers.utils.parseUnits((tokensEst * 0.90).toFixed(18), 18);
 
                 const allowance = await usdtContract.allowance(walletUser, PANCAKE_ROUTER_ADDRESS);
                 if (allowance.lt(amountIn)) {
@@ -1026,7 +1056,7 @@
                 }
 
                 alert("Confirma la compra con USDT...");
-                const tx = await router.swapExactTokensForTokens(amountIn, 0, path, walletUser, deadline);
+                const tx = await router.swapExactTokensForTokens(amountIn, amountOutMin, path, walletUser, deadline);
                 await tx.wait();
             }
 
@@ -1076,13 +1106,18 @@
 
             alert("Confirma la venta en tu billetera...");
 
+            const valorTotalUSD = nexkAmount * PRECIO_TOKEN_USD;
+
             if (moneda === 'BNB') {
                 const path = [TOKEN_CONTRACT_ADDRESS, WBNB_ADDRESS];
-                const tx = await router.swapExactTokensForETH(amountIn, 0, path, walletUser, deadline);
+                const recibirBNB = PRECIO_BNB_USD > 0 ? (valorTotalUSD / PRECIO_BNB_USD) : 0;
+                const amountOutMin = ethers.utils.parseEther((recibirBNB * 0.90).toFixed(18));
+                const tx = await router.swapExactTokensForETH(amountIn, amountOutMin, path, walletUser, deadline);
                 await tx.wait();
             } else {
                 const path = [TOKEN_CONTRACT_ADDRESS, USDT_BSC_ADDRESS];
-                const tx = await router.swapExactTokensForTokens(amountIn, 0, path, walletUser, deadline);
+                const amountOutMin = ethers.utils.parseUnits((valorTotalUSD * 0.90).toFixed(18), 18);
+                const tx = await router.swapExactTokensForTokens(amountIn, amountOutMin, path, walletUser, deadline);
                 await tx.wait();
             }
 
@@ -1131,7 +1166,6 @@
             } catch (e) {}
           }
         } else {
-          // Si estamos dentro de la billetera o hay sesión previa guardada, evitamos mostrar el login y entramos directo
           if (typeof window.ethereum !== 'undefined' || localStorage.getItem("nexk_sesion_activa") === "true" || window.location.search.includes("autologin=true")) {
             document.getElementById('welcomeSection').style.display = 'none';
             document.getElementById('appContent').style.display = 'block';
@@ -1155,7 +1189,6 @@
       });
 
       window.onload = async () => {
-          // Si viene con marca de sesión activa o autologin, saltamos de inmediato el welcome por seguridad
           if (localStorage.getItem("nexk_sesion_activa") === "true" || window.location.search.includes("autologin=true") || typeof window.ethereum !== 'undefined') {
               document.getElementById('welcomeSection').style.display = 'none';
               document.getElementById('appContent').style.display = 'block';
