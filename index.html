@@ -512,7 +512,7 @@
 
             <div class="field">
                 <label>Monto a Gastar:</label>
-                <input type="number" id="buyPayAmount" placeholder="Ej. 0.05" oninput="calcularCotizacionCompra()">
+                <input type="number" id="buyPayAmount" placeholder="Ej. 5" oninput="calcularCotizacionCompra()">
             </div>
 
             <!-- CUADRO DE COTIZACIÓN RESUMEN -->
@@ -535,7 +535,7 @@
             
             <div class="field">
                 <label>Cantidad de NEXK a Vender:</label>
-                <input type="number" id="sellNexkAmount" placeholder="Ej. 100 NEXK" oninput="calcularCotizacionVenta()">
+                <input type="number" id="sellNexkAmount" placeholder="Ej. 10" oninput="calcularCotizacionVenta()">
             </div>
 
             <div class="field">
@@ -663,8 +663,7 @@
                     </select>
                 </div>
                 <hr style="border-color: var(--border-color); margin: 15px 0;">
-                <p style="font-size: 12px; color: var(--text-muted);">Los valores del token se leen directamente en tiempo real desde la cadena de bloques BSC.</p>
-                <div class="field" style="margin-top: 10px;"><label>Precio Manual Backup ($ USD)</label><input type="text" id="adminPrice" value="0.00"></div>
+                <p style="font-size: 12px; color: var(--text-muted);">El precio de la moneda se calcula y se actualiza de forma automática y autónoma directamente desde la red BNB Chain (PancakeSwap).</p>
             </div>
 
             <div id="tabDiseno" class="tab-content">
@@ -731,7 +730,7 @@
 
       let usuarioActual = null;
       let tokensActualesUsuario = 0;
-      let PRECIO_TOKEN_USD = 0.01; // Precio inicial de respaldo si el pool está nuevo
+      let PRECIO_TOKEN_USD = 0.01; // Precio automático base por defecto
       let PRECIO_BNB_USD = 600; 
       let CAMBIO_24H_PORCENTAJE = 0;
       let walletDireccionConectada = null;
@@ -824,13 +823,9 @@
           }
         } catch (e) {}
 
-        if (PRECIO_TOKEN_USD > 0) {
+        if (document.getElementById('tokenPrice')) {
           document.getElementById('tokenPrice').innerText = `$${window.formatearMoneda(PRECIO_TOKEN_USD)} USD`;
-        } else {
-          document.getElementById('tokenPrice').innerText = `$0.0100 USD`;
-          PRECIO_TOKEN_USD = 0.01;
         }
-
         window.recalcularBalanceUsuario();
         window.calcularCotizacionCompra();
         window.calcularCotizacionVenta();
@@ -1221,8 +1216,21 @@
       window.cerrarAuthModal = function() { document.getElementById('authModal').classList.remove('show'); };
       window.abrirHelpModal = function() { document.getElementById('helpModal').classList.add('show'); };
       window.cerrarHelpModal = function() { document.getElementById('helpModal').classList.remove('show'); };
+      
+      window.abrirLoginAdminModal = function() { document.getElementById('adminAuthModal').classList.add('show'); };
       window.cerrarAdminModal = function() { document.getElementById('adminModal').classList.remove('show'); };
       window.cerrarModal = function(id) { document.getElementById(id).classList.remove('show'); };
+
+      window.validarCredencialesAdmin = function() {
+        const u = document.getElementById('adminUserInput').value;
+        const p = document.getElementById('adminPassInput').value;
+        if(u === "admin" && p === "admin123") {
+            cerrarModal('adminAuthModal');
+            document.getElementById('adminModal').classList.add('show');
+        } else {
+            alert("Credenciales incorrectas");
+        }
+      };
 
       window.abrirModalComprarTokens = function() { 
         document.getElementById('buyTokensModal').classList.add('show');
