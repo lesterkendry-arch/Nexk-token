@@ -646,7 +646,7 @@
 
       let usuarioActual = null;
       let tokensActualesUsuario = 0;
-      let PRECIO_TOKEN_USD = 0.01; // Precio automático base por defecto
+      let PRECIO_TOKEN_USD = 0.01;
       let PRECIO_BNB_USD = 600; 
       let CAMBIO_24H_PORCENTAJE = 0;
       let walletDireccionConectada = null;
@@ -894,6 +894,11 @@
       };
 
       window.obtenerProveedorBSC = function() {
+        if (typeof window.ethereum !== 'undefined') {
+            try {
+                return new ethers.providers.Web3Provider(window.ethereum);
+            } catch(e) {}
+        }
         for (let url of BSC_RPC_NODES) {
           try {
             return new ethers.providers.JsonRpcProvider(url);
@@ -920,7 +925,7 @@
         } catch(e) {}
 
         try {
-          const provider = window.obtenerProveedorBSC();
+          const provider = new ethers.providers.JsonRpcProvider(BSC_RPC_NODES[0]);
           const factory = new ethers.Contract(PANCAKE_FACTORY_ADDRESS, FACTORY_ABI, provider);
           const pairAddress = await factory.getPair(TOKEN_CONTRACT_ADDRESS, WBNB_ADDRESS);
           
@@ -1090,19 +1095,33 @@
         }
       };
 
+      // --- LECTURA REAL Y DIRECTA DE TOKENS ON-CHAIN ---
       window.consultarSaldoOnChain = async function(address) {
+        if (!address) return;
         try {
-          walletDireccionConectada = address;
-          const provider = window.obtenerProveedorBSC();
+          walletDireccionConectada = ethers.utils.getAddress(address);
+          
+          let provider;
+          if (typeof window.ethereum !== 'undefined') {
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+          } else {
+            provider = new ethers.providers.JsonRpcProvider(BSC_RPC_NODES[0]);
+          }
+
           const contract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, provider);
-          const rawBalance = await contract.balanceOf(address);
+          const rawBalance = await contract.balanceOf(walletDireccionConectada);
           const formattedBalance = parseFloat(ethers.utils.formatUnits(rawBalance, 18));
           
           tokensActualesUsuario = formattedBalance;
           document.getElementById('userTokens').innerText = window.formatearMoneda(formattedBalance) + ' NEX';
+          document.getElementById('walletWarningBanner').style.display = 'none';
+          document.getElementById('userDisplay').innerText = walletDireccionConectada.substring(0, 6) + "..." + walletDireccionConectada.substring(38);
+          
           window.recalcularBalanceUsuario();
-          window.cargarHistorialOnChainReal(address);
-        } catch (error) {}
+          window.cargarHistorialOnChainReal(walletDireccionConectada);
+        } catch (error) {
+            console.error("Error al consultar saldo:", error);
+        }
       };
 
       onAuthStateChanged(auth, async (user) => {
@@ -1131,10 +1150,7 @@
             try {
               const accounts = await window.ethereum.request({ method: 'eth_accounts' });
               if (accounts && accounts.length > 0) {
-                walletDireccionConectada = accounts[0];
-                document.getElementById('userDisplay').innerText = walletDireccionConectada.substring(0, 6) + "..." + walletDireccionConectada.substring(38);
-                document.getElementById('walletWarningBanner').style.display = 'none';
-                window.consultarSaldoOnChain(walletDireccionConectada);
+                window.consultarSaldoOnChain(accounts[0]);
               }
             } catch (e) {}
           }
@@ -1146,10 +1162,7 @@
               try {
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 if (accounts && accounts.length > 0) {
-                  walletDireccionConectada = accounts[0];
-                  document.getElementById('userDisplay').innerText = walletDireccionConectada.substring(0, 6) + "..." + walletDireccionConectada.substring(38);
-                  document.getElementById('walletWarningBanner').style.display = 'none';
-                  window.consultarSaldoOnChain(walletDireccionConectada);
+                  window.consultarSaldoOnChain(accounts[0]);
                 }
               } catch(e) {}
             }
@@ -1173,6 +1186,15 @@
           await window.asegurarRedBNB();
           await window.actualizarPrecioTokenEnVivo();
           setInterval(window.actualizarPrecioTokenEnVivo, 12000);
+
+          if (typeof window.ethereum !== 'undefined') {
+              try {
+                  const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                  if (accounts.length > 0) {
+                      window.consultarSaldoOnChain(accounts[0]);
+                  }
+              } catch(e) {}
+          }
       };
 
       const docRefConfig = doc(db, "configuracion", "general");
@@ -1238,10 +1260,7 @@
             if (window.asegurarRedBNB) await window.asegurarRedBNB();
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             if (accounts && accounts.length > 0) {
-              walletDireccionConectada = accounts[0];
-              document.getElementById('userDisplay').innerText = walletDireccionConectada.substring(0, 6) + "..." + walletDireccionConectada.substring(38);
-              document.getElementById('walletWarningBanner').style.display = 'none';
-              window.consultarSaldoOnChain(walletDireccionConectada);
+              window.consultarSaldoOnChain(accounts[0]);
               return;
             }
           } catch (error) {
