@@ -372,6 +372,8 @@
         <div class="top-actions">
             <button class="btn-top" id="helpBtn" onclick="abrirHelpModal()" style="display: none;">💬 Soporte</button>
             <button id="authBtn" class="btn-auth" onclick="abrirAuthModal()">Ingresar</button>
+            <!-- BOTÓN DE CERRAR SESIÓN EN LA BARRA SUPERIOR -->
+            <button class="btn-top" id="btnLogoutTop" style="background: rgba(239, 68, 68, 0.2); border-color: var(--red-down); color: var(--red-down); display: none;" onclick="ejecutarCerrarSesion()" title="Cerrar Sesión">🚪 Salir</button>
             <button class="btn-dots" onclick="abrirLoginAdminModal()" title="Acceso Admin">⋮</button>
         </div>
     </div>
@@ -520,11 +522,10 @@
             <button class="btn-provider btn-google" id="btnGoogleModal" onclick="ejecutarLoginGoogle()">Continuar con Google</button>
             <button class="btn-provider btn-apple" id="btnAppleModal" onclick="ejecutarLoginApple()">Continuar con Apple</button>
             <div style="margin: 15px 0; color: var(--text-muted); font-size: 12px; text-align: center;">- O CORREO -</div>
-            <div class="field"><label>Correo</label><input type="email" id="authEmail" placeholder="tu@correo.com"></div>
-            <div class="field"><label>Contraseña</label><input type="password" id="authPassword"><button class="btn-gen" onclick="generarPasswordAzar()">Generar Azar</button></div>
+            <div class="field"><label>Correo Electrónico</label><input type="email" id="authEmail" placeholder="tu@correo.com"></div>
+            
             <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button class="btn-auth" style="flex:1;" onclick="ejecutarRegistro()">Registrarse</button>
-                <button class="btn-auth" style="flex:1; background: var(--border-color); color: white;" onclick="ejecutarLogin()">Iniciar Sesión</button>
+                <button class="btn-auth" style="flex:1;" onclick="enviarCodigoEmail()">Enviar Enlace de Acceso</button>
             </div>
             <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarAuthModal()">Cancelar</button>
         </div>
@@ -655,7 +656,7 @@
     <!-- FIREBASE & LÓGICA INTEGRADA REAL -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-      import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+      import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, signOut, onAuthStateChanged, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
       import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, addDoc, query, orderBy, serverTimestamp, setLogLevel, limit } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
       setLogLevel('silent');
@@ -676,7 +677,7 @@
       let walletDireccionConectada = null;
       let chatListenerUsuario = null;
       let chatListenerAdmin = null;
-      let chatAdminUidActual = null; // NUEVO: Para saber a quién le responde el admin
+      let chatAdminUidActual = null;
 
       const TOKEN_CONTRACT_ADDRESS = "0x44B1c3Cd218D73368AD865C1cf8bd6E1Dd15c59A";
       const PANCAKE_ROUTER_ADDRESS = "0x10ED43335D0f0511c7826814731894B72813462D";
@@ -721,7 +722,6 @@
                   const statRef = doc(db, "estadisticas", "general");
                   await setDoc(statRef, { visitas: increment(1) }, { merge: true });
                   
-                  // Agrega la visita a la lista para que la veas en el panel admin
                   await addDoc(collection(db, "visitas_log"), {
                       fecha: serverTimestamp(),
                       dispositivo: navigator.userAgent.includes("Mobile") ? "Móvil" : "PC",
@@ -775,33 +775,44 @@
           } catch(e) {}
       }
 
-      window.generarPasswordAzar = function() {
-          const pass = Math.random().toString(36).slice(-8) + "!NEX";
-          document.getElementById('authPassword').value = pass;
+      // --- AUTENTICACIÓN POR ENLACE AL CORREO (PASSWORDLESS) ---
+      const actionCodeSettings = {
+          url: window.location.href.split('?')[0],
+          handleCodeInApp: true,
       };
 
-      window.ejecutarRegistro = async function() {
+      window.enviarCodigoEmail = async function() {
           const email = document.getElementById('authEmail').value.trim();
-          const pass = document.getElementById('authPassword').value.trim();
-          if(!email || !pass) return alert("Ingresa correo y contraseña.");
+          if(!email) return alert("Ingresa tu correo electrónico.");
           try {
-              const res = await createUserWithEmailAndPassword(auth, email, pass);
-              await registrarOActualizarUsuarioDB(res.user, 'correo');
+              await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+              window.localStorage.setItem('emailForSignIn', email);
               window.cerrarAuthModal();
-              alert("Cuenta creada con éxito.");
-          } catch(e) { alert("Error al registrarse: " + e.message); }
+              alert("Te hemos enviado un enlace de confirmación a tu correo. Abre tu correo e ingresa mediante el enlace.");
+          } catch(e) { 
+              alert("Error al enviar el enlace: " + e.message); 
+          }
       };
 
-      window.ejecutarLogin = async function() {
-          const email = document.getElementById('authEmail').value.trim();
-          const pass = document.getElementById('authPassword').value.trim();
-          if(!email || !pass) return alert("Ingresa correo y contraseña.");
-          try {
-              const res = await signInWithEmailAndPassword(auth, email, pass);
-              await registrarOActualizarUsuarioDB(res.user, 'correo');
-              window.cerrarAuthModal();
-          } catch(e) { alert("Error al ingresar: " + e.message); }
-      };
+      async function verificarEnlaceCorreoAcceso() {
+          if (isSignInWithEmailLink(auth, window.location.href)) {
+              let email = window.localStorage.getItem('emailForSignIn');
+              if (!email) {
+                  email = window.prompt('Por favor confirma tu correo electrónico:');
+              }
+              if (email) {
+                  try {
+                      const res = await signInWithEmailLink(auth, email, window.location.href);
+                      window.localStorage.removeItem('emailForSignIn');
+                      await registrarOActualizarUsuarioDB(res.user, 'correo-enlace');
+                      alert("¡Correo verificado con éxito!");
+                  } catch(e) {
+                      alert("Error al validar el enlace de confirmación: " + e.message);
+                  }
+              }
+          }
+      }
+      verificarEnlaceCorreoAcceso();
 
       window.ejecutarLoginGoogle = async function() {
           try {
@@ -819,6 +830,17 @@
           } catch(e) { alert("Error con Apple: " + e.message); }
       };
 
+      // --- CERRAR SESIÓN ---
+      window.ejecutarCerrarSesion = async function() {
+          try {
+              localStorage.removeItem("nex_sesion_activa");
+              await signOut(auth);
+              window.location.reload();
+          } catch(e) {
+              alert("Error al cerrar sesión: " + e.message);
+          }
+      };
+
       // --- ESCUCHAR LISTA DE USUARIOS REGISTRADOS Y GESTIÓN DE LISTA DE CHAT ---
       onSnapshot(collection(db, "usuarios"), (snap) => {
           const listaDiv = document.getElementById('listaUsuariosAdmin');
@@ -830,7 +852,6 @@
           snap.forEach(documento => {
               const data = documento.data();
               
-              // Lógica de lista de usuarios general
               if (listaDiv) {
                   const d = document.createElement('div');
                   d.className = 'admin-user-card';
@@ -849,13 +870,11 @@
                   listaDiv.appendChild(d);
               }
 
-              // Preparar lista de chats
               if (data.ultimoMensajeAt) {
                   usuariosChat.push(data);
               }
           });
 
-          // Ordenar los chats para que el más reciente esté arriba
           usuariosChat.sort((a, b) => b.ultimoMensajeAt?.toMillis() - a.ultimoMensajeAt?.toMillis());
 
           if(chatListContainer) {
@@ -870,7 +889,6 @@
                   div.onmouseout = () => div.style.background = 'var(--bg-dark)';
                   div.onclick = () => window.abrirChatUsuarioAdmin(data.uid, data.nombre || data.email);
                   
-                  // El punto verde si el admin no lo ha leído
                   const dot = data.unreadAdmin ? '<span style="color: #10b981; font-size: 16px;" title="Nuevo mensaje">🟢</span>' : '';
                   div.innerHTML = `
                       <div style="display: flex; flex-direction: column;">
@@ -920,7 +938,6 @@
                   sender: 'user',
                   timestamp: serverTimestamp()
               });
-              // Actualizar el estado del usuario para pasarlo arriba y poner punto verde
               await setDoc(doc(db, "usuarios", usuarioActual.uid), {
                   ultimoMensajeAt: serverTimestamp(),
                   unreadAdmin: true
@@ -929,14 +946,13 @@
           } catch(e) { alert("Error al enviar mensaje: " + e.message); }
       };
 
-      // --- LÓGICA DE CHAT DEL ADMIN (NUEVA UI) ---
+      // --- LÓGICA DE CHAT DEL ADMIN ---
       window.abrirChatUsuarioAdmin = async function(uid, nombreUsuario) {
           chatAdminUidActual = uid;
           document.getElementById('adminChatListContainer').style.display = 'none';
           document.getElementById('adminChatActiveContainer').style.display = 'block';
           document.getElementById('adminChatActiveTitle').innerText = "Chat con " + nombreUsuario;
           
-          // Quitar el punto verde cuando el administrador abre el chat
           try {
               await setDoc(doc(db, "usuarios", uid), { unreadAdmin: false }, { merge: true });
           } catch(e) {}
@@ -961,7 +977,7 @@
       window.volverListaChatAdmin = function() {
           chatAdminUidActual = null;
           if (chatListenerAdmin) {
-              chatListenerAdmin(); // Dejar de escuchar este chat específico
+              chatListenerAdmin();
               chatListenerAdmin = null;
           }
           document.getElementById('adminChatActiveContainer').style.display = 'none';
@@ -979,7 +995,6 @@
                   sender: 'admin',
                   timestamp: serverTimestamp()
               });
-              // Quitar punto verde por si acaso y actualizar timestamp
               await setDoc(doc(db, "usuarios", uid), {
                   unreadAdmin: false
               }, { merge: true });
@@ -1069,7 +1084,6 @@
 
         try {
           lista.innerHTML = '<p style="color:var(--text-muted);text-align:center;">Cargando transacciones...</p>';
-          // Se incluye una apikey pública estándar de BscScan para evitar bloqueos por límite de peticiones
           const url = `https://api.bscscan.com/api?module=account&action=tokentx&contractaddress=${TOKEN_CONTRACT_ADDRESS}&address=${address}&page=1&offset=25&sort=desc&apikey=YHQ8E3F2X85FUDZ5XZS4H1B45476R24XV6`;
           const res = await fetch(url);
           const data = await res.json();
@@ -1230,7 +1244,6 @@
         if (user) {
           usuarioActual = user;
           
-          // COMPROBAR BANEO DE USUARIO
           onSnapshot(doc(db, "usuarios", user.uid), (uSnap) => {
               if (uSnap.exists() && uSnap.data().banned === true) {
                   document.getElementById('bannedScreen').style.display = 'flex';
@@ -1244,6 +1257,7 @@
           document.getElementById('welcomeSection').style.display = 'none';
           document.getElementById('appContent').style.display = 'block';
           document.getElementById('helpBtn').style.display = 'inline-block';
+          document.getElementById('btnLogoutTop').style.display = 'inline-block'; // Muestra el botón de salir arriba
           document.getElementById('userDisplay').innerText = user.email || user.displayName || "Usuario NEX";
 
           escucharChatUsuario(user.uid);
@@ -1260,6 +1274,7 @@
           if (typeof window.ethereum !== 'undefined' || localStorage.getItem("nex_sesion_activa") === "true" || window.location.search.includes("autologin=true")) {
             document.getElementById('welcomeSection').style.display = 'none';
             document.getElementById('appContent').style.display = 'block';
+            document.getElementById('btnLogoutTop').style.display = 'inline-block';
             if (typeof window.ethereum !== 'undefined') {
               try {
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -1274,6 +1289,7 @@
           document.getElementById('appContent').style.display = 'none';
           document.getElementById('welcomeSection').style.display = 'block';
           document.getElementById('helpBtn').style.display = 'none';
+          document.getElementById('btnLogoutTop').style.display = 'none'; // Oculta el botón de salir arriba si no hay sesión
         }
       });
 
@@ -1281,9 +1297,11 @@
           if (localStorage.getItem("nex_sesion_activa") === "true" || window.location.search.includes("autologin=true") || typeof window.ethereum !== 'undefined') {
               document.getElementById('welcomeSection').style.display = 'none';
               document.getElementById('appContent').style.display = 'block';
+              document.getElementById('btnLogoutTop').style.display = 'inline-block';
           } else {
               document.getElementById('appContent').style.display = 'none';
               document.getElementById('welcomeSection').style.display = 'block';
+              document.getElementById('btnLogoutTop').style.display = 'none';
           }
           await window.asegurarRedBNB();
           await window.actualizarPrecioTokenEnVivo();
