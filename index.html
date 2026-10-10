@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Bienvenido a NEX Token, el ecosistema descentralizado oficial en la red BNB Smart Chain. Administra tu portafolio, conecta tu billetera Web3 y opera de forma rápida y segura.">
     <title>NEX Token - Ecosistema Descentralizado</title>
     
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4729162767039305" crossorigin="anonymous"></script>
@@ -366,12 +367,6 @@
 </head>
 <body>
 
-    <div id="bannedScreen">
-        <h1>⛔ CUENTA SUSPENDIDA ⛔</h1>
-        <p>Has violado los términos de seguridad de NEX Token.</p>
-        <p>El acceso a este ecosistema ha sido revocado.</p>
-    </div>
-
     <div class="top-bar">
         <div id="userDisplay" class="user-info-bar">Invitado</div>
         <div class="top-actions">
@@ -607,8 +602,18 @@
             </div>
 
             <div id="tabUsuarios" class="tab-content">
-                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Gestiona las cuentas y vigila intentos de hackeo.</p>
-                <div id="listaUsuariosAdmin" style="max-height: 250px; overflow-y: auto;">
+                <div style="margin-bottom: 15px;">
+                    <h4 style="color: var(--primary-cyan); margin-bottom: 8px;">👀 Registro de Entradas (Gente que va entrando)</h4>
+                    <div id="listaVisitasAdmin" style="max-height: 120px; overflow-y: auto; background: var(--bg-dark); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);">
+                        <p style="color:var(--text-muted); font-size:11px;">Cargando lista de visitas...</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="color: var(--primary-gold); margin-bottom: 8px;">👥 Personas Registradas (Usuarios Nuevos)</h4>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">Lista de personas unidas con correo, Google o Apple. Usa el botón al lado para expulsar al que haga algo mal.</p>
+                    <div id="listaUsuariosAdmin" style="max-height: 200px; overflow-y: auto;">
+                    </div>
                 </div>
             </div>
 
@@ -628,11 +633,18 @@
         </div>
     </div>
 
+    <!-- PANTALLA DE BANEO MOVIDA AL FONDO PARA QUE GOOGLE NO LA LEA PRIMERO -->
+    <div id="bannedScreen">
+        <h1>⛔ CUENTA SUSPENDIDA ⛔</h1>
+        <p>Has violado los términos de seguridad de NEX Token.</p>
+        <p>El acceso a este ecosistema ha sido revocado.</p>
+    </div>
+
     <!-- FIREBASE & LÓGICA INTEGRADA REAL -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
       import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-      import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, addDoc, query, orderBy, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+      import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, addDoc, query, orderBy, serverTimestamp, setLogLevel, limit } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
       setLogLevel('silent');
 
@@ -689,12 +701,20 @@
           "function token0() external view returns (address)"
       ];
 
-      // --- CONTADOR DE VISITAS ÚNICAS ---
+      // --- CONTADOR DE VISITAS ÚNICAS Y REGISTRO EN LISTA ---
       async function registrarVisitaPagina() {
           try {
               if (!sessionStorage.getItem("nex_visita_contada")) {
                   const statRef = doc(db, "estadisticas", "general");
                   await setDoc(statRef, { visitas: increment(1) }, { merge: true });
+                  
+                  // Agrega la visita a la lista para que la veas en el panel admin
+                  await addDoc(collection(db, "visitas_log"), {
+                      fecha: serverTimestamp(),
+                      dispositivo: navigator.userAgent.includes("Mobile") ? "Móvil" : "PC",
+                      plataforma: navigator.platform || "Desconocida"
+                  });
+
                   sessionStorage.setItem("nex_visita_contada", "true");
               }
           } catch(e){}
@@ -708,7 +728,22 @@
           }
       });
 
-      // --- SINCRO BASE DE DATOS USUARIOS ---
+      // --- ESCUCHAR LA LISTA DE GENTE QUE VA ENTRANDO (VISITAS) ---
+      onSnapshot(query(collection(db, "visitas_log"), orderBy("fecha", "desc"), limit(50)), (snap) => {
+          const listaDiv = document.getElementById('listaVisitasAdmin');
+          if(!listaDiv) return;
+          listaDiv.innerHTML = '';
+          snap.forEach(documento => {
+              const data = documento.data();
+              const fecha = data.fecha ? data.fecha.toDate().toLocaleString() : 'Justo ahora...';
+              const d = document.createElement('div');
+              d.style.cssText = "border-bottom: 1px solid var(--border-color); padding: 5px 0; font-size: 11px; color: #fff; display: flex; justify-content: space-between;";
+              d.innerHTML = `<span>🟢 Nueva entrada</span> <span style="color:var(--text-muted);">${fecha} - ${data.dispositivo} (${data.plataforma})</span>`;
+              listaDiv.appendChild(d);
+          });
+      });
+
+      // --- SINCRO BASE DE DATOS USUARIOS NUEVOS ---
       async function registrarOActualizarUsuarioDB(u, proveedor = 'email') {
           if (!u) return;
           try {
@@ -771,7 +806,7 @@
           } catch(e) { alert("Error con Apple: " + e.message); }
       };
 
-      // --- ESCUCHAR LISTA DE USUARIOS Y BANEO EN TIEMPO REAL ---
+      // --- ESCUCHAR LISTA DE USUARIOS REGISTRADOS Y EXPULSAR ---
       onSnapshot(collection(db, "usuarios"), (snap) => {
           const listaDiv = document.getElementById('listaUsuariosAdmin');
           const chatSelect = document.getElementById('adminChatSelect');
@@ -797,7 +832,7 @@
                       <div style="font-size:10px; color:${data.banned ? 'var(--red-down)' : 'var(--green-up)'};">${data.banned ? '⛔ SUSPENDIDO' : '✅ ACTIVO'}</div>
                   </div>
                   <div>
-                      <button class="btn-gen" style="background:var(--red-down); color:white; border:none; padding:5px 8px;" onclick="expulsarUsuarioAdmin('${data.uid}', ${!data.banned})">
+                      <button class="btn-gen" style="background:var(--red-down); color:white; border:none; padding:5px 8px; font-weight:bold;" onclick="expulsarUsuarioAdmin('${data.uid}', ${!data.banned})">
                           ${data.banned ? 'Reactivar' : '🔴 Expulsar'}
                       </button>
                   </div>
