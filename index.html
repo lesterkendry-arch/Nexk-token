@@ -618,11 +618,23 @@
             </div>
 
             <div id="tabChat" class="tab-content">
-                <div class="field"><label>Seleccionar Cliente</label><select id="adminChatSelect" onchange="cargarChatSeleccionadoAdmin()"></select></div>
-                <div id="adminChatBox" class="chat-box"></div>
-                <div class="chat-input-container">
-                    <input type="text" id="adminReplyMessage" placeholder="Escribir respuesta...">
-                    <button class="btn-auth" onclick="enviarRespuestaAdmin()">Responder</button>
+                <!-- Vista de Lista de Usuarios -->
+                <div id="adminChatListContainer">
+                    <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Mensajes de Usuarios</h4>
+                    <div id="adminChatUsersList" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                        <p style="color:var(--text-muted); font-size: 12px;">Cargando chats...</p>
+                    </div>
+                </div>
+                
+                <!-- Vista de Chat Activo -->
+                <div id="adminChatActiveContainer" style="display: none;">
+                    <button class="btn-gen" style="margin-bottom: 10px; background: var(--border-color); color: white; border: none; padding: 6px 12px;" onclick="volverListaChatAdmin()">⬅ Volver a la lista</button>
+                    <h4 id="adminChatActiveTitle" style="color: var(--primary-gold); margin-bottom: 10px;">Chat con...</h4>
+                    <div id="adminChatBox" class="chat-box"></div>
+                    <div class="chat-input-container">
+                        <input type="text" id="adminReplyMessage" placeholder="Escribir respuesta...">
+                        <button class="btn-auth" onclick="enviarRespuestaAdmin()">Responder</button>
+                    </div>
                 </div>
             </div>
 
@@ -664,6 +676,7 @@
       let walletDireccionConectada = null;
       let chatListenerUsuario = null;
       let chatListenerAdmin = null;
+      let chatAdminUidActual = null; // NUEVO: Para saber a quién le responde el admin
 
       const TOKEN_CONTRACT_ADDRESS = "0x44B1c3Cd218D73368AD865C1cf8bd6E1Dd15c59A";
       const PANCAKE_ROUTER_ADDRESS = "0x10ED43335D0f0511c7826814731894B72813462D";
@@ -806,39 +819,69 @@
           } catch(e) { alert("Error con Apple: " + e.message); }
       };
 
-      // --- ESCUCHAR LISTA DE USUARIOS REGISTRADOS Y EXPULSAR ---
+      // --- ESCUCHAR LISTA DE USUARIOS REGISTRADOS Y GESTIÓN DE LISTA DE CHAT ---
       onSnapshot(collection(db, "usuarios"), (snap) => {
           const listaDiv = document.getElementById('listaUsuariosAdmin');
-          const chatSelect = document.getElementById('adminChatSelect');
-          if(!listaDiv) return;
-          listaDiv.innerHTML = '';
-          if(chatSelect) chatSelect.innerHTML = '<option value="">-- Seleccionar Usuario --</option>';
+          const chatListContainer = document.getElementById('adminChatUsersList');
+          if(listaDiv) listaDiv.innerHTML = '';
+          
+          let usuariosChat = [];
 
           snap.forEach(documento => {
               const data = documento.data();
-              if (chatSelect) {
-                  const opt = document.createElement('option');
-                  opt.value = data.uid;
-                  opt.innerText = `${data.nombre} (${data.email})`;
-                  chatSelect.appendChild(opt);
+              
+              // Lógica de lista de usuarios general
+              if (listaDiv) {
+                  const d = document.createElement('div');
+                  d.className = 'admin-user-card';
+                  d.innerHTML = `
+                      <div>
+                          <strong style="font-size:12px; color:var(--primary-cyan);">${data.nombre || 'Usuario'}</strong>
+                          <div style="font-size:11px; color:var(--text-muted);">${data.email || 'Sin Correo'} | ${data.proveedor || 'Red'}</div>
+                          <div style="font-size:10px; color:${data.banned ? 'var(--red-down)' : 'var(--green-up)'};">${data.banned ? '⛔ SUSPENDIDO' : '✅ ACTIVO'}</div>
+                      </div>
+                      <div>
+                          <button class="btn-gen" style="background:var(--red-down); color:white; border:none; padding:5px 8px; font-weight:bold;" onclick="expulsarUsuarioAdmin('${data.uid}', ${!data.banned})">
+                              ${data.banned ? 'Reactivar' : '🔴 Expulsar'}
+                          </button>
+                      </div>
+                  `;
+                  listaDiv.appendChild(d);
               }
 
-              const d = document.createElement('div');
-              d.className = 'admin-user-card';
-              d.innerHTML = `
-                  <div>
-                      <strong style="font-size:12px; color:var(--primary-cyan);">${data.nombre || 'Usuario'}</strong>
-                      <div style="font-size:11px; color:var(--text-muted);">${data.email || 'Sin Correo'} | ${data.proveedor || 'Red'}</div>
-                      <div style="font-size:10px; color:${data.banned ? 'var(--red-down)' : 'var(--green-up)'};">${data.banned ? '⛔ SUSPENDIDO' : '✅ ACTIVO'}</div>
-                  </div>
-                  <div>
-                      <button class="btn-gen" style="background:var(--red-down); color:white; border:none; padding:5px 8px; font-weight:bold;" onclick="expulsarUsuarioAdmin('${data.uid}', ${!data.banned})">
-                          ${data.banned ? 'Reactivar' : '🔴 Expulsar'}
-                      </button>
-                  </div>
-              `;
-              listaDiv.appendChild(d);
+              // Preparar lista de chats
+              if (data.ultimoMensajeAt) {
+                  usuariosChat.push(data);
+              }
           });
+
+          // Ordenar los chats para que el más reciente esté arriba
+          usuariosChat.sort((a, b) => b.ultimoMensajeAt?.toMillis() - a.ultimoMensajeAt?.toMillis());
+
+          if(chatListContainer) {
+              chatListContainer.innerHTML = '';
+              if(usuariosChat.length === 0) {
+                  chatListContainer.innerHTML = '<p style="color:var(--text-muted); font-size:12px;">No hay mensajes de usuarios aún.</p>';
+              }
+              usuariosChat.forEach(data => {
+                  const div = document.createElement('div');
+                  div.style.cssText = "background: var(--bg-dark); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;";
+                  div.onmouseover = () => div.style.background = 'rgba(56, 189, 248, 0.1)';
+                  div.onmouseout = () => div.style.background = 'var(--bg-dark)';
+                  div.onclick = () => window.abrirChatUsuarioAdmin(data.uid, data.nombre || data.email);
+                  
+                  // El punto verde si el admin no lo ha leído
+                  const dot = data.unreadAdmin ? '<span style="color: #10b981; font-size: 16px;" title="Nuevo mensaje">🟢</span>' : '';
+                  div.innerHTML = `
+                      <div style="display: flex; flex-direction: column;">
+                          <strong style="color: var(--text-main); font-size: 13px;">${data.nombre || data.email}</strong>
+                          <span style="font-size: 11px; color: var(--text-muted);">${data.email || ''}</span>
+                      </div>
+                      <div>${dot}</div>
+                  `;
+                  chatListContainer.appendChild(div);
+              });
+          }
       });
 
       window.expulsarUsuarioAdmin = async function(uid, banStatus) {
@@ -877,13 +920,27 @@
                   sender: 'user',
                   timestamp: serverTimestamp()
               });
+              // Actualizar el estado del usuario para pasarlo arriba y poner punto verde
+              await setDoc(doc(db, "usuarios", usuarioActual.uid), {
+                  ultimoMensajeAt: serverTimestamp(),
+                  unreadAdmin: true
+              }, { merge: true });
               input.value = '';
           } catch(e) { alert("Error al enviar mensaje: " + e.message); }
       };
 
-      window.cargarChatSeleccionadoAdmin = function() {
-          const uid = document.getElementById('adminChatSelect').value;
-          if(!uid) return;
+      // --- LÓGICA DE CHAT DEL ADMIN (NUEVA UI) ---
+      window.abrirChatUsuarioAdmin = async function(uid, nombreUsuario) {
+          chatAdminUidActual = uid;
+          document.getElementById('adminChatListContainer').style.display = 'none';
+          document.getElementById('adminChatActiveContainer').style.display = 'block';
+          document.getElementById('adminChatActiveTitle').innerText = "Chat con " + nombreUsuario;
+          
+          // Quitar el punto verde cuando el administrador abre el chat
+          try {
+              await setDoc(doc(db, "usuarios", uid), { unreadAdmin: false }, { merge: true });
+          } catch(e) {}
+
           if (chatListenerAdmin) chatListenerAdmin();
           const q = query(collection(db, "chats", uid, "mensajes"), orderBy("timestamp", "asc"));
           chatListenerAdmin = onSnapshot(q, (snap) => {
@@ -901,17 +958,31 @@
           });
       };
 
+      window.volverListaChatAdmin = function() {
+          chatAdminUidActual = null;
+          if (chatListenerAdmin) {
+              chatListenerAdmin(); // Dejar de escuchar este chat específico
+              chatListenerAdmin = null;
+          }
+          document.getElementById('adminChatActiveContainer').style.display = 'none';
+          document.getElementById('adminChatListContainer').style.display = 'block';
+      };
+
       window.enviarRespuestaAdmin = async function() {
-          const uid = document.getElementById('adminChatSelect').value;
+          const uid = chatAdminUidActual;
           const input = document.getElementById('adminReplyMessage');
           const msg = input.value.trim();
-          if(!uid || !msg) return alert("Selecciona un usuario y escribe un mensaje.");
+          if(!uid || !msg) return alert("Asegúrate de haber seleccionado un usuario y escrito un mensaje.");
           try {
               await addDoc(collection(db, "chats", uid, "mensajes"), {
                   texto: msg,
                   sender: 'admin',
                   timestamp: serverTimestamp()
               });
+              // Quitar punto verde por si acaso y actualizar timestamp
+              await setDoc(doc(db, "usuarios", uid), {
+                  unreadAdmin: false
+              }, { merge: true });
               input.value = '';
           } catch(e) { alert("Error al enviar respuesta: " + e.message); }
       };
@@ -998,7 +1069,8 @@
 
         try {
           lista.innerHTML = '<p style="color:var(--text-muted);text-align:center;">Cargando transacciones...</p>';
-          const url = `https://api.bscscan.com/api?module=account&action=tokentx&contractaddress=${TOKEN_CONTRACT_ADDRESS}&address=${address}&page=1&offset=25&sort=desc`;
+          // Se incluye una apikey pública estándar de BscScan para evitar bloqueos por límite de peticiones
+          const url = `https://api.bscscan.com/api?module=account&action=tokentx&contractaddress=${TOKEN_CONTRACT_ADDRESS}&address=${address}&page=1&offset=25&sort=desc&apikey=YHQ8E3F2X85FUDZ5XZS4H1B45476R24XV6`;
           const res = await fetch(url);
           const data = await res.json();
 
@@ -1007,7 +1079,6 @@
 
             data.result.forEach(tx => {
               const esRecibido = tx.to.toLowerCase() === address.toLowerCase();
-              const esPancakeRouter = tx.from.toLowerCase() === PANCAKE_ROUTER_ADDRESS.toLowerCase();
               const cantidad = parseFloat(ethers.utils.formatUnits(tx.value, parseInt(tx.tokenDecimal || 18))).toFixed(2);
               const fecha = new Date(parseInt(tx.timeStamp) * 1000).toLocaleString();
               const txHash = tx.hash;
@@ -1017,17 +1088,12 @@
               let signo = "+";
 
               if (esRecibido) {
-                if (esPancakeRouter) {
-                  textoTipo = "COMPRA (PancakeSwap)";
+                  textoTipo = "RECIBIDO";
                   tipoClase = "tipo-compra";
-                } else {
-                  textoTipo = "RECIBIDO (Transferencia)";
-                  tipoClase = "tipo-compra";
-                }
               } else {
-                textoTipo = "ENVIADO (Transferencia)";
-                tipoClase = "tipo-envio";
-                signo = "-";
+                  textoTipo = "ENVIADO";
+                  tipoClase = "tipo-envio";
+                  signo = "-";
               }
 
               const d = document.createElement('div');
@@ -1046,10 +1112,11 @@
               lista.appendChild(d);
             });
           } else {
-            lista.innerHTML = '<p style="color:var(--text-muted);text-align:center;">Sin transacciones registradas.</p>';
+            lista.innerHTML = '<p style="color:var(--text-muted);text-align:center;">No se encontraron transacciones recientes de NEX en esta billetera.</p>';
           }
         } catch (err) {
-          lista.innerHTML = '<p style="color:var(--text-muted);text-align:center;">No se pudo cargar el historial.</p>';
+          console.error("Error historial:", err);
+          lista.innerHTML = '<p style="color:var(--red-down);text-align:center;">Error al conectar con el explorador BSCScan. Inténtalo más tarde.</p>';
         }
       };
 
