@@ -1,13 +1,3 @@
-            --color-rojo: #ef4444;
-            --color-verde: #10b981;
-            --color-azul-claro: #3b82f6;
-            --color-rosa: #ec4899;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--color-fondo); padding-top: 65px; padding-bottom: 70px; overflow-x: hidden; }
-        /* === HEADER === */
-        .header { position: fixed; top: 0; left: 0; width: 100%; background-color: var(--color-primario); padding: 12px 15px; display: flex; align-items: center; gap: 15px; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .logo-text { color: white; font-weight: 800; font-size: 1.2rem; }
         .search-container { flex: 1; background-color: white; border-radius: 20px; padding: 8px 15px; display: flex; align-items: center; gap: 10px; }
         .search-container input { border: none; outline: none; width: 100%; font-size: 0.95rem; }
         .header-icon { color: white; font-size: 1.2rem; cursor: pointer;}
@@ -498,3 +488,13 @@ git pull origin-shop main --allow-unrelated-histories
         .old-price { text-decoration: line-through; color: var(--color-gris); font-size: 0.8rem; margin-bottom: -3px; display: block; }
         .product-price { font-size: 1.2rem; font-weight: bold; }
         .product-shipping { font-size: 0.7rem; color: var(--color-verde); font-weight: 600; margin: 4px 0; }
+git add index.html
+git commit -m "Conflictos de fusión resueltos en index.html"
+git push origin-shop
+git push origin shop master:main
+git push origin-shop master:main
+git add .
+git commit -m "anex"
+git push origin-shop master:main
+git add .
+ls
