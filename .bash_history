@@ -72,3 +72,39 @@ dit commit -m "pix"
 git commit -m "pix"
 git push
 git .
+cd/nex
+cd/Nex
+cdNex
+cd Nex
+ls
+cd/
+cd /
+ls
+cd sdcard
+ls
+cd Documents
+ls
+cd ..
+ls
+cd Download
+ls
+cd Nex
+ls
+alias cdnex='cd /sdcard/Download/Nex'
+cdnex
+git add .
+git init
+git remote v
+git remote add origin https://github.com/lesterkendry-arch/NeXshopping.git
+git config --global --add safe.directory /sdcard/Download/Nex
+git add .
+git commit -m "prueva1"
+git add .
+git status
+git add index.html
+git status
+ls
+pwd
+git add .
+git commit -m "prueva1"
+git init
