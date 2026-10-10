@@ -1,11 +1,3 @@
-        .search-container { flex: 1; background-color: white; border-radius: 20px; padding: 8px 15px; display: flex; align-items: center; gap: 10px; }
-        .search-container input { border: none; outline: none; width: 100%; font-size: 0.95rem; }
-        .header-icon { color: white; font-size: 1.2rem; cursor: pointer;}
-        /* === VISTAS COMUNES === */
-        .screen-header { padding: 20px; font-size: 1.5rem; font-weight: bold; background: white; border-bottom: 1px solid #ddd; }
-        .screen-content { padding: 20px; text-align: center; color: var(--color-gris); }
-        /* === INICIO === */
-        .quick-actions { display: flex; overflow-x: auto; padding: 20px 15px; gap: 20px; background: white; scrollbar-width: none; }
         .quick-actions::-webkit-scrollbar { display: none; }
         .action-item { display: flex; flex-direction: column; align-items: center; min-width: 65px; gap: 8px; cursor: pointer;}
         .action-icon { width: 48px; height: 48px; background-color: #eff6ff; color: var(--color-primario); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
@@ -498,3 +490,11 @@ git commit -m "anex"
 git push origin-shop master:main
 git add .
 ls
+git remmote set-url origin https://github.com/lesterkendry-arch/NeXshopping.git
+git remmote set-url origin https://github.com/les
+git remote set-url origin https://github.com/lesterkendry-arch/NeXshopping.git
+git push origin master:main
+git init
+pwd
+cd/Nex
+nex
