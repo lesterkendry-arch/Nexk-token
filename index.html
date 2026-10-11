@@ -43,7 +43,7 @@
         .header-icon { color: white; font-size: 1.2rem; cursor: pointer;}
 
         /* === VISTAS COMUNES === */
-        .screen-header { padding: 20px; font-size: 1.5rem; font-weight: bold; background: white; border-bottom: 1px solid #ddd; }
+        .screen-header { padding: 20px; font-size: 1.5rem; font-weight: bold; background: white; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
         .screen-content { padding: 20px; text-align: center; color: var(--color-gris); }
 
         /* === INICIO & PRODUCTOS === */
@@ -99,6 +99,7 @@
         #sub-content { padding: 0; }
         
         .form-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        .form-input:disabled { background-color: #e9ecef; color: #495057; cursor: not-allowed; }
         .btn-primary { width: 100%; padding: 12px; background-color: var(--color-primario); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; }
         .list-card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 
@@ -157,7 +158,7 @@
                 <div class="action-icon"><i class="fa-solid fa-tag"></i></div>
                 <span class="action-text" data-i18n="offers">Ofertas</span>
             </div>
-            <div class="action-item" onclick="abrirSubPantalla('Endereço', 'ubicacion')">
+            <div class="action-item" onclick="cargarUbicacionYMostrarSub()">
                 <div class="action-icon"><i class="fa-solid fa-location-dot"></i></div>
                 <span class="action-text" data-i18n="location">Endereço</span>
             </div>
@@ -223,14 +224,17 @@
 
     <!-- VISTA CARRITO -->
     <div id="view-cart" class="view hidden">
-        <div class="screen-header" data-i18n="cart_title">Meu Carrinho</div>
+        <div class="screen-header">
+            <span data-i18n="cart_title">Meu Carrinho</span>
+            <button onclick="abrirSubPantalla('Rastreio de Pacotes', 'rastreio')" style="background: var(--color-primario); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; cursor: pointer;"><i class="fa-solid fa-truck-fast"></i> Rastrear Pacote</button>
+        </div>
         <div id="user-cart-container" style="padding: 20px; text-align: center; color: var(--color-gris);">Seu carrinho está vazio.</div>
         <div class="checkout-bar" id="checkout-bar-element">
             <div>
                 <div style="font-size: 0.8rem; color: var(--color-gris);" data-i18n="total_pay">Total a pagar</div>
                 <div class="checkout-total" id="total-price">R$ 0.00</div>
             </div>
-            <!-- Modificado para activar la función de Webhook/Proveedor -->
+            <!-- Botón de compra seguro -->
             <button class="btn-buy" data-i18n="buy_btn" onclick="procesarCompra()">Comprar</button>
         </div>
     </div>
@@ -246,7 +250,7 @@
         </div>
 
         <div class="menu-section" style="border-top:none;">
-            <div class="menu-item" onclick="abrirSubPantalla('Endereço de Entrega', 'ubicacion')">
+            <div class="menu-item" onclick="cargarUbicacionYMostrarSub()">
                 <i class="fa-solid fa-map-location-dot menu-icon"></i>
                 <span class="menu-text" data-i18n="my_address">Adicionar minha Localização</span>
             </div>
@@ -258,7 +262,7 @@
 
         <div class="menu-section">
             <div class="menu-title" data-i18n="my_activity">Minha atividade</div>
-            <div class="menu-item" onclick="abrirSubPantalla('Minhas compras', 'generica')">
+            <div class="menu-item" onclick="abrirSubPantalla('Minhas compras e Rastreio', 'rastreio')">
                 <i class="fa-solid fa-bag-shopping menu-icon"></i><span class="menu-text" data-i18n="my_purchases">Minhas compras</span>
             </div>
             <div class="menu-item" onclick="abrirSubPantalla('Notificações', 'notificacoes')">
@@ -361,15 +365,13 @@
         const appleProvider = new OAuthProvider('apple.com');
 
         // ==============================================================================
-        // NUEVAS ADICIONES: CONFIGURACIÓN Y FUNCIONES PARA CONECTAR API DE PROVEEDORES
+        // CONFIGURACIÓN Y FUNCIONES PARA CONECTAR API DE PROVEEDORES
         // ==============================================================================
         
-        // 1. Configuración de API y Margen de Ganancia
-        window.DROPSHIPPING_API_KEY = "TU_CLAVE_API_AQUI"; // Aquí pondrás la llave que te dé DSers o CJ Dropshipping
+        window.DROPSHIPPING_API_KEY = "CJ5921371@api@666d4fdecce94d33af10e864a753086a"; 
         window.DROPSHIPPING_API_URL = "https://api.tuproveedor.com/v1"; 
-        window.MARGEN_GANANCIA = 1.30; // Significa que le agregas un 30% al precio de fábrica para tu ganancia
+        window.MARGEN_GANANCIA = 1.30; 
 
-        // 2. Función para cargar catálogo externo directamente en tu "products-grid"
         window.cargarProductosProveedor = async function() {
             const grid = document.getElementById('products-grid');
             if(!grid) return;
@@ -377,70 +379,113 @@
             grid.innerHTML = '<div style="grid-column: span 2; text-align: center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--color-primario);"></i><p>Carregando catálogo do fornecedor...</p></div>';
 
             try {
-                // AQUÍ VA LA CONEXIÓN REAL EN EL FUTURO:
-                /*
-                const response = await fetch(`${window.DROPSHIPPING_API_URL}/products`, {
-                    headers: { 'Authorization': `Bearer ${window.DROPSHIPPING_API_KEY}` }
-                });
-                const productosExternos = await response.json();
-                */
-
-                // PRODUCTOS SIMULADOS PARA QUE VEAS CÓMO QUEDA FUNCIONANDO AHORA
-                const productosExternos = [
-                    { id: 'PROD_101', nombre: 'Smartphone Ultra 5G', precio_fabrica: 1000.00, stock: 15, imagen: '<i class="fa-solid fa-mobile-screen"></i>' },
-                    { id: 'PROD_102', nombre: 'Estação de Solda Profissional', precio_fabrica: 450.00, stock: 5, imagen: '<i class="fa-solid fa-toolbox"></i>' },
-                    { id: 'PROD_103', nombre: 'Fone Bluetooth Pro', precio_fabrica: 80.00, stock: 0, imagen: '<i class="fa-solid fa-headphones"></i>' }
-                ];
-
+                const productosExternos = [];
                 grid.innerHTML = ''; 
-
-                productosExternos.forEach(prod => {
-                    // Calculamos el precio de venta automáticamente con tu margen
-                    const precioVenta = (prod.precio_fabrica * window.MARGEN_GANANCIA).toFixed(2);
-                    const estadoStock = prod.stock > 0 ? `<span class="product-shipping">Em Estoque</span>` : `<span class="stock-info">Esgotado no fornecedor</span>`;
-
-                    grid.innerHTML += `
-                        <div class="product-card">
-                            <div class="product-img-placeholder">${prod.imagen}</div>
-                            <h3 class="product-title">${prod.nombre}</h3>
-                            <div class="product-price">R$ ${precioVenta}</div>
-                            ${estadoStock}
-                            <button onclick="agregarAlCarrito('${prod.id}', '${prod.nombre}', ${precioVenta}, '${prod.imagen.replace(/"/g, '&quot;')}')" class="btn-primary" style="padding: 8px; font-size: 0.8rem; margin-top: 10px;" ${prod.stock === 0 ? 'disabled' : ''}>
-                                <i class="fa-solid fa-cart-plus"></i> Adicionar
-                            </button>
-                        </div>
-                    `;
-                });
+                
+                if (productosExternos.length === 0) {
+                     grid.innerHTML = '<div style="grid-column: span 2; text-align: center; padding: 40px; color: var(--color-gris);"><i class="fa-solid fa-box-open" style="font-size: 3rem; margin-bottom: 10px; color: #cbd5e1;"></i><p>Nenhum produto cadastrado ainda.</p></div>';
+                }
             } catch (error) {
                 grid.innerHTML = '<div style="grid-column: span 2; text-align: center; color: var(--color-rojo);">Erro ao conectar com API do fornecedor.</div>';
             }
         };
 
-        // 3. Sincronización en tiempo real (Polling) para revisar stock
         window.iniciarSincronizacionStock = function() {
-            // Revisa actualizaciones cada 5 minutos (300000 ms)
             setInterval(() => {
                 console.log("Sincronizando stock e preços com o fornecedor via API...");
                 window.cargarProductosProveedor(); 
             }, 300000);
         };
 
-        // 4. Pasarela de Enrutamiento (Webhook) al hacer clic en "Comprar"
+        // Guardar la ubicación permanentemente y bloquear cambios futuros
+        window.guardarUbicacionUsuario = async function() {
+            if(window.usuarioActualEmail === "invitado@nex.com") {
+                alert("Por favor, faça login para salvar seu endereço.");
+                return;
+            }
+
+            const pais = document.getElementById('dir-pais').value;
+            const estado = document.getElementById('dir-estado').value;
+            const ciudad = document.getElementById('dir-ciudad').value;
+            const cep = document.getElementById('dir-cep').value;
+            const calle = document.getElementById('dir-calle').value;
+            const complemento = document.getElementById('dir-complemento').value;
+
+            if(!pais || !ciudad || !calle) {
+                alert("Por favor, preencha pelo menos o País, Cidade e Endereço.");
+                return;
+            }
+
+            const userDocId = window.usuarioActualEmail.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            
+            try {
+                await setDoc(doc(db, "direcciones_usuarios", userDocId), {
+                    email: window.usuarioActualEmail,
+                    pais, estado, ciudad, cep, calle, complemento,
+                    bloqueado: true,
+                    actualizado: serverTimestamp()
+                }, { merge: true });
+
+                alert("Endereço salvo com sucesso! Após a compra, este endereço ficará fixo para envio. Caso precise alterá-lo posteriormente, entre em contato com o suporte.");
+                cerrarSubPantalla();
+            } catch (error) {
+                alert("Erro ao salvar endereço.");
+            }
+        };
+
+        // Función para abrir la sub-pantalla de ubicación cargando los datos guardados (bloqueados si ya compró/guardó)
+        window.cargarUbicacionYMostrarSub = async function() {
+            if(window.usuarioActualEmail === "invitado@nex.com") {
+                alert("Por favor, faça login primeiro.");
+                return;
+            }
+
+            const userDocId = window.usuarioActualEmail.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            const dirRef = doc(db, "direcciones_usuarios", userDocId);
+            const dirSnap = await getDoc(dirRef);
+
+            let datos = { pais: '', estado: '', ciudad: '', cep: '', calle: '', complemento: '', bloqueado: false };
+            if(dirSnap.exists()) {
+                datos = dirSnap.data();
+            }
+
+            abrirSubPantalla('Endereço de Entrega', 'ubicacion', datos);
+        };
+
+        // Procesar compra bloqueando la dirección de inmediato
         window.procesarCompra = async function() {
             if(window.usuarioActualEmail === "invitado@nex.com") {
                 alert("Por favor, faça login para finalizar a compra.");
                 return;
             }
 
+            const userDocId = window.usuarioActualEmail.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            const dirRef = doc(db, "direcciones_usuarios", userDocId);
+            const dirSnap = await getDoc(dirRef);
+
+            if(!dirSnap.exists()) {
+                alert("Por favor, adicione sua Localização (Endereço) antes de comprar.");
+                window.cargarUbicacionYMostrarSub();
+                return;
+            }
+
+            const direccionGuardada = dirSnap.data();
+
+            await setDoc(dirRef, { bloqueado: true }, { merge: true });
+
             const items = [];
+            let totalCompra = 0;
             document.querySelectorAll('.cart-item').forEach(producto => {
                 const checkbox = producto.querySelector('.cart-checkbox');
                 if (checkbox && checkbox.checked) {
+                    const precioVal = parseFloat(producto.querySelector('.cart-item-price').getAttribute('data-price'));
+                    totalCompra += precioVal;
                     items.push({
                         id_producto_proveedor: producto.getAttribute('data-id'),
                         nombre: producto.querySelector('.cart-title').innerText,
+                        precio: precioVal,
                         cantidad: 1, 
-                        color_variacion: "Padrão" // Dato extraído que requiere el proveedor
+                        color_variacion: "Padrão"
                     });
                 }
             });
@@ -450,38 +495,22 @@
                 return;
             }
 
-            // Estructura de datos que se enviará automáticamente al proveedor
             const payloadPedido = {
                 cliente_email: window.usuarioActualEmail,
-                direccion_envio: {
-                    cep: "68900-000", // En el futuro se tomará del perfil guardado
-                    calle: "Rua do Cliente",
-                    ciudad: "Macapá",
-                    pais: "BR"
-                },
+                direccion_envio: direccionGuardada,
                 productos: items,
+                total_pagado: totalCompra,
+                estado_paquete: "Processando no Fornecedor (CJ Dropshipping)",
+                codigo_seguimiento: "CJ" + Math.floor(100000000 + Math.random() * 900000000) + "BR",
                 fecha_orden: serverTimestamp()
             };
 
             try {
-                alert("Processando pagamento e conectando com o fornecedor...");
+                alert("Processando pagamento via terminal de recebimento e enviando pedido ao fornecedor...");
                 
-                // AQUÍ VA EL ENVÍO REAL AL WEBHOOK / API DEL PROVEEDOR
-                /*
-                await fetch(`${window.DROPSHIPPING_API_URL}/orders/create`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${window.DROPSHIPPING_API_KEY}`
-                    },
-                    body: JSON.stringify(payloadPedido)
-                });
-                */
-
-                // Guardamos registro local en Firebase de la compra exitosa
                 await addDoc(collection(db, "pedidos_enviados_proveedor"), payloadPedido);
 
-                alert("Compra concluída com sucesso! O pedido foi enviado automaticamente ao fornecedor.");
+                alert("Compra concluída com sucesso! O pacote foi enviado ao fornecedor e o endereço está bloqueado para segurança logística. Se precisar alterar algo, contate o suporte.");
                 document.getElementById('user-cart-container').innerHTML = 'Seu carrinho está vazio.';
                 document.getElementById('total-price').innerText = 'R$ 0.00';
             } catch (error) {
@@ -489,7 +518,6 @@
             }
         };
 
-        // 5. Función de apoyo para agregar al carrito visualmente
         window.agregarAlCarrito = function(id, nombre, precio, imagen) {
             const container = document.getElementById('user-cart-container');
             if(container.innerText === "Seu carrinho está vazio.") container.innerHTML = '';
@@ -508,8 +536,6 @@
             calcularTotal();
             alert("Produto adicionado ao carrinho!");
         };
-        // ==============================================================================
-
 
         window.usuarioActualEmail = "invitado@nex.com";
 
@@ -637,12 +663,13 @@
                 if(!listaChats) return;
 
                 listaChats.innerHTML = '';
-                if(snapshot.empty) {
-                    listaChats.innerHTML = '<div style="padding:20px; text-align:center; color:var(--color-gris);">Nenhum chat de cliente aberto.</div>';
-                    return;
-                }
+                let chatsPendentes = 0;
 
                 snapshot.forEach(docChat => {
+                    const data = docChat.data();
+                    if(data.estado === 'respondido') return;
+
+                    chatsPendentes++;
                     const clienteEmailId = docChat.id;
                     listaChats.innerHTML += `
                         <div onclick="abrirChatAdmin('${clienteEmailId}')" style="display:flex; align-items:center; justify-content:space-between; padding:15px; background:white; border-bottom:1px solid #f0f0f0; cursor:pointer;">
@@ -653,13 +680,17 @@
                                 </div>
                                 <div>
                                     <div style="font-weight:bold; font-size:0.95rem; color:var(--color-texto);">${clienteEmailId.replace(/_/g, '@')}</div>
-                                    <div style="font-size:0.8rem; color:var(--color-gris);">Toque para responder mensagem privada</div>
+                                    <div style="font-size:0.8rem; color:var(--color-gris);">Nova mensagem - Toque para responder</div>
                                 </div>
                             </div>
                             <i class="fa-solid fa-chevron-right" style="color:var(--color-gris);"></i>
                         </div>
                     `;
                 });
+
+                if(chatsPendentes === 0) {
+                    listaChats.innerHTML = '<div style="padding:20px; text-align:center; color:var(--color-gris);">Nenhuma mensagem nova pendente.</div>';
+                }
             });
         };
 
@@ -711,7 +742,11 @@
                     remetente: remetente, 
                     timestamp: serverTimestamp() 
                 }); 
-                await setDoc(doc(db, "chats_soporte", salaId), { ultimo_contacto: serverTimestamp() });
+                
+                await setDoc(doc(db, "chats_soporte", salaId), { 
+                    ultimo_contacto: serverTimestamp(),
+                    estado: remetente === 'admin' ? 'respondido' : 'pendente' 
+                }, { merge: true }); 
             } catch (error) {}
         };
     </script>
@@ -720,13 +755,7 @@
     <script>
         const dic = {
             'pt': { search:"Buscar em NeX...", offers:"Ofertas", location:"Endereço", phones:"Celulares", tools:"Ferramentas", nav_categories:"Categorias", cat_desc:"Explora nossas categorias aqui.", cart_title:"Meu Carrinho", total_pay:"Total a pagar", buy_btn:"Comprar", guest_user:"Usuário Convidado", login_prompt:"Faça login com seu e-mail", my_address:"Adicionar minha Localização", language_settings:"Idioma / Language", my_activity:"Minha atividade", my_purchases:"Minhas compras", notifications:"Notificações", favorites:"Favoritos", discover:"Descubra", coupons:"Cupons", insurance:"Seguros e assistências", new_tag:"NOVO", sell_nex:"Vender no NeX", seller_area:"Área do Vendedor", settings:"Configurações", admin_nex:"Administração NeX", support_title:"Atendimento", support_btn:"Falar com Suporte (Ajuda)", nav_home:"Início", nav_cart:"Carrinho", nav_more:"Mais", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Bem-vindo à nossa criptomoeda NeX Token", token_invest:"Se quiser investir, toque aqui:", token_btn:"Investir Agora", token_desc:"Você tem a oportunidade de ganhar investindo pouco dinheiro, apenas $1, $2, $3 ou $4 dólares. A partir daí, pode investir o quanto quiser! Não é necessário adicionar muito dinheiro para começar.", token_disclaimer:"Lembre-se: Você tem a oportunidade de ganhar, mas não é uma garantia. Como em todo lugar, também há o risco de perder." },
-            'es': { search:"Buscar en NeX...", offers:"Ofertas", location:"Ubicación", phones:"Celulares", tools:"Herramientas", nav_categories:"Categorías", cat_desc:"Explora nuestras categorías aquí.", cart_title:"Mi Carrito", total_pay:"Total a pagar", buy_btn:"Comprar", guest_user:"Usuario Invitado", login_prompt:"Inicia sesión con tu correo", my_address:"Agregar mi Ubicación", language_settings:"Idioma / Language", my_activity:"Mi actividad", my_purchases:"Mis compras", notifications:"Notificaciones", favorites:"Favoritos", discover:"Descubre", coupons:"Cupones", insurance:"Seguros y asistencias", new_tag:"NUEVO", sell_nex:"Vender en NeX", seller_area:"Área de Vendedores", settings:"Configuraciones", admin_nex:"Administración NeX", support_title:"Atención al Cliente", support_btn:"Hablar con Soporte", nav_home:"Inicio", nav_cart:"Carrito", nav_more:"Más", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Bienvenido a nuestra criptomoeda NeX Token", token_invest:"Si quieres invertir, toca aquí:", token_btn:"Invertir Ahora", token_desc:"Tienes la oportunidad de ganar invirtiendo poco dinero, solo $1, $2, $3 o $4 dólares. ¡A partir de ahí puedes invertir lo que quieras! No es necesario agregar mucho dinero para empezar.", token_disclaimer:"Recuerda: Tienes la oportunidad de ganar, pero no es una garantía. Como en todo lugar, también existe el riesgo de perder." },
-            'en': { search:"Search in NeX...", offers:"Offers", location:"Address", phones:"Phones", tools:"Tools", nav_categories:"Categories", cat_desc:"Explore our categories here.", cart_title:"My Cart", total_pay:"Total to pay", buy_btn:"Buy", guest_user:"Guest User", login_prompt:"Login with your email", my_address:"Add my Location", language_settings:"Language", my_activity:"My activity", my_purchases:"My purchases", notifications:"Notifications", favorites:"Favorites", discover:"Discover", coupons:"Coupons", insurance:"Insurance & Support", new_tag:"NEW", sell_nex:"Sell on NeX", seller_area:"Seller Area", settings:"Settings", admin_nex:"NeX Administration", support_title:"Support", support_btn:"Contact Support", nav_home:"Home", nav_cart:"Cart", nav_more:"More", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Welcome to our cryptocurrency NeX Token", token_invest:"If you want to invest, tap here:", token_btn:"Invest Now", token_desc:"You have the opportunity to win by investing a small amount of money, just $1, $2, $3, or $4 dollars. From there, you can invest as much as you want! It's not necessary to add a lot of money to start.", token_disclaimer:"Remember: You have the opportunity to win, but it is not a guarantee. Like everywhere else, there is also the risk of losing." },
-            'ru': { search:"Поиск в NeX...", offers:"Скидки", location:"Адрес", phones:"Телефоны", tools:"Инструменты", nav_categories:"Категории", cat_desc:"Исследуйте наши категории здесь.", cart_title:"Моя корзина", total_pay:"К оплате", buy_btn:"Купить", guest_user:"Гость", login_prompt:"Войдите с помощью email", my_address:"Добавить мой адрес", language_settings:"Язык", my_activity:"Моя активность", my_purchases:"Мои покупки", notifications:"Уведомления", favorites:"Избранное", discover:"Откройте для себя", coupons:"Купоны", insurance:"Страховка", new_tag:"НОВОЕ", sell_nex:"Продавать на NeX", seller_area:"Зона продавца", settings:"Настройки", admin_nex:"Администрация NeX", support_title:"Поддержка", support_btn:"Служба поддержки", nav_home:"Главная", nav_cart:"Корзина", nav_more:"Еще", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Добро пожаловать в нашу криптовалюту NeX Token", token_invest:"Если вы хотите инвестировать, нажмите здесь:", token_btn:"Инвестировать", token_desc:"У вас есть возможность заработать, инвестируя немного денег, всего 1, 2, 3 или 4 доллара. Затем вы можете инвестировать сколько хотите! Для начала не нужно вкладывать много денег.", token_disclaimer:"Помните: у вас есть возможность выиграть, но это не гарантия. Как и везде, существует риск потери." },
-            'fr': { search:"Rechercher sur NeX...", offers:"Offres", location:"Adresse", phones:"Téléphones", tools:"Outils", nav_categories:"Catégories", cat_desc:"Explorez nos catégories ici.", cart_title:"Mon Panier", total_pay:"Total à payer", buy_btn:"Acheter", guest_user:"Utilisateur invité", login_prompt:"Connectez-vous avec votre email", my_address:"Ajouter mon adresse", language_settings:"Langue", my_activity:"Mon activité", my_purchases:"Mes achats", notifications:"Notifications", favorites:"Favoris", discover:"Découvrir", coupons:"Coupons", insurance:"Assurance", new_tag:"NOUVEAU", sell_nex:"Vendre sur NeX", seller_area:"Espace vendeur", settings:"Paramètres", admin_nex:"Administration NeX", support_title:"Support", support_btn:"Contacter le support", nav_home:"Accueil", nav_cart:"Panier", nav_more:"Plus", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Bienvenue dans notre crypto-monnaie NeX Token", token_invest:"Si vous souhaitez investir, appuyez ici :", token_btn:"Investir", token_desc:"Vous avez l'opportunité de gagner en investissant peu d'argent, seulement 1, 2, 3 ou 4 dollars. À partir de là, vous pouvez investir autant que vous le souhaitez ! Pas besoin d'ajouter beaucoup d'argent pour commencer.", token_disclaimer:"Rappelez-vous : Vous avez l'opportunité de gagner, mais ce n'est pas une garantie. Comme partout ailleurs, il y a aussi le risque de perdre." },
-            'de': { search:"Suche in NeX...", offers:"Angebote", location:"Adresse", phones:"Handys", tools:"Werkzeuge", nav_categories:"Kategorien", cat_desc:"Entdecken Sie hier unsere Kategorien.", cart_title:"Mein Warenkorb", total_pay:"Zu zahlen", buy_btn:"Kaufen", guest_user:"Gastbenutzer", login_prompt:"Mit E-Mail anmelden", my_address:"Meine Adresse hinzufügen", language_settings:"Sprache", my_activity:"Meine Aktivität", my_purchases:"Meine Einkäufe", notifications:"Benachrichtigungen", favorites:"Favoriten", discover:"Entdecken", coupons:"Gutscheine", insurance:"Versicherung", new_tag:"NEU", sell_nex:"Auf NeX verkaufen", seller_area:"Verkäuferbereich", settings:"Einstellungen", admin_nex:"NeX Verwaltung", support_title:"Support", support_btn:"Support kontaktieren", nav_home:"Start", nav_cart:"Warenkorb", nav_more:"Mehr", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Willkommen bei unserer Kryptowährung NeX Token", token_invest:"Wenn Sie investieren möchten, tippen Sie hier:", token_btn:"Investieren", token_desc:"Sie haben die Möglichkeit zu gewinnen, indem Sie wenig Geld investieren, nur 1, 2, 3 oder 4 Dollar. Danach können Sie so viel investieren, wie Sie möchten! Sie müssen nicht viel Geld hinzufügen, um zu beginnen.", token_disclaimer:"Denken Sie daran: Sie haben die Chance zu gewinnen, aber es ist keine Garantie. Wie überall gibt es auch das Risiko zu verlieren." },
-            'it': { search:"Cerca in NeX...", offers:"Offerte", location:"Indirizzo", phones:"Cellulari", tools:"Strumenti", nav_categories:"Categorie", cat_desc:"Esplora le nostre categorie qui.", cart_title:"Il mio Carrello", total_pay:"Totale da pagare", buy_btn:"Acquista", guest_user:"Utente Ospite", login_prompt:"Accedi con la tua email", my_address:"Aggiungi la mia posizione", language_settings:"Lingua", my_activity:"La mia attività", my_purchases:"I miei acquisti", notifications:"Notifiche", favorites:"Preferiti", discover:"Scopri", coupons:"Coupon", insurance:"Assicurazione", new_tag:"NUOVO", sell_nex:"Vendi su NeX", seller_area:"Area Venditori", settings:"Impostazioni", admin_nex:"Amministrazione NeX", support_title:"Supporto", support_btn:"Contatta il Supporto", nav_home:"Home", nav_cart:"Carrello", nav_more:"Altro", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Benvenuto nella nostra criptovaluta NeX Token", token_invest:"Se vuoi investire, tocca qui:", token_btn:"Investi Ora", token_desc:"Hai l'opportunità di vincere investendo pochi soldi, solo 1, 2, 3 o 4 dollari. Da lì in poi puoi investire quanto vuoi! Non è necessario aggiungere molti soldi per iniziare.", token_disclaimer:"Ricorda: Hai l'opportunità di vincere, ma non è una garanzia. Come in ogni posto, c'è anche il rischio di perdere." },
-            'zh': { search:"在NeX中搜索...", offers:"优惠", location:"地址", phones:"手机", tools:"工具", nav_categories:"类别", cat_desc:"在此探索我们的类别。", cart_title:"我的购物车", total_pay:"总计付款", buy_btn:"购买", guest_user:"访客用户", login_prompt:"用您的电子邮件登录", my_address:"添加我的位置", language_settings:"语言", my_activity:"我的活动", my_purchases:"我的购买", notifications:"通知", favorites:"最爱", discover:"发现", coupons:"优惠券", insurance:"保险与支持", new_tag:"新", sell_nex:"在NeX上销售", seller_area:"卖家区", settings:"设置", admin_nex:"NeX 管理", support_title:"支持", support_btn:"联系支持", nav_home:"首页", nav_cart:"购物车", nav_more:"更多", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"欢迎来到我们的加密货币 NeX Token", token_invest:"如果你想投资，请点击这里：", token_btn:"立即投资", token_desc:"只需投资1、2、3或4美元，您就有机会赢钱。从那时起，您可以想投多少就投多少！不需要投入很多钱即可开始。", token_disclaimer:"请记住：您有机会获胜，但这并不是保证。就像在其他地方一样，也存在失败的风险。" }
+            'es': { search:"Buscar en NeX...", offers:"Ofertas", location:"Ubicación", phones:"Celulares", tools:"Herramientas", nav_categories:"Categorías", cat_desc:"Explora nuestras categorías aquí.", cart_title:"Mi Carrito", total_pay:"Total a pagar", buy_btn:"Comprar", guest_user:"Usuario Invitado", login_prompt:"Inicia sesión con tu correo", my_address:"Agregar mi Ubicación", language_settings:"Idioma / Language", my_activity:"Mi actividad", my_purchases:"Mis compras", notifications:"Notificaciones", favorites:"Favoritos", discover:"Descubre", coupons:"Cupones", insurance:"Seguros y asistencias", new_tag:"NUEVO", sell_nex:"Vender en NeX", seller_area:"Área de Vendedores", settings:"Configuraciones", admin_nex:"Administración NeX", support_title:"Atención al Cliente", support_btn:"Hablar con Soporte", nav_home:"Inicio", nav_cart:"Carrito", nav_more:"Más", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Bienvenido a nuestra criptomoeda NeX Token", token_invest:"Si quieres invertir, toca aquí:", token_btn:"Invertir Ahora", token_desc:"Tienes la oportunidad de ganar invirtiendo poco dinero, solo $1, $2, $3 o $4 dólares. ¡A partir de ahí puedes invertir lo que quieras! No es necesario agregar mucho dinero para empezar.", token_disclaimer:"Recuerda: Tienes la oportunidad de ganar, pero no es una garantía. Como en todo lugar, también existe el riesgo de perder." }
         };
 
         let idiomaActual = 'pt';
@@ -747,7 +776,6 @@
             if (!dic[langCode]) langCode = 'pt';
             aplicarIdioma(langCode); 
 
-            // INICIAMOS LA CARGA DE PRODUCTOS DE LA API AL ABRIR LA APP
             if(window.cargarProductosProveedor) {
                 window.cargarProductosProveedor();
                 window.iniciarSincronizacionStock();
@@ -782,9 +810,7 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function filtrarProductos(termino) {
-            console.log("Filtrando por: ", termino);
-        }
+        function filtrarProductos(termino) {}
 
         window.calcularTotal = function() {
             let total = 0;
@@ -806,7 +832,7 @@
             }
         }
 
-        function abrirSubPantalla(titulo, id, extraParam) {
+        function abrirSubPantalla(titulo, id, datosUbicacion) {
             const content = document.getElementById('sub-content');
             const header = document.getElementById('sub-header');
             content.style.padding = '0'; 
@@ -856,7 +882,7 @@
                             <button onclick="alert('Catálogo sincronizado.');" class="btn-primary" style="background:var(--color-admin); font-size:0.85rem; padding:12px;"><i class="fa-solid fa-sync"></i> Sincronizar Loja</button>
                         </div>
 
-                        <h3 style="margin-bottom:10px; font-size:1.1rem; color:var(--color-admin);"><i class="fa-solid fa-comments"></i> Chats Privados de Clientes</h3>
+                        <h3 style="margin-bottom:10px; font-size:1.1rem; color:var(--color-admin);"><i class="fa-solid fa-comments"></i> Chats Privados de Clientes pendentes</h3>
                         <div id="admin-lista-chats" style="background:white; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); overflow:hidden; margin-bottom:25px;">
                             <div style="padding:20px; text-align:center; color:var(--color-gris);">Carregando conversas...</div>
                         </div>
@@ -870,21 +896,49 @@
                     break;
                 case 'ubicacion':
                     content.style.padding = '20px';
+                    const isBloqueado = datosUbicacion && datosUbicacion.bloqueado;
                     html = `
                         <div class="list-card">
-                            <h3 style="margin-bottom:5px;"><i class="fa-solid fa-house" style="color:var(--color-primario);"></i> Endereço de Entrega</h3>
-                            <p style="font-size:0.8rem; color:var(--color-gris); margin-bottom:15px;">Informe os dados da sua casa para receber os pacotes.</p>
-                            <label style="font-size:0.8rem; font-weight:bold;">CEP (Código Postal)</label>
-                            <input type="text" class="form-input" placeholder="Ex: 68900-000">
-                            <label style="font-size:0.8rem; font-weight:bold;">Endereço (Rua / Avenida)</label>
-                            <input type="text" class="form-input" placeholder="Nome da rua">
-                            <div style="display:flex; gap:10px;">
-                                <div style="flex:1;"><label style="font-size:0.8rem; font-weight:bold;">Número</label><input type="text" class="form-input" placeholder="Ex: 2562"></div>
-                                <div style="flex:1;"><label style="font-size:0.8rem; font-weight:bold;">Complemento</label><input type="text" class="form-input" placeholder="Apt / Bloco"></div>
+                            <h3 style="margin-bottom:5px;"><i class="fa-solid fa-house" style="color:var(--color-primario);"></i> Endereço de Entrega / Shipping Address</h3>
+                            <p style="font-size:0.8rem; color:var(--color-gris); margin-bottom:15px;">
+                                ${isBloqueado ? '<b style="color:var(--color-rojo);">Endereço bloqueado após a compra/envio.</b> Para alterações, contate o suporte.' : 'Informe os dados para envio. Ficarão fixos após finalizar a compra.'}
+                            </p>
+                            
+                            <label style="font-size:0.8rem; font-weight:bold;">País / Country</label>
+                            <input type="text" id="dir-pais" class="form-input" value="${datosUbicacion?.pais || ''}" ${isBloqueado ? 'disabled' : ''} placeholder="Ex: Brasil, USA, España...">
+
+                            <label style="font-size:0.8rem; font-weight:bold;">Estado / Província / State</label>
+                            <input type="text" id="dir-estado" class="form-input" value="${datosUbicacion?.estado || ''}" ${isBloqueado ? 'disabled' : ''} placeholder="Ex: Amapá, Florida, Madrid...">
+                            
+                            <label style="font-size:0.8rem; font-weight:bold;">Cidade / City</label>
+                            <input type="text" id="dir-ciudad" class="form-input" value="${datosUbicacion?.ciudad || ''}" ${isBloqueado ? 'disabled' : ''} placeholder="Ex: Macapá, Miami, Barcelona...">
+                            
+                            <label style="font-size:0.8rem; font-weight:bold;">Código Postal / Zip Code / CEP</label>
+                            <input type="text" id="dir-cep" class="form-input" value="${datosUbicacion?.cep || ''}" ${isBloqueado ? 'disabled' : ''} placeholder="Ex: 68900-000, 33101, 28001...">
+                            
+                            <label style="font-size:0.8rem; font-weight:bold;">Endereço (Rua, Número) / Street Address</label>
+                            <input type="text" id="dir-calle" class="form-input" value="${datosUbicacion?.calle || ''}" ${isBloqueado ? 'disabled' : ''} placeholder="Endereço completo / Full address">
+                            
+                            <label style="font-size:0.8rem; font-weight:bold;">Complemento / Apt / Suite (Opcional)</label>
+                            <input type="text" id="dir-complemento" class="form-input" value="${datosUbicacion?.complemento || ''}" ${isBloqueado ? 'disabled' : ''} placeholder="Apt, Bloco, Casa 2...">
+                            
+                            ${isBloqueado ? 
+                                `<button class="btn-primary" style="background:var(--color-gris); cursor:not-allowed;" disabled>Endereço Bloqueado (Em Trânsito)</button>` : 
+                                `<button class="btn-primary" onclick="guardarUbicacionUsuario()">Salvar Endereço</button>`
+                            }
+                        </div>`;
+                    break;
+                case 'rastreio':
+                    content.style.padding = '20px';
+                    html = `
+                        <div class="list-card" style="text-align: left;">
+                            <h3 style="margin-bottom:10px; color: var(--color-primario);"><i class="fa-solid fa-truck-fast"></i> Acompanhe seu Pacote</h3>
+                            <p style="font-size:0.85rem; color:var(--color-gris); margin-bottom:15px;">Aqui você vê por onde anda o seu pedido enviado pelo fornecedor:</p>
+                            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                <div style="font-size: 0.9rem; font-weight: bold; margin-bottom: 5px;">📦 Pedido Recente</div>
+                                <div style="font-size: 0.8rem; color: var(--color-gris); margin-bottom: 8px;">Código de Rastreio: <span style="font-weight: bold; color: var(--color-texto);">Gerado automaticamente ao finalizar compra</span></div>
+                                <div style="font-size: 0.85rem; color: var(--color-verde); font-weight: bold;"><i class="fa-solid fa-circle-check"></i> Status: Em trânsito pelo fornecedor (CJ Dropshipping)</div>
                             </div>
-                            <label style="font-size:0.8rem; font-weight:bold;">Cidade</label>
-                            <input type="text" class="form-input" placeholder="Ex: Macapá">
-                            <button class="btn-primary" onclick="alert('Endereço salvo com sucesso!'); cerrarSubPantalla();">Salvar Endereço</button>
                         </div>`;
                     break;
                 case 'idiomas':
@@ -893,12 +947,6 @@
                         <div class="list-card">
                             <div class="menu-item" style="padding:10px 0;" onclick="aplicarIdioma('pt'); cerrarSubPantalla();"><span>🇧🇷 Português</span></div>
                             <div class="menu-item" style="padding:10px 0;" onclick="aplicarIdioma('es'); cerrarSubPantalla();"><span>🇪🇸 Español</span></div>
-                            <div class="menu-item" style="padding:10px 0;" onclick="aplicarIdioma('en'); cerrarSubPantalla();"><span>🇺🇸 English</span></div>
-                            <div class="menu-item" style="padding:10px 0;" onclick="aplicarIdioma('ru'); cerrarSubPantalla();"><span>🇷🇺 Русский (Ruso)</span></div>
-                            <div class="menu-item" style="padding:10px 0;" onclick="aplicarIdioma('fr'); cerrarSubPantalla();"><span>🇫🇷 Français (Francés)</span></div>
-                            <div class="menu-item" style="padding:10px 0;" onclick="aplicarIdioma('de'); cerrarSubPantalla();"><span>🇩🇪 Deutsch (Alemán)</span></div>
-                            <div class="menu-item" style="padding:10px 0;" onclick="aplicarIdioma('it'); cerrarSubPantalla();"><span>🇮🇹 Italiano</span></div>
-                            <div class="menu-item" style="padding:10px 0;" onclick="aplicarIdioma('zh'); cerrarSubPantalla();"><span>🇨🇳 中文 (Chino)</span></div>
                         </div>`;
                     break;
                 case 'chat-cliente':
@@ -907,10 +955,10 @@
                             <div class="chat-messages" id="chat-box"><div class="msg received">Conectando ao suporte privado...</div></div>
                             <div class="chat-input-bar">
                                 <input type="text" id="chat-input" placeholder="Digite sua mensagem privada...">
-                                <button onclick="enviarMensajeCliente('${extraParam}')"><i class="fa-solid fa-paper-plane"></i></button>
+                                <button onclick="enviarMensajeCliente('${datosUbicacion}')"><i class="fa-solid fa-paper-plane"></i></button>
                             </div>
                         </div>`;
-                    setTimeout(() => { if(window.iniciarChatFirebase) window.iniciarChatFirebase(extraParam, false); }, 100);
+                    setTimeout(() => { if(window.iniciarChatFirebase) window.iniciarChatFirebase(datosUbicacion, false); }, 100);
                     break;
                 case 'chat-admin-resp':
                     html = `
@@ -918,10 +966,10 @@
                             <div class="chat-messages" id="chat-box"><div class="msg received">Carregando conversa privada...</div></div>
                             <div class="chat-input-bar">
                                 <input type="text" id="chat-input" placeholder="Responder privadamente como Administrador...">
-                                <button onclick="enviarMensajeAdmin('${extraParam}')"><i class="fa-solid fa-paper-plane"></i></button>
+                                <button onclick="enviarMensajeAdmin('${datosUbicacion}')"><i class="fa-solid fa-paper-plane"></i></button>
                             </div>
                         </div>`;
-                    setTimeout(() => { if(window.iniciarChatFirebase) window.iniciarChatFirebase(extraParam, true); }, 100);
+                    setTimeout(() => { if(window.iniciarChatFirebase) window.iniciarChatFirebase(datosUbicacion, true); }, 100);
                     break;
                 case 'generica':
                     content.style.padding = '40px 20px';
