@@ -18,7 +18,7 @@ export default async function handler(req, res) {
         // 1. Credenciales
         const APP_KEY = "552568";
         const APP_SECRET = "qwLFTLfIFh3Ksg0JvoDmXDhHXQaXTQVT";
-        const API_URL = "https://api.aliexpress.com/sync";
+        const API_URL = "https://api-gw.aliexpress.com/router/rest";
 
         // 2. Formato de Timestamp preciso para TOP / AliExpress (YYYY-MM-DD HH:mm:ss en GMT/UTC)
         const date = new Date();
