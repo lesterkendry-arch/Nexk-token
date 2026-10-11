@@ -377,8 +377,19 @@
             grid.innerHTML = '<div style="grid-column: span 2; text-align: center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--color-primario);"></i><p>Carregando catálogo do fornecedor...</p></div>';
 
             try {
-                // Llama a la API Serverless de AliExpress
-                const response = await fetch('/api/productos');
+                // Llama a la API Serverless de Vercel (CORREGIDO A POST)
+                const response = await fetch('/api/productos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        method: 'aliexpress.ds.recommend.feed.get',
+                        country: 'BR',
+                        target_currency: 'BRL',
+                        target_language: 'PT'
+                    })
+                });
                 const resultado = await response.json();
 
                 if (resultado.error) {
