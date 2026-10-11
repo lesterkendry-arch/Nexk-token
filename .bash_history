@@ -1,26 +1,3 @@
-        .product-title { font-size: 0.85rem; color: var(--color-gris); line-height: 1.3; }
-        /* === CARRITO === */
-        #view-cart { padding-bottom: 70px; }
-        .cart-item { background: white; margin: 10px 15px; padding: 15px; border-radius: 10px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .cart-checkbox { width: 20px; height: 20px; accent-color: var(--color-primario); }
-        .cart-img { width: 60px; height: 60px; background: #f8fafc; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #cbd5e1; }
-        .cart-details { flex: 1; }
-        .cart-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; }
-        .cart-item-price { font-size: 1.1rem; color: var(--color-primario); font-weight: bold; }
-        .btn-delete { background: none; border: none; color: var(--color-rojo); font-size: 1.2rem; padding: 10px; cursor: pointer; }
-        .checkout-bar { position: fixed; bottom: 65px; left: 0; width: 100%; background: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); border-top: 1px solid #e5e7eb; z-index: 999; }
-        .checkout-total { font-size: 1.2rem; font-weight: bold; }
-        .btn-buy { background: var(--color-primario); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer;}
-        /* === VISTA MÁS (Menú) === */
-        #view-more { background-color: white; min-height: 100vh; padding-bottom: 20px; }
-        .profile-header { background-color: var(--color-primario); padding: 20px 15px 30px 15px; color: white; }
-        .profile-info { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; cursor: pointer; }
-        .profile-avatar { width: 60px; height: 60px; background-color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--color-primario); font-size: 1.5rem; font-weight: bold; }
-        .profile-text h2 { font-size: 1.2rem; margin-bottom: 2px; }
-        .profile-text p { font-size: 0.9rem; opacity: 0.9; display: flex; align-items: center; gap: 5px; }
-        .promo-cards { display: flex; flex-direction: column; gap: 10px; margin-top: -15px; padding: 0 15px; position: relative; z-index: 2; }
-        .promo-card { border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center; color: white; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
-        .promo-meli { background-color: var(--color-rosa); }
         .promo-pago { background-color: white; color: var(--color-texto); border: 1px solid #e5e7eb;}
         .menu-section { margin-top: 20px; border-top: 8px solid var(--color-fondo); }
         .menu-title { padding: 20px 15px 10px 15px; font-size: 0.9rem; color: var(--color-gris); font-weight: 600; }
@@ -498,3 +475,26 @@ git add.
 git add .
 git commit -m "solucion"
 git push 
+git add .
+git commit -m "prueva1"
+git push origin-shop master
+git init
+cd
+cd Documents/NeX
+ls
+cd /sdcard/Documents/NeX
+git init
+git add index.html
+git config --global --add safe.directory /sdcard/Documents/NeX
+git commit -m "otraves"
+git add .
+git commit -m "problema"
+git status
+ls
+git add index.html
+git commi -m "pinga"
+git commit -m "pinga"
+ls -ld
+mkdir -p .git/objects
+git add .
+git commit -m "pajaro"
