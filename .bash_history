@@ -1,13 +1,3 @@
-        .quick-actions::-webkit-scrollbar { display: none; }
-        .action-item { display: flex; flex-direction: column; align-items: center; min-width: 65px; gap: 8px; cursor: pointer;}
-        .action-icon { width: 48px; height: 48px; background-color: #eff6ff; color: var(--color-primario); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
-        .action-text { font-size: 0.75rem; font-weight: 500; }
-        .banner { margin: 15px; background: linear-gradient(135deg, #3b82f6, #1e40af); border-radius: 12px; padding: 25px 20px; color: white; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 15px 20px 15px; }
-        .product-card { background: white; border-radius: 8px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .product-img-placeholder { width: 100%; aspect-ratio: 1; background-color: #f8fafc; border-radius: 6px; margin-bottom: 12px; display: flex; justify-content: center; align-items: center; color: #cbd5e1; font-size: 2.5rem; }
-        .product-price { font-size: 1.2rem; font-weight: bold; }
-        .product-shipping { font-size: 0.75rem; color: #16a34a; font-weight: 600; margin: 4px 0; }
         .product-title { font-size: 0.85rem; color: var(--color-gris); line-height: 1.3; }
         /* === CARRITO === */
         #view-cart { padding-bottom: 70px; }
@@ -498,3 +488,13 @@ git init
 pwd
 cd/Nex
 nex
+git add .
+git commit -m "problema"
+git push
+git remote -v
+git remote set-url origin https://github.com/lesterkendry-arch/Nexk-token.git
+git remote -v
+git add.
+git add .
+git commit -m "solucion"
+git push 
