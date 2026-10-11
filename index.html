@@ -172,7 +172,7 @@
             </div>
         </div>
         
-        <!-- CATÁLOGO QUE SE LLENARÁ AUTOMÁTICAMENTE CON LA API DEL PROVEEDOR -->
+        <!-- CATÁLOGO CONECTADO A CJ DROPSHIPPING -->
         <div class="products-grid" id="products-grid">
             <div style="grid-column: span 2; text-align: center; padding: 40px; color: var(--color-gris);">
                 <i class="fa-solid fa-box-open" style="font-size: 3rem; margin-bottom: 10px; color: #cbd5e1;"></i>
@@ -365,11 +365,11 @@
         const appleProvider = new OAuthProvider('apple.com');
 
         // ==============================================================================
-        // CONFIGURACIÓN Y FUNCIONES PARA CONECTAR API DE PROVEEDORES
+        // CONFIGURACIÓN Y CONEXIÓN DIRECTA CON API DE CJ DROPSHIPPING
         // ==============================================================================
         
         window.DROPSHIPPING_API_KEY = "CJ5921371@api@666d4fdecce94d33af10e864a753086a"; 
-        window.DROPSHIPPING_API_URL = "https://api.tuproveedor.com/v1"; 
+        window.DROPSHIPPING_API_URL = "https://api.cjdropshipping.com/api/product/list"; 
         window.MARGEN_GANANCIA = 1.30; 
 
         window.cargarProductosProveedor = async function() {
@@ -379,14 +379,45 @@
             grid.innerHTML = '<div style="grid-column: span 2; text-align: center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--color-primario);"></i><p>Carregando catálogo do fornecedor...</p></div>';
 
             try {
-                const productosExternos = [];
+                const response = await fetch(window.DROPSHIPPING_API_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Token': window.DROPSHIPPING_API_KEY
+                    }
+                });
+                
+                const resultado = await response.json();
+                const productosExternos = resultado.data && resultado.data.list ? resultado.data.list : [];
+
                 grid.innerHTML = ''; 
                 
                 if (productosExternos.length === 0) {
-                     grid.innerHTML = '<div style="grid-column: span 2; text-align: center; padding: 40px; color: var(--color-gris);"><i class="fa-solid fa-box-open" style="font-size: 3rem; margin-bottom: 10px; color: #cbd5e1;"></i><p>Nenhum produto cadastrado ainda.</p></div>';
+                     grid.innerHTML = '<div style="grid-column: span 2; text-align: center; padding: 40px; color: var(--color-gris);"><i class="fa-solid fa-box-open" style="font-size: 3rem; margin-bottom: 10px; color: #cbd5e1;"></i><p>Nenhum produto encontrado na API.</p></div>';
+                     return;
                 }
+
+                productosExternos.forEach(prod => {
+                    const precioFabrica = prod.sellPrice || 10.00;
+                    const precioVenta = (precioFabrica * window.MARGEN_GANANCIA).toFixed(2);
+                    const nombreProd = prod.productNameEn || prod.productName || "Produto NeX";
+                    const imagenProd = prod.productImage || "";
+                    const idProd = prod.pid || prod.sku || "1";
+
+                    grid.innerHTML += `
+                        <div class="product-card">
+                            <div class="product-img-placeholder" style="background-image: url('${imagenProd}'); background-size: cover; background-position: center;"></div>
+                            <h3 class="product-title">${nombreProd}</h3>
+                            <div class="product-price">R$ ${precioVenta}</div>
+                            <span class="product-shipping">Em Estoque</span>
+                            <button onclick="agregarAlCarrito('${idProd}', '${nombreProd.replace(/'/g, "")}', ${precioVenta}, '<img src=&quot;${imagenProd}&quot; style=&quot;width:100%;height:100%;object-fit:cover;border-radius:6px;&quot;>')" class="btn-primary" style="padding: 8px; font-size: 0.8rem; margin-top: 10px;">
+                                <i class="fa-solid fa-cart-plus"></i> Adicionar
+                            </button>
+                        </div>
+                    `;
+                });
             } catch (error) {
-                grid.innerHTML = '<div style="grid-column: span 2; text-align: center; color: var(--color-rojo);">Erro ao conectar com API do fornecedor.</div>';
+                grid.innerHTML = '<div style="grid-column: span 2; text-align: center; color: var(--color-rojo); padding: 20px;">Erro ao conectar com API do fornecedor. Verifique a rede.</div>';
             }
         };
 
@@ -433,7 +464,6 @@
             }
         };
 
-        // Función para abrir la sub-pantalla de ubicación cargando los datos guardados (bloqueados si ya compró/guardó)
         window.cargarUbicacionYMostrarSub = async function() {
             if(window.usuarioActualEmail === "invitado@nex.com") {
                 alert("Por favor, faça login primeiro.");
@@ -452,7 +482,6 @@
             abrirSubPantalla('Endereço de Entrega', 'ubicacion', datos);
         };
 
-        // Procesar compra bloqueando la dirección de inmediato
         window.procesarCompra = async function() {
             if(window.usuarioActualEmail === "invitado@nex.com") {
                 alert("Por favor, faça login para finalizar a compra.");
@@ -518,14 +547,14 @@
             }
         };
 
-        window.agregarAlCarrito = function(id, nombre, precio, imagen) {
+        window.agregarAlCarrito = function(id, nombre, precio, imagenHtml) {
             const container = document.getElementById('user-cart-container');
             if(container.innerText === "Seu carrinho está vazio.") container.innerHTML = '';
 
             container.innerHTML += `
                 <div class="cart-item" data-id="${id}">
                     <input type="checkbox" class="cart-checkbox" checked onchange="calcularTotal()">
-                    <div class="cart-img" style="font-size: 1.5rem;">${imagen}</div>
+                    <div class="cart-img">${imagenHtml}</div>
                     <div class="cart-details">
                         <div class="cart-title">${nombre}</div>
                         <div class="cart-item-price" data-price="${precio}">R$ ${precio}</div>
