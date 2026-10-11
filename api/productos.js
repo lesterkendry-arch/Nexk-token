@@ -59,7 +59,7 @@ export default async function handler(req, res) {
         if (data.error_response) {
             return res.status(400).json({
                 error: "Error en la API de AliExpress",
-                details: data.error_response
+                details: data.error_response||JSON.stringify(data)
             });
         }
 
