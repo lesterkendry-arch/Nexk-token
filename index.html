@@ -172,7 +172,7 @@
             </div>
         </div>
         
-        <!-- CATÁLOGO CONECTADO A CJ DROPSHIPPING -->
+        <!-- CATÁLOGO CONECTADO A ALIEXPRESS -->
         <div class="products-grid" id="products-grid">
             <div style="grid-column: span 2; text-align: center; padding: 40px; color: var(--color-gris);">
                 <i class="fa-solid fa-box-open" style="font-size: 3rem; margin-bottom: 10px; color: #cbd5e1;"></i>
@@ -365,7 +365,7 @@
         const appleProvider = new OAuthProvider('apple.com');
 
         // ==============================================================================
-        // CONFIGURACIÓN Y CONEXIÓN A TRAVÉS DE SERVERLESS FUNCTION EN VERCEL
+        // CONFIGURACIÓN Y CONEXIÓN A TRAVÉS DE SERVERLESS FUNCTION EN VERCEL (ALIEXPRESS)
         // ==============================================================================
         
         window.MARGEN_GANANCIA = 1.30; 
@@ -377,11 +377,18 @@
             grid.innerHTML = '<div style="grid-column: span 2; text-align: center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--color-primario);"></i><p>Carregando catálogo do fornecedor...</p></div>';
 
             try {
-                // Llama a la API Serverless en Vercel
+                // Llama a la API Serverless de AliExpress
                 const response = await fetch('/api/productos');
                 const resultado = await response.json();
 
-                const productosExternos = resultado.data && resultado.data.list ? resultado.data.list : [];
+                if (resultado.error) {
+                    grid.innerHTML = '<div style="grid-column: span 2; text-align: center; color: var(--color-rojo); padding: 20px;">Erro na API de AliExpress.</div>';
+                    return;
+                }
+
+                // Extraer lista de productos devuelta por AliExpress Open Platform
+                const respuestaAli = resultado.aliexpress_ds_recommend_feed_get_response;
+                const productosExternos = respuestaAli?.result?.products?.product || [];
 
                 grid.innerHTML = ''; 
                 
@@ -391,11 +398,11 @@
                 }
 
                 productosExternos.forEach(prod => {
-                    const precioFabrica = parseFloat(prod.sellPrice) || 10.00;
+                    const precioFabrica = parseFloat(prod.target_sale_price) || 10.00;
                     const precioVenta = (precioFabrica * window.MARGEN_GANANCIA).toFixed(2);
-                    const nombreProd = prod.productNameEn || prod.productName || "Produto NeX";
-                    const imagenProd = prod.productImage || "";
-                    const idProd = prod.pid || prod.sku || "1";
+                    const nombreProd = prod.product_title || "Produto NeX";
+                    const imagenProd = prod.product_main_image_url || "";
+                    const idProd = prod.product_id || "1";
 
                     grid.innerHTML += `
                         <div class="product-card">
@@ -523,8 +530,8 @@
                 direccion_envio: direccionGuardada,
                 productos: items,
                 total_pagado: totalCompra,
-                estado_paquete: "Processando no Fornecedor (CJ Dropshipping)",
-                codigo_seguimiento: "CJ" + Math.floor(100000000 + Math.random() * 900000000) + "BR",
+                estado_paquete: "Processando no Fornecedor (AliExpress)",
+                codigo_seguimiento: "AE" + Math.floor(100000000 + Math.random() * 900000000) + "BR",
                 fecha_orden: serverTimestamp()
             };
 
@@ -778,7 +785,7 @@
     <script>
         const dic = {
             'pt': { search:"Buscar em NeX...", offers:"Ofertas", location:"Endereço", phones:"Celulares", tools:"Ferramentas", nav_categories:"Categorias", cat_desc:"Explora nossas categorias aqui.", cart_title:"Meu Carrinho", total_pay:"Total a pagar", buy_btn:"Comprar", guest_user:"Usuário Convidado", login_prompt:"Faça login com seu e-mail", my_address:"Adicionar minha Localização", language_settings:"Idioma / Language", my_activity:"Minha atividade", my_purchases:"Minhas compras", notifications:"Notificações", favorites:"Favoritos", discover:"Descubra", coupons:"Cupons", insurance:"Seguros e assistências", new_tag:"NOVO", sell_nex:"Vender no NeX", seller_area:"Área do Vendedor", settings:"Configurações", admin_nex:"Administração NeX", support_title:"Atendimento", support_btn:"Falar com Suporte (Ajuda)", nav_home:"Início", nav_cart:"Carrinho", nav_more:"Mais", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Bem-vindo à nossa criptomoeda NeX Token", token_invest:"Se quiser investir, toque aqui:", token_btn:"Investir Agora", token_desc:"Você tem a oportunidade de ganhar investindo pouco dinheiro, apenas $1, $2, $3 ou $4 dólares. A partir daí, pode investir o quanto quiser! Não é necessário adicionar muito dinheiro para começar.", token_disclaimer:"Lembre-se: Você tem a oportunidade de ganhar, mas não é uma garantia. Como em todo lugar, também há o risco de perder." },
-            'es': { search:"Buscar en NeX...", offers:"Ofertas", location:"Ubicación", phones:"Celulares", tools:"Herramientas", nav_categories:"Categorías", cat_desc:"Explora nuestras categorías aquí.", cart_title:"Mi Carrito", total_pay:"Total a pagar", buy_btn:"Comprar", guest_user:"Usuario Invitado", login_prompt:"Inicia sesión con tu correo", my_address:"Agregar mi Ubicación", language_settings:"Idioma / Language", my_activity:"Mi actividad", my_purchases:"Mis compras", notifications:"Notificaciones", favorites:"Favoritos", discover:"Descubre", coupons:"Cupones", insurance:"Seguros y asistencias", new_tag:"NUEVO", sell_nex:"Vender en NeX", seller_area:"Área de Vendedores", settings:"Configuraciones", admin_nex:"Administración NeX", support_title:"Atención al Cliente", support_btn:"Hablar con Soporte", nav_home:"Inicio", nav_cart:"Carrito", nav_more:"Más", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Bienvenido a nuestra criptomoeda NeX Token", token_invest:"Si quieres invertir, toca aquí:", token_btn:"Invertir Ahora", token_desc:"Tienes la oportunidad de ganar invirtiendo poco dinero, solo $1, $2, $3 o $4 dólares. ¡A partir de ahí puedes invertir lo que quieras! No es necesario agregar mucho dinero para empezar.", token_disclaimer:"Recuerda: Tienes la oportunidad de ganar, pero no es una garantía. Como en todo lugar, también existe el riesgo de perder." }
+            'es': { search:"Buscar en NeX...", offers:"Ofertas", location:"Ubicación", phones:"Celulares", tools:"Herramientas", nav_categories:"Categorías", cat_desc:"Explora nuestras categorías aquí.", cart_title:"Mi Carrito", total_pay:"Total a pagar", buy_btn:"Comprar", guest_user:"Usuario Invitado", login_prompt:"Inicia sesión con tu correo", my_address:"Agregar mi Ubicación", language_settings:"Idioma / Language", my_activity:"Mi actividad", my_purchases:"Mis compras", notifications:"Notificaciones", favorites:"Favoritos", discover:"Descubre", coupons:"Cupones", insurance:"Seguros y asistencias", new_tag:"NUEVO", sell_nex:"Vender en NeX", seller_area:"Área de Vendedores", settings:"Configuraciones", admin_nex:"Administración NeX", support_title:"Atención al Cliente", support_btn:"Hablar con Soporte", nav_home:"Inicio", nav_cart:"Carrito", nav_more:"Más", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Bienvenido a nuestra criptomoeda NeX Token", token_invest:"Si quieres invertir, toca aquí:", token_btn:"Invertir Ahora", token_desc:"Tienes la oportunidad de ganar invirtiendo poco dinero, solo $1, $2, $3 o $4 dólares. ¡A partir de ahí puedes invertir lo que quieras! No es necesario agregar mucho dinero para empezar.", token_disclaimer:"Recuerda: Tienes la oportunidad de ganar, pero no es una garantía. Como en todo lugar, existe el riesgo de perder." }
         };
 
         let idiomaActual = 'pt';
@@ -960,7 +967,7 @@
                             <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
                                 <div style="font-size: 0.9rem; font-weight: bold; margin-bottom: 5px;">📦 Pedido Recente</div>
                                 <div style="font-size: 0.8rem; color: var(--color-gris); margin-bottom: 8px;">Código de Rastreio: <span style="font-weight: bold; color: var(--color-texto);">Gerado automaticamente ao finalizar compra</span></div>
-                                <div style="font-size: 0.85rem; color: var(--color-verde); font-weight: bold;"><i class="fa-solid fa-circle-check"></i> Status: Em trânsito pelo fornecedor (CJ Dropshipping)</div>
+                                <div style="font-size: 0.85rem; color: var(--color-verde); font-weight: bold;"><i class="fa-solid fa-circle-check"></i> Status: Em trânsito pelo fornecedor (AliExpress)</div>
                             </div>
                         </div>`;
                     break;
