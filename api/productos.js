@@ -2,7 +2,7 @@ import crypto from 'crypto';
 
 export default async function handler(req, res) {
     // Configura cabeceras CORS
-    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
     res.setHeader(
@@ -11,19 +11,20 @@ export default async function handler(req, res) {
     );
 
     if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
+        return res.status(200).end();
     }
 
     try {
-        // 1. Credenciales de AliExpress
+        // 1. Credenciales
         const APP_KEY = "552568";
         const APP_SECRET = "qwLFTLfIFh3Ksg0JvoDmXDhHXQaXTQVT";
         const API_URL = "https://api.aliexpress.com/sync";
 
-        // 2. Parámetros del método para obtener lista de productos/dropshipping
-        const timestamp = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
-        
+        // 2. Formato de Timestamp preciso para TOP / AliExpress (YYYY-MM-DD HH:mm:ss en GMT/UTC)
+        const date = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        const timestamp = `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(date.getUTCSeconds())}`;
+
         const params = {
             app_key: APP_KEY,
             method: 'aliexpress.ds.recommend.feed.get',
@@ -35,7 +36,7 @@ export default async function handler(req, res) {
             page_no: '1'
         };
 
-        // 3. Generación de la firma (Sign) requerida por AliExpress
+        // 3. Firma (Sign) - AliExpress exige concatenar APP_SECRET + params ordenados + APP_SECRET
         const sortedKeys = Object.keys(params).sort();
         let queryStr = APP_SECRET;
         for (const key of sortedKeys) {
@@ -43,11 +44,11 @@ export default async function handler(req, res) {
         }
         queryStr += APP_SECRET;
 
-        // Crear hash MD5 en mayúsculas
-        const sign = crypto.createHash('md5').update(queryStr, 'utf8').digest('hex').toUpperCase();
+        // Hash MD5 en mayúsculas
+        const sign = crypto.createHash('md5').update(queryStr, 'utf-8').digest('hex').toUpperCase();
         params.sign = sign;
 
-        // 4. Realizar la solicitud a la API de AliExpress
+        // 4. Petición a la API
         const urlParams = new URLSearchParams(params).toString();
         const response = await fetch(`${API_URL}?${urlParams}`, {
             method: 'GET'
