@@ -289,9 +289,11 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-analytics.js";
-        // Añadidos doc y deleteDoc para la función de expulsar usuarios
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
         import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
+        
+        /* === NUEVAS IMPORTACIONES PARA AUTENTICACIÓN REAL === */
+        import { getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBXQNXxZuJgVrCqKlVBV2Ssx5vIF-Oc5oo",
@@ -308,16 +310,37 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
         
+        /* === INICIALIZAR AUTH Y PROVEEDORES === */
+        const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
+        const appleProvider = new OAuthProvider('apple.com');
+        
         // --- FUNCIÓN PARA INICIAR SESIÓN Y REGISTRAR VISITA EN FIREBASE ---
         window.iniciarSesionApp = async function(metodo) {
-            // Pedimos un correo para simular el inicio real por ahora (para que veas datos en tu panel admin)
-            let correo = prompt("Confirme seu e-mail para continuar com " + metodo + ":");
-            if(!correo) return; // Si cancela, no entra
+            let correo = "";
+            let nombreUsuario = "Usuário NeX";
 
             try {
+                if (metodo === 'Google' || metodo === 'Apple') {
+                    // Abre la ventana de Google/Apple directamente
+                    const provider = metodo === 'Google' ? googleProvider : appleProvider;
+                    const result = await signInWithPopup(auth, provider);
+                    
+                    // Extrae los datos reales del usuario
+                    correo = result.user.email;
+                    if (result.user.displayName) {
+                        nombreUsuario = result.user.displayName;
+                    }
+                } else {
+                    // Si toca "E-mail", por ahora sigue pidiendo manual (hasta que hagamos esa función)
+                    correo = prompt("Confirme seu e-mail para continuar com " + metodo + ":");
+                    if(!correo) return;
+                }
+
                 // 1. Guardar el usuario real en Firestore
                 await addDoc(collection(db, "usuarios"), {
                     email: correo,
+                    nombre: nombreUsuario,
                     metodo: metodo,
                     data_registro: serverTimestamp()
                 });
@@ -330,7 +353,7 @@
                 });
 
                 // 3. Actualizar el perfil visual y dar acceso a la app
-                document.getElementById('user-display-name').innerText = "Usuário NeX";
+                document.getElementById('user-display-name').innerText = nombreUsuario;
                 document.getElementById('user-display-email').innerText = correo;
                 
                 document.getElementById('login-screen').style.opacity = '0';
@@ -341,7 +364,15 @@
 
             } catch(error) {
                 console.error("Error al iniciar sesión:", error);
-                alert("Erro de conexão com o banco de dados. Tente novamente.");
+                
+                // DETECTA SI TIENE ACTIVADA LA VERIFICACIÓN EN DOS PASOS
+                if (error.code === 'auth/multi-factor-auth-required') {
+                    alert("O sistema requer verificação em duas etapas (2FA). Siga as instruções na tela de login para confirmar o código enviado ao seu celular.");
+                } else if (error.code === 'auth/popup-closed-by-user') {
+                    console.log("Login cancelado pelo usuário.");
+                } else {
+                    alert("Erro ao iniciar sessão: " + error.message);
+                }
             }
         };
 
