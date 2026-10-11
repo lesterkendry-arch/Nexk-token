@@ -50,22 +50,37 @@ export default async function handler(req, res) {
 
         // 4. Petición a la API
         const urlParams = new URLSearchParams(params).toString();
-        const response = await fetch(`${API_URL}?${urlParams}`, {
+        const fetchUrl = `${API_URL}?${urlParams}`;
+        
+        console.log("=== URL DE PETICIÓN ===");
+        console.log(fetchUrl);
+
+        const response = await fetch(fetchUrl, {
             method: 'GET'
         });
 
         const data = await response.json();
 
+        // 5. REGISTRO DE LOGS (Aquí se fuerza la impresión de la respuesta)
+        console.log("=== RESPUESTA DE ALIEXPRESS ===");
+        console.log(JSON.stringify(data, null, 2));
+        console.log("===============================");
+
         if (data.error_response) {
             return res.status(400).json({
                 error: "Error en la API de AliExpress",
-                details: data.error_response||JSON.stringify(data)
+                details: data.error_response
             });
         }
 
         return res.status(200).json(data);
 
     } catch (error) {
+        // ATRAPA Y MUESTRA CUALQUIER FALLO DE SERVIDOR
+        console.error("=== ERROR CRÍTICO ===");
+        console.error(error);
+        console.error("=====================");
+
         return res.status(500).json({ error: "Error interno del servidor", message: error.message });
     }
 }
