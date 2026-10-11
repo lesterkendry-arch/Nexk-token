@@ -1,5 +1,3 @@
-        .tag-blue { background-color: var(--color-azul-claro); }
-        /* === SISTEMA DE SUB-PANTALLAS (Deslizables) === */
         #sub-screen-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: var(--color-fondo); z-index: 2000;
@@ -498,3 +496,5 @@ git push origin-shop
 git add .
 git commit -m "ayyy"
 git add .
+git add .
+git commit -m "priebaall"
