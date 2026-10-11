@@ -1,12 +1,3 @@
-        .promo-pago { background-color: white; color: var(--color-texto); border: 1px solid #e5e7eb;}
-        .menu-section { margin-top: 20px; border-top: 8px solid var(--color-fondo); }
-        .menu-title { padding: 20px 15px 10px 15px; font-size: 0.9rem; color: var(--color-gris); font-weight: 600; }
-        .menu-item { display: flex; align-items: center; padding: 16px 20px; background: white; border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: background-color 0.2s; }
-        .menu-item:active { background-color: #f9fafb; }
-        .menu-icon { width: 30px; font-size: 1.2rem; color: var(--color-gris); text-align: center; margin-right: 15px; }
-        .menu-text { flex: 1; font-size: 1rem; color: var(--color-texto); }
-        .tag { font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; font-weight: bold; color: white; margin-left: 10px; }
-        .tag-green { background-color: var(--color-verde); }
         .tag-blue { background-color: var(--color-azul-claro); }
         /* === SISTEMA DE SUB-PANTALLAS (Deslizables) === */
         #sub-screen-container {
@@ -498,3 +489,12 @@ ls -ld
 mkdir -p .git/objects
 git add .
 git commit -m "pajaro"
+git add .
+git commit -m "klv"
+git push origin-shop
+git add .
+git commit -m "bamos"
+git push origin-shop
+git add .
+git commit -m "ayyy"
+git add .
