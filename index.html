@@ -365,11 +365,9 @@
         const appleProvider = new OAuthProvider('apple.com');
 
         // ==============================================================================
-        // CONFIGURACIÓN Y CONEXIÓN DIRECTA CON API DE CJ DROPSHIPPING
+        // CONFIGURACIÓN Y CONEXIÓN A TRAVÉS DE PHP INTERMEDIARIO (CORS FIX)
         // ==============================================================================
         
-        window.DROPSHIPPING_API_KEY = "CJ5921371@api@666d4fdecce94d33af10e864a753086a"; 
-        window.DROPSHIPPING_API_URL = "https://api.cjdropshipping.com/api/product/list"; 
         window.MARGEN_GANANCIA = 1.30; 
 
         window.cargarProductosProveedor = async function() {
@@ -379,12 +377,9 @@
             grid.innerHTML = '<div style="grid-column: span 2; text-align: center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--color-primario);"></i><p>Carregando catálogo do fornecedor...</p></div>';
 
             try {
-                const response = await fetch(window.DROPSHIPPING_API_URL, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Access-Token': window.DROPSHIPPING_API_KEY
-                    }
+                // Llamamos al archivo intermediario PHP en lugar de la API directa
+                const response = await fetch('catalogo.php', {
+                    method: 'GET'
                 });
                 
                 const resultado = await response.json();
@@ -417,7 +412,8 @@
                     `;
                 });
             } catch (error) {
-                grid.innerHTML = '<div style="grid-column: span 2; text-align: center; color: var(--color-rojo); padding: 20px;">Erro ao conectar com API do fornecedor. Verifique a rede.</div>';
+                console.error(error);
+                grid.innerHTML = '<div style="grid-column: span 2; text-align: center; color: var(--color-rojo); padding: 20px;">Erro ao carregar catálogo. Verifique sua conexão.</div>';
             }
         };
 
