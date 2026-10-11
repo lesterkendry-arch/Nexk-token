@@ -15,33 +15,16 @@ export default async function handler(req, res) {
     }
 
     try {
-        // 1. Tus Credenciales de AliExpress
-        // OJO: Verifica si "552568" es tu App Key completo o si le faltan números.
         const APP_KEY = "552568"; 
         const APP_SECRET = "qwLFTLfIFh3Ksg0JvoDmXDhHXQaXTQVT";
         const API_URL = "https://api-gw.aliexpress.com/router/rest";
 
         // ====================================================================
-        // 2. TOKEN DE AUTORIZACIÓN (El pase VIP que te falta para evitar el bloqueo)
+        // AQUÍ ESTÁ TU TOKEN INTEGRADO
         // ====================================================================
-        const ACCESS_TOKEN = ""; // Lo dejamos vacío porque apenas lo vamos a conseguir
+        const ACCESS_TOKEN = "50000601c30atpedfgu3LVvik87Ixlsvle3mSoB7701ceb156fPunYZ43GBg"; 
 
-        // Si no tenemos token, detenemos la app y te damos el link para conseguirlo
-        if (!ACCESS_TOKEN) {
-            const REDIRECT_URI = "https://www.nexshopping.com.br";
-            const AUTH_URL = `https://api-sg.aliexpress.com/oauth/authorize?response_type=code&client_id=${APP_KEY}&redirect_uri=${REDIRECT_URI}&force_auth=true&state=1212`;
-            
-            console.log("=== LINK PARA AUTORIZAR LA APP ===");
-            console.log(AUTH_URL);
-
-            return res.status(401).json({
-                error: "Falta autorizar tu app en AliExpress",
-                instruccion: "Copia el 'link_autorizacion' de abajo, pégalo en tu navegador e inicia sesión en AliExpress. Al terminar, la página te devolverá a tu tienda, pero arriba en la barra web aparecerá un 'code=...'. Cópialo.",
-                link_autorizacion: AUTH_URL
-            });
-        }
-
-        // 3. Formato de Timestamp para la API (Hora de Beijing)
+        // Formato de Timestamp para la API (Hora de Beijing)
         const date = new Date();
         const utcTime = date.getTime() + (date.getTimezoneOffset() * 60000);
         const beijingTime = new Date(utcTime + (3600000 * 8));
@@ -49,10 +32,10 @@ export default async function handler(req, res) {
         const pad = (n) => String(n).padStart(2, '0');
         const timestamp = `${beijingTime.getFullYear()}-${pad(beijingTime.getMonth() + 1)}-${pad(beijingTime.getDate())} ${pad(beijingTime.getHours())}:${pad(beijingTime.getMinutes())}:${pad(beijingTime.getSeconds())}`;
 
-        // 4. Parámetros (AQUÍ ENVIAMOS EL TOKEN cuando ya lo tengamos)
+        // Parámetros de la petición con el TOKEN INCLUIDO
         const params = {
             app_key: APP_KEY,
-            session: ACCESS_TOKEN, // Enviamos el permiso a AliExpress
+            session: ACCESS_TOKEN,
             method: 'aliexpress.ds.recommend.feed.get',
             format: 'json',
             v: '2.0',
@@ -66,7 +49,7 @@ export default async function handler(req, res) {
             country: 'BR'
         };
 
-        // 5. Encriptar y firmar la petición
+        // Encriptar y firmar la petición
         const sortedKeys = Object.keys(params).sort();
         let queryStr = APP_SECRET;
         for (const key of sortedKeys) {
@@ -77,7 +60,7 @@ export default async function handler(req, res) {
         const sign = crypto.createHash('md5').update(queryStr, 'utf-8').digest('hex').toUpperCase();
         params.sign = sign;
 
-        // 6. Hacer la llamada a AliExpress
+        // Hacer la llamada a AliExpress
         const urlParams = new URLSearchParams(params).toString();
         const fetchUrl = `${API_URL}?${urlParams}`;
 
@@ -89,15 +72,15 @@ export default async function handler(req, res) {
             }
         });
 
-        // 7. Revisar si nos mandó datos o la bendita página HTML de bloqueo
+        // Revisar respuesta
         const rawText = await response.text();
         let data;
         try {
             data = JSON.parse(rawText);
         } catch (parseError) {
-            console.error("=== ALIEXPRESS TE BLOQUEÓ (HTML en vez de JSON) ===");
+            console.error("=== ERROR: LA RESPUESTA NO ES JSON ===");
             return res.status(500).json({
-                error: "El token falló o caducó. AliExpress mandó una página de bloqueo.",
+                error: "AliExpress devolvió HTML. Posiblemente el token es inválido o caducó.",
                 respuesta_corta: rawText.substring(0, 150)
             });
         }
