@@ -121,9 +121,9 @@
         .chat-input-bar input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
         .chat-input-bar button { background: var(--color-primario); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
 
-        /* MENÚ INFERIOR (4 BOTONES) */
+        /* MENÚ INFERIOR (AJUSTADA A 5 BOTONES) */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; padding-bottom: env(safe-area-inset-bottom, 10px); box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--color-gris); font-size: 0.7rem; cursor: pointer; width: 25%; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--color-gris); font-size: 0.7rem; cursor: pointer; width: 20%; }
         .nav-item.active { color: var(--color-primario); }
         .nav-item i { font-size: 1.3rem; transition: transform 0.2s;}
         .nav-item.active i { transform: scale(1.1); }
@@ -162,21 +162,64 @@
     <div id="view-home" class="view">
         <div class="quick-actions">
             <!-- BOTONES REDONDOS HACEN BÚSQUEDA AUTOMÁTICA -->
-            <div class="action-item" onclick="buscarAccionRapida('ofertas')"><div class="action-icon"><i class="fa-solid fa-tag"></i></div><span class="action-text" data-i18n="offers">Ofertas</span></div>
-            <div class="action-item" onclick="abrirSubPantalla('Endereço', 'ubicacion')"><div class="action-icon"><i class="fa-solid fa-location-dot"></i></div><span class="action-text" data-i18n="location">Endereço</span></div>
-            <div class="action-item" onclick="buscarAccionRapida('celulares')"><div class="action-icon"><i class="fa-solid fa-mobile-screen"></i></div><span class="action-text" data-i18n="phones">Celulares</span></div>
-            <div class="action-item" onclick="buscarAccionRapida('ferramentas')"><div class="action-icon"><i class="fa-solid fa-toolbox"></i></div><span class="action-text" data-i18n="tools">Ferramentas</span></div>
+            <div class="action-item" onclick="buscarAccionRapida('ofertas')">
+                <div class="action-icon"><i class="fa-solid fa-tag"></i></div>
+                <span class="action-text" data-i18n="offers">Ofertas</span>
+            </div>
+            <div class="action-item" onclick="abrirSubPantalla('Endereço', 'ubicacion')">
+                <div class="action-icon"><i class="fa-solid fa-location-dot"></i></div>
+                <span class="action-text" data-i18n="location">Endereço</span>
+            </div>
+            <div class="action-item" onclick="buscarAccionRapida('celulares')">
+                <div class="action-icon"><i class="fa-solid fa-mobile-screen"></i></div>
+                <span class="action-text" data-i18n="phones">Celulares</span>
+            </div>
+            <div class="action-item" onclick="buscarAccionRapida('ferramentas')">
+                <div class="action-icon"><i class="fa-solid fa-toolbox"></i></div>
+                <span class="action-text" data-i18n="tools">Ferramentas</span>
+            </div>
         </div>
         
         <div class="products-grid" id="products-grid">
-            <!-- Catálogo vacío para que agregues tus productos después -->
+            <!-- Catálogo vazio para que agregues tus produtos depois -->
         </div>
     </div>
 
     <!-- VISTA CATEGORÍAS -->
     <div id="view-categories" class="view hidden">
         <div class="screen-header" data-i18n="nav_categories">Categorias</div>
-        <div class="screen-content"><i class="fa-solid fa-border-all" style="font-size:3rem; margin-bottom:10px;"></i><p data-i18n="cat_desc">Explora nossas categorias aqui.</p></div>
+        <div class="screen-content">
+            <i class="fa-solid fa-border-all" style="font-size:3rem; margin-bottom:10px;"></i>
+            <p data-i18n="cat_desc">Explora nossas categorias aqui.</p>
+        </div>
+    </div>
+
+    <!-- VISTA NEX TOKEN (NUEVA PÁGINA INTERNA CON ADVERTENCIA Y BOTÓN ATRÁS) -->
+    <div id="view-token" class="view hidden">
+        <div class="screen-header" style="display: flex; align-items: center; gap: 15px;">
+            <i class="fa-solid fa-arrow-left" onclick="cambiarVista(document.querySelector('.bottom-nav .nav-item:first-child'), 'view-home')" style="font-size:1.3rem; cursor:pointer;"></i>
+            <span data-i18n="token_title">NeX Token</span>
+        </div>
+        <div class="screen-content" style="padding-top: 30px; padding-bottom: 40px; text-align: center;">
+            <i class="fa-brands fa-bitcoin" style="font-size: 5rem; color: #f59e0b; margin-bottom: 20px;"></i>
+            <h2 style="color: var(--color-primario); font-size: 1.5rem; margin-bottom: 15px;" data-i18n="token_welcome">Bem-vindo à nossa criptomoeda NeX Token</h2>
+            
+            <p style="color: var(--color-texto); font-size: 0.95rem; line-height: 1.5; margin-bottom: 20px; text-align: left;" data-i18n="token_desc">
+                Você tem a oportunidade de ganhar investindo pouco dinheiro, apenas $1, $2, $3 ou $4 dólares. A partir daí, pode investir o quanto quiser! Não é necessário adicionar muito dinheiro para começar.
+            </p>
+            
+            <div style="background-color: #fef2f2; border-left: 4px solid var(--color-rojo); padding: 12px; margin-bottom: 25px; text-align: left; border-radius: 4px;">
+                <p style="color: var(--color-rojo); font-size: 0.85rem; font-weight: 600; line-height: 1.4;" data-i18n="token_disclaimer">
+                    <i class="fa-solid fa-circle-exclamation"></i> Lembre-se: Você tem a oportunidade de ganhar, mas não é uma garantia. Como em todo lugar, também há o risco de perder.
+                </p>
+            </div>
+            
+            <p style="color: var(--color-gris); font-size: 0.9rem; margin-bottom: 15px;" data-i18n="token_invest">Se quiser investir, toque aqui:</p>
+            
+            <button class="btn-primary" onclick="window.open('https://nexvoltk.com.br', '_blank')" style="display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1.1rem; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> <span data-i18n="token_btn">Investir Agora</span>
+            </button>
+        </div>
     </div>
 
     <!-- VISTA CARRITO -->
@@ -243,8 +286,6 @@
             </div>
         </div>
 
-        <!-- SECCIÓN DE VENDEDORES OCULTADA -->
-
         <div class="menu-section">
             <div class="menu-item" onclick="abrirSubPantalla('Configurações', 'generica')">
                 <i class="fa-solid fa-gear menu-icon"></i><span class="menu-text" data-i18n="settings">Configurações</span>
@@ -269,7 +310,7 @@
         <div id="sub-content"></div>
     </div>
 
-    <!-- NAVEGACIÓN INFERIOR (AJUSTADA A 4 BOTONES) -->
+    <!-- NAVEGACIÓN INFERIOR (AJUSTADA A 5 BOTONES) -->
     <nav class="bottom-nav">
         <div class="nav-item active" onclick="cambiarVista(this, 'view-home')">
             <i class="fa-solid fa-house"></i><span data-i18n="nav_home">Início</span>
@@ -277,6 +318,13 @@
         <div class="nav-item" onclick="cambiarVista(this, 'view-categories')">
             <i class="fa-solid fa-border-all"></i><span data-i18n="nav_categories">Categorias</span>
         </div>
+        
+        <!-- NUEVO BOTÓN CON SIMBOLOGÍA NeX Y CAMBIO DE VISTA -->
+        <div class="nav-item" onclick="cambiarVista(this, 'view-token')">
+            <i style="font-style: normal; font-weight: 900; font-size: 1.2rem; line-height: 1;">NeX</i>
+            <span data-i18n="nav_token">NeX Token</span>
+        </div>
+
         <div class="nav-item" onclick="cambiarVista(this, 'view-cart')">
             <i class="fa-solid fa-cart-shopping"></i><span data-i18n="nav_cart">Carrinho</span>
         </div>
@@ -293,7 +341,7 @@
         import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
         
         /* === NUEVAS IMPORTACIONES PARA AUTENTICACIÓN REAL === */
-        import { getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBXQNXxZuJgVrCqKlVBV2Ssx5vIF-Oc5oo",
@@ -314,30 +362,41 @@
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
         const appleProvider = new OAuthProvider('apple.com');
+
+        // === VERIFICAR SI YA HAY UNA SESIÓN GUARDADA AL ABRIR LA APP ===
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('user-display-name').innerText = user.displayName || "Usuário NeX";
+                document.getElementById('user-display-email').innerText = user.email;
+                
+                const loginScreen = document.getElementById('login-screen');
+                if (loginScreen) {
+                    loginScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        loginScreen.style.display = 'none';
+                        document.body.classList.remove('bloqueado');
+                    }, 500);
+                }
+            }
+        });
         
-        // --- FUNCIÓN PARA INICIAR SESIÓN Y REGISTRAR VISITA EN FIREBASE ---
         window.iniciarSesionApp = async function(metodo) {
             let correo = "";
             let nombreUsuario = "Usuário NeX";
 
             try {
+                await setPersistence(auth, browserLocalPersistence);
+
                 if (metodo === 'Google' || metodo === 'Apple') {
-                    // Abre la ventana de Google/Apple directamente
                     const provider = metodo === 'Google' ? googleProvider : appleProvider;
                     const result = await signInWithPopup(auth, provider);
-                    
-                    // Extrae los datos reales del usuario
                     correo = result.user.email;
-                    if (result.user.displayName) {
-                        nombreUsuario = result.user.displayName;
-                    }
+                    if (result.user.displayName) nombreUsuario = result.user.displayName;
                 } else {
-                    // Si toca "E-mail", por ahora sigue pidiendo manual (hasta que hagamos esa función)
                     correo = prompt("Confirme seu e-mail para continuar com " + metodo + ":");
                     if(!correo) return;
                 }
 
-                // 1. Guardar el usuario real en Firestore
                 await addDoc(collection(db, "usuarios"), {
                     email: correo,
                     nombre: nombreUsuario,
@@ -345,14 +404,12 @@
                     data_registro: serverTimestamp()
                 });
 
-                // 2. Registrar la visita (detectar si es celular o PC)
                 const esCelular = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                 await addDoc(collection(db, "visitas"), {
                     dispositivo: esCelular ? "celular" : "pc",
                     timestamp: serverTimestamp()
                 });
 
-                // 3. Actualizar el perfil visual y dar acceso a la app
                 document.getElementById('user-display-name').innerText = nombreUsuario;
                 document.getElementById('user-display-email').innerText = correo;
                 
@@ -363,28 +420,20 @@
                 }, 500);
 
             } catch(error) {
-                console.error("Error al iniciar sesión:", error);
-                
-                // DETECTA SI TIENE ACTIVADA LA VERIFICACIÓN EN DOS PASOS
                 if (error.code === 'auth/multi-factor-auth-required') {
                     alert("O sistema requer verificação em duas etapas (2FA). Siga as instruções na tela de login para confirmar o código enviado ao seu celular.");
-                } else if (error.code === 'auth/popup-closed-by-user') {
-                    console.log("Login cancelado pelo usuário.");
-                } else {
+                } else if (error.code !== 'auth/popup-closed-by-user') {
                     alert("Erro ao iniciar sessão: " + error.message);
                 }
             }
         };
 
-        // --- CARGAR DATOS EN EL PANEL DE ADMINISTRADOR ---
         window.cargarDatosAdminFirebase = function() {
-            // Escuchar analíticas de visitas
             onSnapshot(collection(db, "visitas"), (snapshot) => {
-                let contadorCelular = 0;
-                let contadorPC = 0;
-                snapshot.forEach(doc => {
-                    if(doc.data().dispositivo === 'celular') contadorCelular++;
-                    else contadorPC++;
+                let contadorCelular = 0, contadorPC = 0;
+                snapshot.forEach(doc => { 
+                    if(doc.data().dispositivo === 'celular') contadorCelular++; 
+                    else contadorPC++; 
                 });
                 const elCel = document.getElementById('admin-visitas-celular');
                 const elPc = document.getElementById('admin-visitas-pc');
@@ -392,15 +441,14 @@
                 if(elPc) elPc.innerText = contadorPC;
             });
 
-            // Escuchar lista de usuarios registrados
             onSnapshot(collection(db, "usuarios"), (snapshot) => {
                 const lista = document.getElementById('admin-lista-usuarios');
                 if(!lista) return;
                 
                 lista.innerHTML = '';
-                if(snapshot.empty) {
-                    lista.innerHTML = '<div style="padding:20px; text-align:center; color:var(--color-gris);">Nenhum usuário registrado ainda.</div>';
-                    return;
+                if(snapshot.empty) { 
+                    lista.innerHTML = '<div style="padding:20px; text-align:center; color:var(--color-gris);">Nenhum usuário registrado ainda.</div>'; 
+                    return; 
                 }
 
                 snapshot.forEach(docUsuario => {
@@ -427,24 +475,23 @@
             });
         };
 
-        // --- FUNCIÓN PARA ELIMINAR (EXPULSAR) USUARIOS ---
         window.expulsarUsuario = async function(idDocumento) {
             if(confirm("Tem certeza que deseja expulsar e apagar este usuário do sistema?")) {
-                try {
-                    await deleteDoc(doc(db, "usuarios", idDocumento));
-                    // Firebase actualizará la lista automáticamente en la pantalla
-                } catch(error) {
-                    alert("Erro ao tentar expulsar o usuário.");
+                try { 
+                    await deleteDoc(doc(db, "usuarios", idDocumento)); 
+                } catch(error) { 
+                    alert("Erro ao tentar expulsar o usuário."); 
                 }
             }
         };
 
-        // --- CHAT DE SOPORTE MANTENIDO ---
         let unsubscribeChat = null;
         window.iniciarChatFirebase = function(salaId) {
             const chatBox = document.getElementById('chat-box');
             if(!chatBox) return;
+            
             if (unsubscribeChat) unsubscribeChat();
+            
             const q = query(collection(db, `chats/${salaId}/mensagens`), orderBy("timestamp", "asc"));
             unsubscribeChat = onSnapshot(q, (snapshot) => {
                 chatBox.innerHTML = ''; 
@@ -460,24 +507,31 @@
         };
 
         window.enviarMensajeFirebase = async function(salaId, texto) {
-            try {
-                await addDoc(collection(db, `chats/${salaId}/mensagens`), {
+            try { 
+                await addDoc(collection(db, `chats/${salaId}/mensagens`), { 
                     texto: texto, 
                     remetente: 'yo', 
-                    timestamp: serverTimestamp()
-                });
+                    timestamp: serverTimestamp() 
+                }); 
             } catch (error) {}
         };
     </script>
 
-    <!-- SCRIPT PRINCIPAL ORIGINAL -->
+    <!-- SCRIPT DE IDIOMAS Y LÓGICA UI -->
     <script>
         const dic = {
-            'pt': { search:"Buscar em NeX...", offers:"Ofertas", location:"Endereço", phones:"Celulares", tools:"Ferramentas", nav_categories:"Categorias", cat_desc:"Explora nossas categorias aqui.", cart_title:"Meu Carrinho", total_pay:"Total a pagar", buy_btn:"Comprar", guest_user:"Usuário Convidado", login_prompt:"Faça login com seu e-mail", my_address:"Adicionar minha Localização", language_settings:"Idioma / Language", my_activity:"Minha atividade", my_purchases:"Minhas compras", notifications:"Notificações", favorites:"Favoritos", discover:"Descubra", coupons:"Cupons", insurance:"Seguros e assistências", new_tag:"NOVO", sell_nex:"Vender no NeX", seller_area:"Área do Vendedor", settings:"Configurações", admin_nex:"Administração NeX", support_title:"Atendimento", support_btn:"Falar com Suporte (Ajuda)", nav_home:"Início", nav_cart:"Carrinho", nav_more:"Mais" },
-            'es': { search:"Buscar en NeX...", offers:"Ofertas", location:"Ubicación", phones:"Celulares", tools:"Herramientas", nav_categories:"Categorías", cat_desc:"Explora nuestras categorías aquí.", cart_title:"Mi Carrito", total_pay:"Total a pagar", buy_btn:"Comprar", guest_user:"Usuario Invitado", login_prompt:"Inicia sesión con tu correo", my_address:"Agregar mi Ubicación", language_settings:"Idioma / Language", my_activity:"Mi actividad", my_purchases:"Mis compras", notifications:"Notificaciones", favorites:"Favoritos", discover:"Descubre", coupons:"Cupones", insurance:"Seguros y asistencias", new_tag:"NUEVO", sell_nex:"Vender en NeX", seller_area:"Área de Vendedores", settings:"Configuraciones", admin_nex:"Administración NeX", support_title:"Atención al Cliente", support_btn:"Hablar con Soporte", nav_home:"Inicio", nav_cart:"Carrito", nav_more:"Más" }
+            'pt': { search:"Buscar em NeX...", offers:"Ofertas", location:"Endereço", phones:"Celulares", tools:"Ferramentas", nav_categories:"Categorias", cat_desc:"Explora nossas categorias aqui.", cart_title:"Meu Carrinho", total_pay:"Total a pagar", buy_btn:"Comprar", guest_user:"Usuário Convidado", login_prompt:"Faça login com seu e-mail", my_address:"Adicionar minha Localização", language_settings:"Idioma / Language", my_activity:"Minha atividade", my_purchases:"Minhas compras", notifications:"Notificações", favorites:"Favoritos", discover:"Descubra", coupons:"Cupons", insurance:"Seguros e assistências", new_tag:"NOVO", sell_nex:"Vender no NeX", seller_area:"Área do Vendedor", settings:"Configurações", admin_nex:"Administração NeX", support_title:"Atendimento", support_btn:"Falar com Suporte (Ajuda)", nav_home:"Início", nav_cart:"Carrinho", nav_more:"Mais", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Bem-vindo à nossa criptomoeda NeX Token", token_invest:"Se quiser investir, toque aqui:", token_btn:"Investir Agora", token_desc:"Você tem a oportunidade de ganhar investindo pouco dinheiro, apenas $1, $2, $3 ou $4 dólares. A partir daí, pode investir o quanto quiser! Não é necessário adicionar muito dinheiro para começar.", token_disclaimer:"Lembre-se: Você tem a oportunidade de ganhar, mas não é uma garantia. Como em todo lugar, também há o risco de perder." },
+            'es': { search:"Buscar en NeX...", offers:"Ofertas", location:"Ubicación", phones:"Celulares", tools:"Herramientas", nav_categories:"Categorías", cat_desc:"Explora nuestras categorías aquí.", cart_title:"Mi Carrito", total_pay:"Total a pagar", buy_btn:"Comprar", guest_user:"Usuario Invitado", login_prompt:"Inicia sesión con tu correo", my_address:"Agregar mi Ubicación", language_settings:"Idioma / Language", my_activity:"Mi actividad", my_purchases:"Mis compras", notifications:"Notificaciones", favorites:"Favoritos", discover:"Descubre", coupons:"Cupones", insurance:"Seguros y asistencias", new_tag:"NUEVO", sell_nex:"Vender en NeX", seller_area:"Área de Vendedores", settings:"Configuraciones", admin_nex:"Administración NeX", support_title:"Atención al Cliente", support_btn:"Hablar con Soporte", nav_home:"Inicio", nav_cart:"Carrito", nav_more:"Más", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Bienvenido a nuestra criptomoneda NeX Token", token_invest:"Si quieres invertir, toca aquí:", token_btn:"Invertir Ahora", token_desc:"Tienes la oportunidad de ganar invirtiendo poco dinero, solo $1, $2, $3 o $4 dólares. ¡A partir de ahí puedes invertir lo que quieras! No es necesario agregar mucho dinero para empezar.", token_disclaimer:"Recuerda: Tienes la oportunidad de ganar, pero no es una garantía. Como en todo lugar, también existe el riesgo de perder." },
+            'en': { search:"Search in NeX...", offers:"Offers", location:"Address", phones:"Phones", tools:"Tools", nav_categories:"Categories", cat_desc:"Explore our categories here.", cart_title:"My Cart", total_pay:"Total to pay", buy_btn:"Buy", guest_user:"Guest User", login_prompt:"Login with your email", my_address:"Add my Location", language_settings:"Language", my_activity:"My activity", my_purchases:"My purchases", notifications:"Notifications", favorites:"Favorites", discover:"Discover", coupons:"Coupons", insurance:"Insurance & Support", new_tag:"NEW", sell_nex:"Sell on NeX", seller_area:"Seller Area", settings:"Settings", admin_nex:"NeX Administration", support_title:"Support", support_btn:"Contact Support", nav_home:"Home", nav_cart:"Cart", nav_more:"More", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Welcome to our cryptocurrency NeX Token", token_invest:"If you want to invest, tap here:", token_btn:"Invest Now", token_desc:"You have the opportunity to win by investing a small amount of money, just $1, $2, $3, or $4 dollars. From there, you can invest as much as you want! It's not necessary to add a lot of money to start.", token_disclaimer:"Remember: You have the opportunity to win, but it is not a guarantee. Like everywhere else, there is also the risk of losing." },
+            'ru': { search:"Поиск в NeX...", offers:"Скидки", location:"Адрес", phones:"Телефоны", tools:"Инструменты", nav_categories:"Категории", cat_desc:"Исследуйте наши категории здесь.", cart_title:"Моя корзина", total_pay:"К оплате", buy_btn:"Купить", guest_user:"Гость", login_prompt:"Войдите с помощью email", my_address:"Добавить мой адрес", language_settings:"Язык", my_activity:"Моя активность", my_purchases:"Мои покупки", notifications:"Уведомления", favorites:"Избранное", discover:"Откройте для себя", coupons:"Купоны", insurance:"Страховка", new_tag:"НОВОЕ", sell_nex:"Продавать на NeX", seller_area:"Зона продавца", settings:"Настройки", admin_nex:"Администрация NeX", support_title:"Поддержка", support_btn:"Служба поддержки", nav_home:"Главная", nav_cart:"Корзина", nav_more:"Еще", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Добро пожаловать в нашу криптовалюту NeX Token", token_invest:"Если вы хотите инвестировать, нажмите здесь:", token_btn:"Инвестировать", token_desc:"У вас есть возможность заработать, инвестируя немного денег, всего 1, 2, 3 или 4 доллара. Затем вы можете инвестировать сколько хотите! Для начала не нужно вкладывать много денег.", token_disclaimer:"Помните: у вас есть возможность выиграть, но это не гарантия. Как и везде, существует риск потери." },
+            'fr': { search:"Rechercher sur NeX...", offers:"Offres", location:"Adresse", phones:"Téléphones", tools:"Outils", nav_categories:"Catégories", cat_desc:"Explorez nos catégories ici.", cart_title:"Mon Panier", total_pay:"Total à payer", buy_btn:"Acheter", guest_user:"Utilisateur invité", login_prompt:"Connectez-vous avec votre email", my_address:"Ajouter mon adresse", language_settings:"Langue", my_activity:"Mon activité", my_purchases:"Mes achats", notifications:"Notifications", favorites:"Favoris", discover:"Découvrir", coupons:"Coupons", insurance:"Assurance", new_tag:"NOUVEAU", sell_nex:"Vendre sur NeX", seller_area:"Espace vendeur", settings:"Paramètres", admin_nex:"Administration NeX", support_title:"Support", support_btn:"Contacter le support", nav_home:"Accueil", nav_cart:"Panier", nav_more:"Plus", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Bienvenue dans notre crypto-monnaie NeX Token", token_invest:"Si vous souhaitez investir, appuyez ici :", token_btn:"Investir", token_desc:"Vous avez l'opportunité de gagner en investissant peu d'argent, seulement 1, 2, 3 ou 4 dollars. À partir de là, vous pouvez investir autant que vous le souhaitez ! Pas besoin d'ajouter beaucoup d'argent pour commencer.", token_disclaimer:"Rappelez-vous : Vous avez l'opportunité de gagner, mais ce n'est pas une garantie. Comme partout ailleurs, il y a aussi le risque de perdre." },
+            'de': { search:"Suche in NeX...", offers:"Angebote", location:"Adresse", phones:"Handys", tools:"Werkzeuge", nav_categories:"Kategorien", cat_desc:"Entdecken Sie hier unsere Kategorien.", cart_title:"Mein Warenkorb", total_pay:"Zu zahlen", buy_btn:"Kaufen", guest_user:"Gastbenutzer", login_prompt:"Mit E-Mail anmelden", my_address:"Meine Adresse hinzufügen", language_settings:"Sprache", my_activity:"Meine Aktivität", my_purchases:"Meine Einkäufe", notifications:"Benachrichtigungen", favorites:"Favoriten", discover:"Entdecken", coupons:"Gutscheine", insurance:"Versicherung", new_tag:"NEU", sell_nex:"Auf NeX verkaufen", seller_area:"Verkäuferbereich", settings:"Einstellungen", admin_nex:"NeX Verwaltung", support_title:"Support", support_btn:"Support kontaktieren", nav_home:"Start", nav_cart:"Warenkorb", nav_more:"Mehr", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Willkommen bei unserer Kryptowährung NeX Token", token_invest:"Wenn Sie investieren möchten, tippen Sie hier:", token_btn:"Investieren", token_desc:"Sie haben die Möglichkeit zu gewinnen, indem Sie wenig Geld investieren, nur 1, 2, 3 oder 4 Dollar. Danach können Sie so viel investieren, wie Sie möchten! Sie müssen nicht viel Geld hinzufügen, um zu beginnen.", token_disclaimer:"Denken Sie daran: Sie haben die Chance zu gewinnen, aber es ist keine Garantie. Wie überall gibt es auch das Risiko zu verlieren." },
+            'it': { search:"Cerca in NeX...", offers:"Offerte", location:"Indirizzo", phones:"Cellulari", tools:"Strumenti", nav_categories:"Categorie", cat_desc:"Esplora le nostre categorie qui.", cart_title:"Il mio Carrello", total_pay:"Totale da pagare", buy_btn:"Acquista", guest_user:"Utente Ospite", login_prompt:"Accedi con la tua email", my_address:"Aggiungi la mia posizione", language_settings:"Lingua", my_activity:"La mia attività", my_purchases:"I miei acquisti", notifications:"Notifiche", favorites:"Preferiti", discover:"Scopri", coupons:"Coupon", insurance:"Assicurazione", new_tag:"NUOVO", sell_nex:"Vendi su NeX", seller_area:"Area Venditori", settings:"Impostazioni", admin_nex:"Amministrazione NeX", support_title:"Supporto", support_btn:"Contatta il Supporto", nav_home:"Home", nav_cart:"Carrello", nav_more:"Altro", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Benvenuto nella nostra criptovaluta NeX Token", token_invest:"Se vuoi investire, tocca qui:", token_btn:"Investi Ora", token_desc:"Hai l'opportunità di vincere investendo pochi soldi, solo 1, 2, 3 o 4 dollari. Da lì in poi puoi investire quanto vuoi! Non è necessario aggiungere molti soldi per iniziare.", token_disclaimer:"Ricorda: Hai l'opportunità di vincere, ma non è una garanzia. Come in ogni posto, c'è anche il rischio di perdere." },
+            'zh': { search:"在NeX中搜索...", offers:"优惠", location:"地址", phones:"手机", tools:"工具", nav_categories:"类别", cat_desc:"在此探索我们的类别。", cart_title:"我的购物车", total_pay:"总计付款", buy_btn:"购买", guest_user:"访客用户", login_prompt:"用您的电子邮件登录", my_address:"添加我的位置", language_settings:"语言", my_activity:"我的活动", my_purchases:"我的购买", notifications:"通知", favorites:"最爱", discover:"发现", coupons:"优惠券", insurance:"保险与支持", new_tag:"新", sell_nex:"在NeX上销售", seller_area:"卖家区", settings:"设置", admin_nex:"NeX 管理", support_title:"支持", support_btn:"联系支持", nav_home:"首页", nav_cart:"购物车", nav_more:"更多", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"欢迎来到我们的加密货币 NeX Token", token_invest:"如果你想投资，请点击这里：", token_btn:"立即投资", token_desc:"只需投资1、2、3或4美元，您就有机会赢钱。从那时起，您可以想投多少就投多少！不需要投入很多钱即可开始。", token_disclaimer:"请记住：您有机会获胜，但这并不是保证。就像在其他地方一样，也存在失败的风险。" }
         };
 
         let idiomaActual = 'pt';
+        
         function aplicarIdioma(lang) {
             idiomaActual = lang;
             document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -488,24 +542,37 @@
                 }
             });
         }
-        window.onload = function() { aplicarIdioma('pt'); };
+        
+        // AUTO-DETECCIÓN DE IDIOMA AL CARGAR LA PÁGINA
+        window.onload = function() { 
+            const userLangFull = navigator.language || navigator.userLanguage;
+            let langCode = userLangFull.split('-')[0]; // Extrae "es", "en", "pt", etc.
+            
+            // Si el idioma del teléfono no está en los 8 que tenemos, pon Portugués por defecto
+            if (!dic[langCode]) {
+                langCode = 'pt';
+            }
+            aplicarIdioma(langCode); 
+        };
 
         function cambiarVista(btn, id) {
+            if (!id) return;
+            
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            if(btn) btn.classList.add('active');
+            
             document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
 
             const checkoutBar = document.getElementById('checkout-bar-element');
-            if(id === 'view-cart' && checkoutBar) {
-                checkoutBar.classList.remove('hidden');
-                calcularTotal();
-            } else if(checkoutBar) {
-                checkoutBar.classList.add('hidden');
+            if(id === 'view-cart' && checkoutBar) { 
+                checkoutBar.classList.remove('hidden'); 
+                calcularTotal(); 
+            } else if(checkoutBar) { 
+                checkoutBar.classList.add('hidden'); 
             }
         }
 
-        // --- FUNCIÓN PARA LOS BOTONES REDONDOS ---
         function buscarAccionRapida(tipo) {
             const searchInput = document.getElementById('main-search-input');
             let terminoBusqueda = '';
@@ -513,7 +580,7 @@
             if(tipo === 'ofertas') { terminoBusqueda = dic[idiomaActual]['offers'] || 'Ofertas'; }
             else if (tipo === 'celulares') { terminoBusqueda = dic[idiomaActual]['phones'] || 'Celulares'; }
             else if (tipo === 'ferramentas') { terminoBusqueda = dic[idiomaActual]['tools'] || 'Ferramentas'; }
-
+            
             searchInput.value = terminoBusqueda;
             alert('Buscando: ' + terminoBusqueda + ' (O sistema vai filtrar os produtos no catálogo)');
         }
@@ -522,8 +589,8 @@
             let total = 0;
             document.querySelectorAll('.cart-item').forEach(producto => {
                 const checkbox = producto.querySelector('.cart-checkbox');
-                if (checkbox.checked) {
-                    total += parseFloat(producto.querySelector('.cart-item-price').getAttribute('data-price'));
+                if (checkbox.checked) { 
+                    total += parseFloat(producto.querySelector('.cart-item-price').getAttribute('data-price')); 
                 }
             });
             const totalPriceEl = document.getElementById('total-price');
@@ -532,16 +599,16 @@
 
         function verificarAdmin() {
             const codigo = document.getElementById('admin-pin').value;
-            if(codigo === '200832') {
-                abrirSubPantalla('Painel Central (O Olho)', 'dashboard-admin');
-            } else {
-                alert('Código incorreto. Acesso negado.');
-                document.getElementById('admin-pin').value = '';
+            if(codigo === '200832') { 
+                abrirSubPantalla('Painel Central (O Olho)', 'dashboard-admin'); 
+            } else { 
+                alert('Código incorreto. Acesso negado.'); 
+                document.getElementById('admin-pin').value = ''; 
             }
         }
 
-        function volverAdminChat() {
-            abrirSubPantalla('Painel Central (O Olho)', 'dashboard-admin');
+        function volverAdminChat() { 
+            abrirSubPantalla('Painel Central (O Olho)', 'dashboard-admin'); 
         }
 
         function abrirSubPantalla(titulo, id) {
@@ -549,16 +616,16 @@
             const header = document.getElementById('sub-header');
             content.style.padding = '0'; 
 
-            if (id === 'chat-admin-reply') {
-                header.innerHTML = `<i class="fa-solid fa-arrow-left" onclick="volverAdminChat()" style="font-size:1.3rem; cursor:pointer; padding:5px;"></i><h2 id="sub-title">${titulo}</h2>`;
-            } else {
-                header.innerHTML = `<i class="fa-solid fa-arrow-left" onclick="cerrarSubPantalla()" style="font-size:1.3rem; cursor:pointer; padding:5px;"></i><h2 id="sub-title">${titulo}</h2>`;
+            if (id === 'chat-admin-reply') { 
+                header.innerHTML = `<i class="fa-solid fa-arrow-left" onclick="volverAdminChat()" style="font-size:1.3rem; cursor:pointer; padding:5px;"></i><h2 id="sub-title">${titulo}</h2>`; 
+            } else { 
+                header.innerHTML = `<i class="fa-solid fa-arrow-left" onclick="cerrarSubPantalla()" style="font-size:1.3rem; cursor:pointer; padding:5px;"></i><h2 id="sub-title">${titulo}</h2>`; 
             }
 
-            if (id === 'login-admin' || id === 'dashboard-admin' || id === 'chat-admin-reply') {
-                header.style.backgroundColor = 'var(--color-admin)';
-            } else {
-                header.style.backgroundColor = 'var(--color-primario)';
+            if (id === 'login-admin' || id === 'dashboard-admin' || id === 'chat-admin-reply') { 
+                header.style.backgroundColor = 'var(--color-admin)'; 
+            } else { 
+                header.style.backgroundColor = 'var(--color-primario)'; 
             }
             
             let html = '';
@@ -575,36 +642,33 @@
                             <button class="btn-primary" style="background:var(--color-admin);" onclick="verificarAdmin()">Verificar</button>
                         </div>`;
                     break;
-
                 case 'dashboard-admin':
                     content.style.padding = '15px'; 
                     html = `
-                            <!-- ANALÍTICA REAL DE DISPOSITIVOS -->
-                            <h3 style="margin-bottom:10px; font-size:1.1rem; color:var(--color-admin);"><i class="fa-solid fa-chart-pie"></i> Analítica de Acessos</h3>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:25px;">
-                                <div style="background:white; padding:15px; border-radius:8px; border-left:4px solid var(--color-azul-claro); box-shadow:0 1px 3px rgba(0,0,0,0.1); text-align:center;">
-                                    <i class="fa-solid fa-mobile-screen" style="font-size:1.5rem; color:var(--color-gris); margin-bottom:5px;"></i>
-                                    <span style="display:block; font-size:0.8rem; color:var(--color-gris);">Via Celular</span>
-                                    <h3 id="admin-visitas-celular" style="color:var(--color-texto); font-size:1.5rem;">0</h3>
-                                </div>
-                                <div style="background:white; padding:15px; border-radius:8px; border-left:4px solid var(--color-rosa); box-shadow:0 1px 3px rgba(0,0,0,0.1); text-align:center;">
-                                    <i class="fa-solid fa-desktop" style="font-size:1.5rem; color:var(--color-gris); margin-bottom:5px;"></i>
-                                    <span style="display:block; font-size:0.8rem; color:var(--color-gris);">Via Computador</span>
-                                    <h3 id="admin-visitas-pc" style="color:var(--color-texto); font-size:1.5rem;">0</h3>
-                                </div>
+                        <h3 style="margin-bottom:10px; font-size:1.1rem; color:var(--color-admin);">
+                            <i class="fa-solid fa-chart-pie"></i> Analítica de Acessos
+                        </h3>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:25px;">
+                            <div style="background:white; padding:15px; border-radius:8px; border-left:4px solid var(--color-azul-claro); box-shadow:0 1px 3px rgba(0,0,0,0.1); text-align:center;">
+                                <i class="fa-solid fa-mobile-screen" style="font-size:1.5rem; color:var(--color-gris); margin-bottom:5px;"></i>
+                                <span style="display:block; font-size:0.8rem; color:var(--color-gris);">Via Celular</span>
+                                <h3 id="admin-visitas-celular" style="color:var(--color-texto); font-size:1.5rem;">0</h3>
                             </div>
-
-                            <!-- LISTA DE USUARIOS CON BOTÓN DE EXPULSAR -->
-                            <h3 style="margin-bottom:10px; font-size:1.1rem; color:var(--color-admin);"><i class="fa-solid fa-users"></i> Usuários Registrados</h3>
-                            <div id="admin-lista-usuarios" style="background:white; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); overflow:hidden;">
-                                <div style="padding:20px; text-align:center; color:var(--color-gris);">Carregando base de dados...</div>
+                            <div style="background:white; padding:15px; border-radius:8px; border-left:4px solid var(--color-rosa); box-shadow:0 1px 3px rgba(0,0,0,0.1); text-align:center;">
+                                <i class="fa-solid fa-desktop" style="font-size:1.5rem; color:var(--color-gris); margin-bottom:5px;"></i>
+                                <span style="display:block; font-size:0.8rem; color:var(--color-gris);">Via Computador</span>
+                                <h3 id="admin-visitas-pc" style="color:var(--color-texto); font-size:1.5rem;">0</h3>
                             </div>
-                        `;
+                        </div>
+                        <h3 style="margin-bottom:10px; font-size:1.1rem; color:var(--color-admin);">
+                            <i class="fa-solid fa-users"></i> Usuários Registrados
+                        </h3>
+                        <div id="admin-lista-usuarios" style="background:white; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); overflow:hidden;">
+                            <div style="padding:20px; text-align:center; color:var(--color-gris);">Carregando base de dados...</div>
+                        </div>`;
                     
-                    // Iniciar la lectura de Firebase al abrir esta pestaña
                     setTimeout(() => { if(window.cargarDatosAdminFirebase) window.cargarDatosAdminFirebase(); }, 200);
                     break;
-
                 case 'ubicacion':
                     content.style.padding = '20px';
                     html = `
@@ -635,16 +699,20 @@
                             <button class="btn-primary" onclick="alert('Endereço e CEP salvos no perfil com sucesso!'); cerrarSubPantalla();">Salvar Endereço</button>
                         </div>`;
                     break;
-
                 case 'idiomas':
                     content.style.padding = '20px';
                     html = `
                         <div class="list-card">
                             <div class="menu-item" style="padding:10px 0;" onclick="aplicarIdioma('pt'); cerrarSubPantalla();"><span>🇧🇷 Português</span></div>
                             <div class="menu-item" style="padding:10px 0;" onclick="aplicarIdioma('es'); cerrarSubPantalla();"><span>🇪🇸 Español</span></div>
+                            <div class="menu-item" style="padding:10px 0;" onclick="aplicarIdioma('en'); cerrarSubPantalla();"><span>🇺🇸 English</span></div>
+                            <div class="menu-item" style="padding:10px 0;" onclick="aplicarIdioma('ru'); cerrarSubPantalla();"><span>🇷🇺 Русский (Ruso)</span></div>
+                            <div class="menu-item" style="padding:10px 0;" onclick="aplicarIdioma('fr'); cerrarSubPantalla();"><span>🇫🇷 Français (Francés)</span></div>
+                            <div class="menu-item" style="padding:10px 0;" onclick="aplicarIdioma('de'); cerrarSubPantalla();"><span>🇩🇪 Deutsch (Alemán)</span></div>
+                            <div class="menu-item" style="padding:10px 0;" onclick="aplicarIdioma('it'); cerrarSubPantalla();"><span>🇮🇹 Italiano</span></div>
+                            <div class="menu-item" style="padding:10px 0;" onclick="aplicarIdioma('zh'); cerrarSubPantalla();"><span>🇨🇳 中文 (Chino)</span></div>
                         </div>`;
                     break;
-
                 case 'chat-1to1':
                     html = `
                         <div class="chat-area">
@@ -660,10 +728,14 @@
                     window.salaAtual = titulo.toLowerCase().replace(/[^a-z0-9]/g, '_');
                     setTimeout(() => { if(window.iniciarChatFirebase) window.iniciarChatFirebase(window.salaAtual); }, 100);
                     break;
-                
                 case 'generica':
                     content.style.padding = '40px 20px';
-                    html = `<div style="text-align:center;"><i class="fa-solid fa-gear" style="font-size:3rem; color:#cbd5e1; margin-bottom:15px;"></i><h3>${titulo}</h3><p style="color:var(--color-gris);">Em desenvolvimento.</p></div>`;
+                    html = `
+                        <div style="text-align:center;">
+                            <i class="fa-solid fa-gear" style="font-size:3rem; color:#cbd5e1; margin-bottom:15px;"></i>
+                            <h3>${titulo}</h3>
+                            <p style="color:var(--color-gris);">Em desenvolvimento.</p>
+                        </div>`;
                     break;
             }
 
@@ -680,8 +752,8 @@
             const input = document.getElementById('chat-input');
             const texto = input.value.trim();
             if(texto !== "") {
-                if(window.enviarMensajeFirebase && window.salaAtual) {
-                    window.enviarMensajeFirebase(window.salaAtual, texto);
+                if(window.enviarMensajeFirebase && window.salaAtual) { 
+                    window.enviarMensajeFirebase(window.salaAtual, texto); 
                 }
                 input.value = "";
             }
