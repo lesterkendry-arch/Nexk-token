@@ -1,98 +1,87 @@
-import crypto from 'crypto';
+const crypto = require('crypto');
 
-export default async function handler(req, res) {
-    // Configura cabeceras CORS
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
-    res.setHeader(
-        'Access-Control-Allow-Headers',
-        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    );
+// Tus credenciales de AliExpress
+const APP_KEY = '552568';
+const APP_SECRET = 'QwLFTLfIFh3Ksg0JvoDmXDhHXQaXTQVT';
+
+// 1. Nueva función para formatear la hora a como lo exige AliExpress
+function getFormattedTimestamp() {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+// 2. Función de Firma CORREGIDA para AliExpress
+function generateSign(params, secret) {
+    const sortedKeys = Object.keys(params).sort();
+    
+    // AliExpress EXIGE poner el secreto al principio...
+    let signString = secret; 
+    
+    for (const key of sortedKeys) {
+        signString += key + params[key];
+    }
+    
+    // ... y también al final de la cadena
+    signString += secret; 
+    
+    // Se usa Hash MD5 puro, no HMAC
+    return crypto.createHash('md5').update(signString, 'utf8').digest('hex').toUpperCase();
+}
+
+module.exports = async (req, res) => {
+    // Configurar CORS
+    res.setHeader('Access-Control-Allow-Origin', 'https://nexshopping.com.br');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
 
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Método no permitido. Usa POST.' });
+    }
+
     try {
-        const APP_KEY = "552568"; 
-        const APP_SECRET = "qwLFTLfIFh3Ksg0JvoDmXDhHXQaXTQVT";
-        const API_URL = "https://api-gw.aliexpress.com/router/rest";
+        const frontendData = req.body || {};
 
-        // ====================================================================
-        // AQUÍ ESTÁ TU TOKEN INTEGRADO
-        // ====================================================================
-        const ACCESS_TOKEN = "50000601c30atpedfgu3LVvik87Ixlsvle3mSoB7701ceb156fPunYZ43GBg"; 
-
-        // Formato de Timestamp para la API (Hora de Beijing)
-        const date = new Date();
-        const utcTime = date.getTime() + (date.getTimezoneOffset() * 60000);
-        const beijingTime = new Date(utcTime + (3600000 * 8));
-        
-        const pad = (n) => String(n).padStart(2, '0');
-        const timestamp = `${beijingTime.getFullYear()}-${pad(beijingTime.getMonth() + 1)}-${pad(beijingTime.getDate())} ${pad(beijingTime.getHours())}:${pad(beijingTime.getMinutes())}:${pad(beijingTime.getSeconds())}`;
-
-        // Parámetros de la petición con el TOKEN INCLUIDO
-        const params = {
+        // 3. Parámetros estructurados como exige la documentación oficial
+        const apiParams = {
             app_key: APP_KEY,
-            session: ACCESS_TOKEN,
-            method: 'aliexpress.ds.recommend.feed.get',
-            format: 'json',
-            v: '2.0',
+            timestamp: getFormattedTimestamp(),
             sign_method: 'md5',
-            timestamp: timestamp,
-            page_size: '20',
-            page_no: '1',
-            feed_name: 'bestseller',
-            target_currency: 'BRL',
-            target_language: 'PT',
-            country: 'BR'
+            v: '2.0', // Versión obligatoria
+            format: 'json', // Formato obligatorio
+            ...frontendData // Aquí vendrá el 'method' (ej. aliexpress.ds.product.get) y los datos del producto
         };
 
-        // Encriptar y firmar la petición
-        const sortedKeys = Object.keys(params).sort();
-        let queryStr = APP_SECRET;
-        for (const key of sortedKeys) {
-            queryStr += `${key}${params[key]}`;
-        }
-        queryStr += APP_SECRET;
+        // Generar la firma con la nueva función
+        apiParams.sign = generateSign(apiParams, APP_SECRET);
 
-        const sign = crypto.createHash('md5').update(queryStr, 'utf-8').digest('hex').toUpperCase();
-        params.sign = sign;
+        // Convertir para el body de la petición
+        const urlEncodedData = new URLSearchParams(apiParams).toString();
 
-        // Hacer la llamada a AliExpress
-        const urlParams = new URLSearchParams(params).toString();
-        const fetchUrl = `${API_URL}?${urlParams}`;
-
-        const response = await fetch(fetchUrl, {
-            method: 'GET',
+        const response = await fetch('https://api-sg.aliexpress.com/sync', {
+            method: 'POST',
             headers: {
-                'Accept': 'application/json',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/115.0.0.0 Safari/537.36'
-            }
+                'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+            },
+            body: urlEncodedData
         });
 
-        // Revisar respuesta
-        const rawText = await response.text();
-        let data;
-        try {
-            data = JSON.parse(rawText);
-        } catch (parseError) {
-            console.error("=== ERROR: LA RESPUESTA NO ES JSON ===");
-            return res.status(500).json({
-                error: "AliExpress devolvió HTML. Posiblemente el token es inválido o caducó.",
-                respuesta_corta: rawText.substring(0, 150)
-            });
-        }
+        const data = await response.json();
 
-        if (data.error_response) {
-            return res.status(400).json({ error: "Error en AliExpress", detalles: data.error_response });
-        }
-
+        // Devolver a tu frontend
         return res.status(200).json(data);
 
     } catch (error) {
-        console.error("=== ERROR CRÍTICO ===", error);
-        return res.status(500).json({ error: "Error interno", mensaje: error.message });
+        console.error('Error al conectar con AliExpress:', error);
+        return res.status(500).json({ error: 'Error en el backend de Vercel' });
     }
-}
+};
