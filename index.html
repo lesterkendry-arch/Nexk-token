@@ -377,9 +377,13 @@
             grid.innerHTML = '<div style="grid-column: span 2; text-align: center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--color-primario);"></i><p>Carregando catálogo do fornecedor...</p></div>';
 
             try {
-                // Llamamos al archivo intermediario PHP en lugar de la API directa
-                const response = await fetch('catalogo.php', {
-                    method: 'GET'
+                // Conexión directa a la API usando el proxy CORS para saltar el bloqueo de Vercel
+                const response = await fetch('https://corsproxy.io/?https://api.cjdropshipping.com/api/product/list', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Token': 'CJ5921371@api@666d4fdecce94d33af10e8'
+                    }
                 });
                 
                 const resultado = await response.json();
