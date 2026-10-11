@@ -1,18 +1,3 @@
-        #sub-screen-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--color-fondo); z-index: 2000;
-            transform: translateX(100%); /* Oculto a la derecha */
-            transition: transform 0.3s ease-in-out;
-            overflow-y: auto; padding-bottom: 20px;
-        }
-        #sub-screen-container.active { transform: translateX(0); } /* Desliza a la vista */
-        .sub-header { position: sticky; top: 0; background-color: var(--color-primario); color: white; padding: 15px 20px; display: flex; align-items: center; gap: 20px; z-index: 2001; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .sub-header i { font-size: 1.3rem; cursor: pointer; padding: 5px; }
-        .sub-header h2 { font-size: 1.2rem; font-weight: 600; }
-        #sub-content { padding: 15px; }
-        /* ESTILOS INTERNOS DE SUB-PANTALLAS */
-        .form-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
-        .btn-primary { width: 100%; padding: 12px; background-color: var(--color-primario); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; }
         .list-card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .toggle-switch { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: white; border-bottom: 1px solid #eee; }
         .toggle-switch input[type="checkbox"] { width: 40px; height: 20px; accent-color: var(--color-primario); }
@@ -498,3 +483,18 @@ git commit -m "ayyy"
 git add .
 git add .
 git commit -m "priebaall"
+git add .
+git commit -m "all"
+git push origin-shop
+git add .
+dit commit -m "pinga"
+git commit -m "pinga"
+git push origin-shop
+git add .
+git commit -m "paraya"
+git push origin-shop
+git add .
+git commit -m "prueba"
+git push origin-shop
+git add .
+git status
