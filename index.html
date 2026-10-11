@@ -382,7 +382,10 @@
                 const resultado = await response.json();
 
                 if (resultado.error) {
-                    grid.innerHTML = '<div style="grid-column: span 2; text-align: center; color: var(--color-rojo); padding: 20px;">Erro na API de AliExpress.</div>';
+                    grid.innerHTML = `<div style="grid-column: span 2; text-align: center; color: var(--color-rojo); padding: 20px;">
+                        Erro na API de AliExpress.<br>
+                        <span style="color: black; font-size: 0.8rem; word-break: break-all;">Detalles: ${JSON.stringify(resultado.details)}</span>
+                    </div>`;
                     return;
                 }
 
