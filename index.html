@@ -337,7 +337,7 @@
         </div>
     </nav>
 
-    <!-- === FIREBASE, LÓGICA Y API DE DROPSHIPPING === -->
+    <!-- === FIREBASE, LÓGICA Y API DE AFILIADOS ALIEXPRESS === -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-analytics.js";
@@ -365,7 +365,7 @@
         const appleProvider = new OAuthProvider('apple.com');
 
         // ==============================================================================
-        // CONFIGURACIÓN Y CONEXIÓN A TRAVÉS DE SERVERLESS FUNCTION EN VERCEL (ALIEXPRESS)
+        // CONFIGURACIÓN Y CONEXIÓN A TRAVÉS DE SERVERLESS FUNCTION EN VERCEL (AFILIADOS)
         // ==============================================================================
         
         window.MARGEN_GANANCIA = 1.30; 
@@ -377,40 +377,28 @@
             grid.innerHTML = '<div style="grid-column: span 2; text-align: center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--color-primario);"></i><p>Carregando catálogo do fornecedor...</p></div>';
 
             try {
-                // AQUÍ EMPIEZA LA MAGIA DE LAS 8 CATEGORÍAS AL MISMO TIEMPO
-                const misCategorias = ['509', '200000119', '1420', '100003109', '100003070', '1511', '322', '1524']; 
-                
-                const multiplesLlamadas = misCategorias.map(id => {
-                    return fetch('/api/productos', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            method: 'aliexpress.ds.recommend.feed.get',
-                            country: 'BR',
-                            target_currency: 'BRL',
-                            target_language: 'PT',
-                            category_id: id,
-                            feed_name: 'bestseller'
-                        })
-                    }).then(respuesta => respuesta.json()).catch(err => ({error: true})); // Evita que un fallo detenga a las demás
+                // Petición al servidor utilizando el método de afiliados oficial de AliExpress
+                const respuesta = await fetch('/api/productos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        method: 'aliexpress.affiliate.product.query',
+                        keywords: 'smartphone ferramenta',
+                        target_currency: 'BRL',
+                        target_language: 'PT'
+                    })
                 });
 
-                // Esperamos que TODAS las categorías respondan
-                const resultadosDeTodas = await Promise.all(multiplesLlamadas);
+                const resultado = await respuesta.json();
                 
                 let todosLosProductosExternos = [];
-
-                // Juntamos todos los productos en una sola lista gigante
-                resultadosDeTodas.forEach(resultado => {
-                    if (!resultado.error && resultado.aliexpress_ds_recommend_feed_get_response) {
-                        const respuestaAli = resultado.aliexpress_ds_recommend_feed_get_response;
-                        const productosDeEstaCategoria = respuestaAli?.result?.products?.product || [];
-                        todosLosProductosExternos = todosLosProductosExternos.concat(productosDeEstaCategoria);
-                    }
-                });
-
-                // Para que la página no se vea rara, mezclamos los productos al azar (Opcional, pero se ve mejor)
-                todosLosProductosExternos.sort(() => Math.random() - 0.5);
+                
+                // Extraemos los productos de la respuesta de la API de Afiliados de manera segura
+                try {
+                    todosLosProductosExternos = resultado.aliexpress_affiliate_product_query_response?.resp_result?.result?.products?.product || [];
+                } catch(e) {
+                    todosLosProductosExternos = [];
+                }
 
                 grid.innerHTML = ''; 
                 
@@ -419,7 +407,7 @@
                      return;
                 }
 
-                // Dibujamos todos los productos en la pantalla
+                // Dibujamos todos los productos reales en la pantalla
                 todosLosProductosExternos.forEach(prod => {
                     const precioFabrica = parseFloat(prod.target_sale_price) || 10.00;
                     const precioVenta = (precioFabrica * window.MARGEN_GANANCIA).toFixed(2);
@@ -808,7 +796,7 @@
     <script>
         const dic = {
             'pt': { search:"Buscar em NeX...", offers:"Ofertas", location:"Endereço", phones:"Celulares", tools:"Ferramentas", nav_categories:"Categorias", cat_desc:"Explora nossas categorias aqui.", cart_title:"Meu Carrinho", total_pay:"Total a pagar", buy_btn:"Comprar", guest_user:"Usuário Convidado", login_prompt:"Faça login com seu e-mail", my_address:"Adicionar minha Localização", language_settings:"Idioma / Language", my_activity:"Minha atividade", my_purchases:"Minhas compras", notifications:"Notificações", favorites:"Favoritos", discover:"Descubra", coupons:"Cupons", insurance:"Seguros e assistências", new_tag:"NOVO", sell_nex:"Vender no NeX", seller_area:"Área do Vendedor", settings:"Configurações", admin_nex:"Administração NeX", support_title:"Atendimento", support_btn:"Falar com Suporte (Ajuda)", nav_home:"Início", nav_cart:"Carrinho", nav_more:"Mais", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Bem-vindo à nossa criptomoeda NeX Token", token_invest:"Se quiser investir, toque aqui:", token_btn:"Investir Agora", token_desc:"Você tem a oportunidade de ganhar investindo pouco dinheiro, apenas $1, $2, $3 ou $4 dólares. A partir daí, pode investir o quanto quiser! Não é necessário adicionar muito dinheiro para começar.", token_disclaimer:"Lembre-se: Você tem a oportunidade de ganhar, mas não é uma garantia. Como em todo lugar, também há o risco de perder." },
-            'es': { search:"Buscar en NeX...", offers:"Ofertas", location:"Ubicación", phones:"Celulares", tools:"Herramientas", nav_categories:"Categorías", cat_desc:"Explora nuestras categorías aquí.", cart_title:"Mi Carrito", total_pay:"Total a pagar", buy_btn:"Comprar", guest_user:"Usuario Invitado", login_prompt:"Inicia sesión con tu correo", my_address:"Agregar mi Ubicación", language_settings:"Idioma / Language", my_activity:"Mi actividad", my_purchases:"Mis compras", notifications:"Notificaciones", favorites:"Favoritos", discover:"Descubre", coupons:"Cupones", insurance:"Seguros y asistencias", new_tag:"NUEVO", sell_nex:"Vender en NeX", seller_area:"Área de Vendedores", settings:"Configuraciones", admin_nex:"Administración NeX", support_title:"Atención al Cliente", support_btn:"Hablar con Soporte", nav_home:"Inicio", nav_cart:"Carrito", nav_more:"Más", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Bienvenido a nuestra criptomoeda NeX Token", token_invest:"Si quieres invertir, toca aquí:", token_btn:"Invertir Ahora", token_desc:"Tienes la oportunidad de ganar invirtiendo poco dinero, solo $1, $2, $3 o $4 dólares. ¡A partir de ahí puedes invertir lo que quieras! No es necesario agregar mucho dinero para empezar.", token_disclaimer:"Recuerda: Tienes la oportunidad de ganar, pero no es una garantía. Como en todo lugar, existe el riesgo de perder." }
+            'es': { search:"Buscar en NeX...", offers:"Ofertas", location:"Ubicación", phones:"Celulares", tools:"Herramientas", nav_categories:"Categorías", cat_desc:"Explora nuestras categorías aquí.", cart_title:"Mi Carrito", total_pay:"Total a pagar", buy_btn:"Comprar", guest_user:"Usuario Invitado", login_prompt:"Inicia sesión con tu correo", my_address:"Agregar mi Ubicación", language_settings:"Idioma / Language", my_activity:"Mi actividad", my_purchases:"Mis compras", notifications:"Notificaciones", favorites:"Favoritos", discover:"Descubre", coupons:"Cupones", insurance:"Seguros y asistencias", new_tag:"NUEVO", sell_nex:"Vender en NeX", seller_area:"Área de Vendedores", settings:"Configuraciones", admin_nex:"Administración NeX", support_title:"Atención al Cliente", support_btn:"Hablar con Soporte", nav_home:"Inicio", nav_cart:"Carrito", nav_more:"Más", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Bienvenido a nossa criptomoeda NeX Token", token_invest:"Si quieres invertir, toca aquí:", token_btn:"Invertir Ahora", token_desc:"Tienes la oportunidad de ganar invirtiendo poco dinero, solo $1, $2, $3 o $4 dólares. ¡A partir de ahí puedes invertir lo que quieras! No es necesario agregar mucho dinero para empezar.", token_disclaimer:"Recuerda: Tienes la oportunidad de ganar, pero no es una garantía. Como en todo lugar, existe el riesgo de perder." }
         };
 
         let idiomaActual = 'pt';
