@@ -62,6 +62,8 @@
             max-width: 180px; 
         }
         .top-actions { display: flex; gap: 8px; align-items: center; }
+        
+        /* TODOS LOS BOTONES DE ARRIBA AHORA USAN ESTE ESTILO IDÉNTICO */
         .btn-top { 
             background: rgba(255, 255, 255, 0.08); 
             border: 1px solid var(--border-color); 
@@ -71,16 +73,10 @@
             font-size: 12px; 
             font-weight: bold; 
             cursor: pointer; 
+            transition: background 0.3s;
         }
-        .btn-dots { 
-            background: transparent; 
-            border: none; 
-            color: var(--text-main); 
-            font-size: 22px; 
-            cursor: pointer; 
-            padding: 0 8px; 
-            line-height: 1; 
-        }
+        .btn-top:hover { background: rgba(255, 255, 255, 0.15); }
+
         .btn-auth { 
             background: var(--primary-cyan); 
             color: #000; 
@@ -369,12 +365,13 @@
 
     <div class="top-bar">
         <div id="userDisplay" class="user-info-bar">Invitado</div>
+        
+        <!-- AHORA TODOS LOS BOTONES TIENEN LA MISMA CLASE btn-top PARA SER IDÉNTICOS -->
         <div class="top-actions">
             <button class="btn-top" id="helpBtn" onclick="abrirHelpModal()" style="display: none;">💬 Soporte</button>
-            <button id="authBtn" class="btn-auth" onclick="abrirAuthModal()">Ingresar</button>
-            <!-- BOTÓN DE CERRAR SESIÓN EN LA BARRA SUPERIOR -->
-            <button class="btn-top" id="btnLogoutTop" style="background: rgba(239, 68, 68, 0.2); border-color: var(--red-down); color: var(--red-down); display: none;" onclick="ejecutarCerrarSesion()" title="Cerrar Sesión">🚪 Salir</button>
-            <button class="btn-dots" onclick="abrirLoginAdminModal()" title="Acceso Admin">⋮</button>
+            <button class="btn-top" id="authBtn" onclick="abrirAuthModal()">Ingresar</button>
+            <button class="btn-top" id="btnLogoutTop" style="display: none;" onclick="ejecutarCerrarSesion()" title="Cerrar Sesión">🚪 Salir</button>
+            <button class="btn-top" onclick="abrirLoginAdminModal()" title="Acceso Admin" style="padding: 6px 10px;">⋮</button>
         </div>
     </div>
 
@@ -390,7 +387,6 @@
 
     <div id="appContent" style="display: none;">
         
-        <!-- AVISO PURAMENTE INFORMATIVO -->
         <div id="walletWarningBanner" style="background: rgba(245, 158, 11, 0.15); border: 1px solid var(--primary-gold); padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
             <span style="font-size: 20px;">⚠️</span>
             <div>
@@ -424,10 +420,9 @@
                     </div>
                 </div>
 
-                <!-- SECCIÓN COMERCIO REAL Y BILLETERAS -->
                 <div id="realTradeSection" style="margin-top: 15px; display: block;">
-                    <button class="btn-action web3-btn" style="background: #1fc7d4; color: white; border: none; font-weight: bold;" onclick="abrirPancakeSwapDirecto()">
-                        🛒 Comprar en PancakeSwap
+                    <button class="btn-action web3-btn" style="background: #1fc7d4; color: white; border: none; font-weight: bold;" onclick="abrirModalCanjear()">
+                        🔄 Canjear / Comprar NEX
                     </button>
                     <button class="btn-action btn-send" onclick="abrirModalEnviarTokens()">
                         📤 Enviar Tokens a Otra Billetera
@@ -471,7 +466,36 @@
         <div id="bannerBottomContainer" class="dynamic-banner"><img id="bannerBottomImg" src=""></div>
     </div>
 
-    <!-- MODAL PARA ENVIAR TOKENS WEB3 REAL -->
+    <!-- MODAL CANJEAR CON SALDO Y CALCULADORA -->
+    <div id="modalCanjear" class="modal">
+        <div class="modal-content">
+            <h3 style="color: var(--primary-cyan);">🔄 Canjear por NEX</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Compra NEX directamente usando el saldo en tu billetera conectada.</p>
+            
+            <div class="field">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                    <label>Quiero pagar usando:</label>
+                    <span id="swapUserBalance" style="font-size: 11px; color: var(--primary-gold); font-weight: bold; margin-bottom: 4px;">Saldo: 0.00</span>
+                </div>
+                <!-- Al cambiar de moneda, actualiza el saldo y recalcula los NEX -->
+                <select id="swapCurrency" onchange="window.actualizarSaldosSwap(); window.calcularRecepcionNEX();">
+                    <option value="BNB">BNB (Moneda Principal)</option>
+                    <option value="USDT">USDT (Tether BEP-20)</option>
+                </select>
+            </div>
+            
+            <div class="field">
+                <label>Cantidad a gastar:</label>
+                <!-- Al escribir, calcula los NEX en vivo -->
+                <input type="number" id="swapAmountIn" placeholder="Ej. 0.05" oninput="window.calcularRecepcionNEX();">
+                <div id="swapExpectedOut" style="font-size: 12px; color: var(--green-up); margin-top: 6px; font-weight: bold;">Recibirás aprox: 0.00 NEX</div>
+            </div>
+
+            <button class="btn-auth" style="width:100%; margin-top:10px; background: #1fc7d4; color: white; font-size: 14px;" onclick="ejecutarSwapWeb3()">Confirmar y Canjear</button>
+            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('modalCanjear')">Cancelar</button>
+        </div>
+    </div>
+
     <div id="sendTokensModal" class="modal">
         <div class="modal-content">
             <h3 style="color: var(--primary-gold);">📤 Enviar NEX Real (Red BNB)</h3>
@@ -489,7 +513,6 @@
         </div>
     </div>
 
-    <!-- MODAL SELECCIONAR BILLETERA -->
     <div id="walletChoiceModal" class="modal">
         <div class="modal-content" style="text-align: center;">
             <h3>Conecta tu Billetera</h3>
@@ -619,7 +642,6 @@
             </div>
 
             <div id="tabChat" class="tab-content">
-                <!-- Vista de Lista de Usuarios -->
                 <div id="adminChatListContainer">
                     <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Mensajes de Usuarios</h4>
                     <div id="adminChatUsersList" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
@@ -627,7 +649,6 @@
                     </div>
                 </div>
                 
-                <!-- Vista de Chat Activo -->
                 <div id="adminChatActiveContainer" style="display: none;">
                     <button class="btn-gen" style="margin-bottom: 10px; background: var(--border-color); color: white; border: none; padding: 6px 12px;" onclick="volverListaChatAdmin()">⬅ Volver a la lista</button>
                     <h4 id="adminChatActiveTitle" style="color: var(--primary-gold); margin-bottom: 10px;">Chat con...</h4>
@@ -646,7 +667,6 @@
         </div>
     </div>
 
-    <!-- PANTALLA DE BANEO MOVIDA AL FONDO PARA QUE GOOGLE NO LA LEA PRIMERO -->
     <div id="bannedScreen">
         <h1>⛔ CUENTA SUSPENDIDA ⛔</h1>
         <p>Has violado los términos de seguridad de NEX Token.</p>
@@ -715,7 +735,6 @@
           "function token0() external view returns (address)"
       ];
 
-      // --- CONTADOR DE VISITAS ÚNICAS Y REGISTRO EN LISTA ---
       async function registrarVisitaPagina() {
           try {
               if (!sessionStorage.getItem("nex_visita_contada")) {
@@ -741,7 +760,6 @@
           }
       });
 
-      // --- ESCUCHAR LA LISTA DE GENTE QUE VA ENTRANDO (VISITAS) ---
       onSnapshot(query(collection(db, "visitas_log"), orderBy("fecha", "desc"), limit(50)), (snap) => {
           const listaDiv = document.getElementById('listaVisitasAdmin');
           if(!listaDiv) return;
@@ -756,7 +774,6 @@
           });
       });
 
-      // --- SINCRO BASE DE DATOS USUARIOS NUEVOS ---
       async function registrarOActualizarUsuarioDB(u, proveedor = 'email') {
           if (!u) return;
           try {
@@ -775,7 +792,6 @@
           } catch(e) {}
       }
 
-      // --- AUTENTICACIÓN POR ENLACE AL CORREO (PASSWORDLESS) ---
       const actionCodeSettings = {
           url: window.location.href.split('?')[0],
           handleCodeInApp: true,
@@ -830,7 +846,6 @@
           } catch(e) { alert("Error con Apple: " + e.message); }
       };
 
-      // --- CERRAR SESIÓN ---
       window.ejecutarCerrarSesion = async function() {
           try {
               localStorage.removeItem("nex_sesion_activa");
@@ -841,7 +856,6 @@
           }
       };
 
-      // --- ESCUCHAR LISTA DE USUARIOS REGISTRADOS Y GESTIÓN DE LISTA DE CHAT ---
       onSnapshot(collection(db, "usuarios"), (snap) => {
           const listaDiv = document.getElementById('listaUsuariosAdmin');
           const chatListContainer = document.getElementById('adminChatUsersList');
@@ -909,7 +923,6 @@
           } catch(e) { alert("Error al cambiar estado del usuario: " + e.message); }
       };
 
-      // --- CHAT EN VIVO Y SOPORTE ---
       function escucharChatUsuario(uid) {
           if (chatListenerUsuario) chatListenerUsuario();
           const q = query(collection(db, "chats", uid, "mensajes"), orderBy("timestamp", "asc"));
@@ -946,7 +959,6 @@
           } catch(e) { alert("Error al enviar mensaje: " + e.message); }
       };
 
-      // --- LÓGICA DE CHAT DEL ADMIN ---
       window.abrirChatUsuarioAdmin = async function(uid, nombreUsuario) {
           chatAdminUidActual = uid;
           document.getElementById('adminChatListContainer').style.display = 'none';
@@ -1075,9 +1087,9 @@
           document.getElementById('tokenPrice').innerText = `$${window.formatearMoneda(PRECIO_TOKEN_USD)} USD`;
         }
         window.recalcularBalanceUsuario();
+        window.calcularRecepcionNEX(); // Recalcula si el usuario tiene abierta la ventana
       };
 
-      // --- HISTORIAL DETALLADO DE COMPRAS Y ENVIOS REALES ---
       window.cargarHistorialOnChainReal = async function(address) {
         const lista = document.getElementById('historialLista');
         if (!address) return;
@@ -1167,6 +1179,130 @@
         }
       };
 
+      // --- FUNCIONES NUEVAS: SALDO Y CALCULADORA EN VIVO ---
+      window.actualizarSaldosSwap = async function() {
+          const balanceElem = document.getElementById('swapUserBalance');
+          if (!walletDireccionConectada || typeof window.ethereum === 'undefined') {
+              balanceElem.innerText = 'Saldo: 0.00';
+              return;
+          }
+          
+          const currency = document.getElementById('swapCurrency').value;
+          balanceElem.innerText = 'Cargando saldo...';
+          
+          try {
+              const provider = new ethers.providers.Web3Provider(window.ethereum);
+              if (currency === 'BNB') {
+                  const balanceWei = await provider.getBalance(walletDireccionConectada);
+                  const balanceBnb = parseFloat(ethers.utils.formatEther(balanceWei));
+                  balanceElem.innerText = `Saldo: ${balanceBnb.toFixed(4)} BNB`;
+              } else {
+                  const usdtContract = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, provider);
+                  const balanceWei = await usdtContract.balanceOf(walletDireccionConectada);
+                  const balanceUsdt = parseFloat(ethers.utils.formatUnits(balanceWei, 18));
+                  balanceElem.innerText = `Saldo: ${balanceUsdt.toFixed(2)} USDT`;
+              }
+          } catch (error) {
+              balanceElem.innerText = 'Saldo: Error';
+              console.error("Error al cargar saldo:", error);
+          }
+      };
+
+      window.calcularRecepcionNEX = function() {
+          const amountStr = document.getElementById('swapAmountIn').value.trim();
+          const outElem = document.getElementById('swapExpectedOut');
+          const amount = parseFloat(amountStr);
+          
+          if (isNaN(amount) || amount <= 0 || PRECIO_TOKEN_USD <= 0) {
+              outElem.innerText = `Recibirás aprox: 0.00 NEX`;
+              return;
+          }
+
+          const currency = document.getElementById('swapCurrency').value;
+          let nexAmount = 0;
+          
+          if (currency === 'BNB') {
+              nexAmount = (amount * PRECIO_BNB_USD) / PRECIO_TOKEN_USD;
+          } else {
+              nexAmount = amount / PRECIO_TOKEN_USD;
+          }
+          
+          outElem.innerText = `Recibirás aprox: ${window.formatearMoneda(nexAmount, 2)} NEX`;
+      };
+      // ----------------------------------------------------
+
+      window.ejecutarSwapWeb3 = async function() {
+        const currency = document.getElementById('swapCurrency').value;
+        const amountInStr = document.getElementById('swapAmountIn').value.trim();
+        const amountIn = parseFloat(amountInStr);
+
+        if (!amountInStr || isNaN(amountIn) || amountIn <= 0) {
+            return alert("Ingresa una cantidad válida.");
+        }
+
+        if (typeof window.ethereum === 'undefined') {
+            return alert("Abre esta página desde tu billetera (MetaMask o Trust Wallet).");
+        }
+
+        try {
+            await window.asegurarRedBNB();
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            const signer = provider.getSigner();
+            const walletUser = await signer.getAddress();
+            
+            const routerContract = new ethers.Contract(PANCAKE_ROUTER_ADDRESS, ROUTER_ABI, signer);
+            const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
+            
+            if (currency === 'BNB') {
+                const amountInWei = ethers.utils.parseEther(amountInStr);
+                const path = [WBNB_ADDRESS, TOKEN_CONTRACT_ADDRESS];
+                
+                alert("Confirma la transacción en tu billetera para comprar con BNB...");
+                const tx = await routerContract.swapExactETHForTokens(
+                    0, 
+                    path,
+                    walletUser,
+                    deadline,
+                    { value: amountInWei }
+                );
+                alert("Procesando compra en la cadena BNB Smart Chain...");
+                await tx.wait();
+                alert("¡Compra completada exitosamente!");
+                
+            } else if (currency === 'USDT') {
+                const amountInWei = ethers.utils.parseUnits(amountInStr, 18);
+                const path = [USDT_BSC_ADDRESS, TOKEN_CONTRACT_ADDRESS];
+                
+                const usdtContract = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, signer);
+                
+                alert("Paso 1: Confirma la aprobación de USDT en tu billetera...");
+                const txApprove = await usdtContract.approve(PANCAKE_ROUTER_ADDRESS, amountInWei);
+                await txApprove.wait();
+                
+                alert("Paso 2: Ahora, confirma el intercambio (Swap) en tu billetera...");
+                const txSwap = await routerContract.swapExactTokensForTokens(
+                    amountInWei,
+                    0, 
+                    path,
+                    walletUser,
+                    deadline
+                );
+                alert("Procesando compra en la cadena BNB Smart Chain...");
+                await txSwap.wait();
+                alert("¡Compra completada exitosamente!");
+            }
+
+            window.cerrarModal('modalCanjear');
+            document.getElementById('swapAmountIn').value = '';
+            window.consultarSaldoOnChain(walletUser);
+
+        } catch (error) {
+            console.error("Error en canje:", error);
+            alert("No se pudo completar el canje: " + (error.reason || error.message || "La transacción fue cancelada o hubo un error."));
+        }
+      };
+
       window.ejecutarEnvioTokensWeb3 = async function() {
         const destino = document.getElementById('sendDestinationAddress').value.trim();
         const cantidadStr = document.getElementById('sendTokenAmount').value.trim();
@@ -1211,7 +1347,6 @@
         }
       };
 
-      // --- LECTURA REAL Y DIRECTA DE TOKENS ON-CHAIN ---
       window.consultarSaldoOnChain = async function(address) {
         if (!address) return;
         try {
@@ -1256,8 +1391,11 @@
           localStorage.setItem("nex_sesion_activa", "true");
           document.getElementById('welcomeSection').style.display = 'none';
           document.getElementById('appContent').style.display = 'block';
+          
           document.getElementById('helpBtn').style.display = 'inline-block';
-          document.getElementById('btnLogoutTop').style.display = 'inline-block'; // Muestra el botón de salir arriba
+          document.getElementById('btnLogoutTop').style.display = 'inline-block'; 
+          document.getElementById('authBtn').style.display = 'none';
+          
           document.getElementById('userDisplay').innerText = user.email || user.displayName || "Usuario NEX";
 
           escucharChatUsuario(user.uid);
@@ -1274,7 +1412,10 @@
           if (typeof window.ethereum !== 'undefined' || localStorage.getItem("nex_sesion_activa") === "true" || window.location.search.includes("autologin=true")) {
             document.getElementById('welcomeSection').style.display = 'none';
             document.getElementById('appContent').style.display = 'block';
+            
             document.getElementById('btnLogoutTop').style.display = 'inline-block';
+            document.getElementById('authBtn').style.display = 'none';
+            
             if (typeof window.ethereum !== 'undefined') {
               try {
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -1288,8 +1429,10 @@
           usuarioActual = null;
           document.getElementById('appContent').style.display = 'none';
           document.getElementById('welcomeSection').style.display = 'block';
+          
           document.getElementById('helpBtn').style.display = 'none';
-          document.getElementById('btnLogoutTop').style.display = 'none'; // Oculta el botón de salir arriba si no hay sesión
+          document.getElementById('btnLogoutTop').style.display = 'none'; 
+          document.getElementById('authBtn').style.display = 'inline-block';
         }
       });
 
@@ -1297,11 +1440,15 @@
           if (localStorage.getItem("nex_sesion_activa") === "true" || window.location.search.includes("autologin=true") || typeof window.ethereum !== 'undefined') {
               document.getElementById('welcomeSection').style.display = 'none';
               document.getElementById('appContent').style.display = 'block';
+              
               document.getElementById('btnLogoutTop').style.display = 'inline-block';
+              document.getElementById('authBtn').style.display = 'none';
           } else {
               document.getElementById('appContent').style.display = 'none';
               document.getElementById('welcomeSection').style.display = 'block';
+              
               document.getElementById('btnLogoutTop').style.display = 'none';
+              document.getElementById('authBtn').style.display = 'inline-block';
           }
           await window.asegurarRedBNB();
           await window.actualizarPrecioTokenEnVivo();
@@ -1342,6 +1489,18 @@
       window.cerrarAdminModal = function() { document.getElementById('adminModal').classList.remove('show'); };
       window.cerrarModal = function(id) { document.getElementById(id).classList.remove('show'); };
 
+      window.abrirModalCanjear = function() {
+          if (typeof window.ethereum === 'undefined' || !walletDireccionConectada) {
+              return alert("Por favor, conecta tu billetera primero para poder canjear.");
+          }
+          document.getElementById('swapAmountIn').value = '';
+          document.getElementById('swapExpectedOut').innerText = 'Recibirás aprox: 0.00 NEX';
+          document.getElementById('modalCanjear').classList.add('show');
+          
+          // Carga el saldo de la billetera apenas abre la ventana
+          window.actualizarSaldosSwap();
+      };
+
       window.validarCredencialesAdmin = function() {
         const u = document.getElementById('adminUserInput').value;
         const p = document.getElementById('adminPassInput').value;
@@ -1367,10 +1526,6 @@
 
       window.abrirWalletChoiceModal = function() { document.getElementById('walletChoiceModal').classList.add('show'); };
       window.abrirModalEnviarTokens = function() { document.getElementById('sendTokensModal').classList.add('show'); };
-
-      window.abrirPancakeSwapDirecto = function() {
-        window.open("https://pancakeswap.finance/swap?outputCurrency=0x44B1c3Cd218D73368AD865C1cf8bd6E1Dd15c59A&chainId=56", '_blank');
-      };
 
       window.vincularTokenWeb3 = async function(walletType) {
         cerrarModal('walletChoiceModal');
