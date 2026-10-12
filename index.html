@@ -63,7 +63,6 @@
         }
         .top-actions { display: flex; gap: 8px; align-items: center; }
         
-        /* TODOS LOS BOTONES DE ARRIBA AHORA USAN ESTE ESTILO IDÉNTICO */
         .btn-top { 
             background: rgba(255, 255, 255, 0.08); 
             border: 1px solid var(--border-color); 
@@ -366,7 +365,6 @@
     <div class="top-bar">
         <div id="userDisplay" class="user-info-bar">Invitado</div>
         
-        <!-- AHORA TODOS LOS BOTONES TIENEN LA MISMA CLASE btn-top PARA SER IDÉNTICOS -->
         <div class="top-actions">
             <button class="btn-top" id="helpBtn" onclick="abrirHelpModal()" style="display: none;">💬 Soporte</button>
             <button class="btn-top" id="authBtn" onclick="abrirAuthModal()">Ingresar</button>
@@ -475,7 +473,7 @@
             <div class="field">
                 <div style="display: flex; justify-content: space-between; align-items: flex-end;">
                     <label>Quiero pagar usando:</label>
-                    <span id="swapUserBalance" style="font-size: 11px; color: var(--primary-gold); font-weight: bold; margin-bottom: 4px;">Saldo: 0.00</span>
+                    <span id="swapUserBalance" style="font-size: 11px; color: var(--primary-gold); font-weight: bold; margin-bottom: 4px;">Saldo: Cargando...</span>
                 </div>
                 <!-- Al cambiar de moneda, actualiza el saldo y recalcula los NEX -->
                 <select id="swapCurrency" onchange="window.actualizarSaldosSwap(); window.calcularRecepcionNEX();">
@@ -488,10 +486,10 @@
                 <label>Cantidad a gastar:</label>
                 <!-- Al escribir, calcula los NEX en vivo -->
                 <input type="number" id="swapAmountIn" placeholder="Ej. 0.05" oninput="window.calcularRecepcionNEX();">
-                <div id="swapExpectedOut" style="font-size: 12px; color: var(--green-up); margin-top: 6px; font-weight: bold;">Recibirás aprox: 0.00 NEX</div>
+                <div id="swapExpectedOut" style="font-size: 13px; color: var(--green-up); margin-top: 6px; font-weight: bold;">Recibirás aprox: 0.00 NEX</div>
             </div>
 
-            <button class="btn-auth" style="width:100%; margin-top:10px; background: #1fc7d4; color: white; font-size: 14px;" onclick="ejecutarSwapWeb3()">Confirmar y Canjear</button>
+            <button class="btn-auth" style="width:100%; margin-top:10px; background: #1fc7d4; color: white; font-size: 14px;" onclick="ejecutarSwapWeb3()">✅ Confirmar y Comprar</button>
             <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('modalCanjear')">Cancelar</button>
         </div>
     </div>
@@ -689,12 +687,14 @@
       const googleProvider = new GoogleAuthProvider();
       const appleProvider = new OAuthProvider('apple.com');
 
-      let usuarioActual = null;
-      let tokensActualesUsuario = 0;
-      let PRECIO_TOKEN_USD = 0.01;
-      let PRECIO_BNB_USD = 600; 
-      let CAMBIO_24H_PORCENTAJE = 0;
-      let walletDireccionConectada = null;
+      // HACEMOS ESTAS VARIABLES GLOBALES DESDE EL INICIO PARA EVITAR EL ERROR
+      window.usuarioActual = null;
+      window.tokensActualesUsuario = 0;
+      window.PRECIO_TOKEN_USD = 0.01;
+      window.PRECIO_BNB_USD = 600; 
+      window.CAMBIO_24H_PORCENTAJE = 0;
+      window.walletDireccionConectada = null;
+      
       let chatListenerUsuario = null;
       let chatListenerAdmin = null;
       let chatAdminUidActual = null;
@@ -944,14 +944,14 @@
       window.enviarMensajeSoporte = async function() {
           const input = document.getElementById('userChatMessage');
           const msg = input.value.trim();
-          if(!msg || !usuarioActual) return;
+          if(!msg || !window.usuarioActual) return;
           try {
-              await addDoc(collection(db, "chats", usuarioActual.uid, "mensajes"), {
+              await addDoc(collection(db, "chats", window.usuarioActual.uid, "mensajes"), {
                   texto: msg,
                   sender: 'user',
                   timestamp: serverTimestamp()
               });
-              await setDoc(doc(db, "usuarios", usuarioActual.uid), {
+              await setDoc(doc(db, "usuarios", window.usuarioActual.uid), {
                   ultimoMensajeAt: serverTimestamp(),
                   unreadAdmin: true
               }, { merge: true });
@@ -1053,7 +1053,7 @@
           const resBnb = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT");
           const dataBnb = await resBnb.json();
           if (dataBnb && dataBnb.price) {
-            PRECIO_BNB_USD = parseFloat(dataBnb.price);
+            window.PRECIO_BNB_USD = parseFloat(dataBnb.price);
           }
         } catch(e) {}
 
@@ -1078,16 +1078,16 @@
 
             if (reserveToken > 0 && reserveBNB > 0) {
               const bnbPerToken = reserveBNB / reserveToken;
-              PRECIO_TOKEN_USD = bnbPerToken * PRECIO_BNB_USD;
+              window.PRECIO_TOKEN_USD = bnbPerToken * window.PRECIO_BNB_USD;
             }
           }
         } catch (e) {}
 
         if (document.getElementById('tokenPrice')) {
-          document.getElementById('tokenPrice').innerText = `$${window.formatearMoneda(PRECIO_TOKEN_USD)} USD`;
+          document.getElementById('tokenPrice').innerText = `$${window.formatearMoneda(window.PRECIO_TOKEN_USD)} USD`;
         }
         window.recalcularBalanceUsuario();
-        window.calcularRecepcionNEX(); // Recalcula si el usuario tiene abierta la ventana
+        window.calcularRecepcionNEX();
       };
 
       window.cargarHistorialOnChainReal = async function(address) {
@@ -1150,9 +1150,9 @@
         const profitElem = document.getElementById('userProfit');
 
         if (profitElem) {
-            const signo = CAMBIO_24H_PORCENTAJE >= 0 ? '+' : '';
-            profitElem.innerText = `${signo}${CAMBIO_24H_PORCENTAJE.toFixed(2)}%`;
-            profitElem.style.color = CAMBIO_24H_PORCENTAJE >= 0 ? 'var(--green-up)' : 'var(--red-down)';
+            const signo = window.CAMBIO_24H_PORCENTAJE >= 0 ? '+' : '';
+            profitElem.innerText = `${signo}${window.CAMBIO_24H_PORCENTAJE.toFixed(2)}%`;
+            profitElem.style.color = window.CAMBIO_24H_PORCENTAJE >= 0 ? 'var(--green-up)' : 'var(--red-down)';
         }
       };
 
@@ -1179,10 +1179,9 @@
         }
       };
 
-      // --- FUNCIONES NUEVAS: SALDO Y CALCULADORA EN VIVO ---
       window.actualizarSaldosSwap = async function() {
           const balanceElem = document.getElementById('swapUserBalance');
-          if (!walletDireccionConectada || typeof window.ethereum === 'undefined') {
+          if (!window.walletDireccionConectada || typeof window.ethereum === 'undefined') {
               balanceElem.innerText = 'Saldo: 0.00';
               return;
           }
@@ -1193,12 +1192,12 @@
           try {
               const provider = new ethers.providers.Web3Provider(window.ethereum);
               if (currency === 'BNB') {
-                  const balanceWei = await provider.getBalance(walletDireccionConectada);
+                  const balanceWei = await provider.getBalance(window.walletDireccionConectada);
                   const balanceBnb = parseFloat(ethers.utils.formatEther(balanceWei));
                   balanceElem.innerText = `Saldo: ${balanceBnb.toFixed(4)} BNB`;
               } else {
                   const usdtContract = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, provider);
-                  const balanceWei = await usdtContract.balanceOf(walletDireccionConectada);
+                  const balanceWei = await usdtContract.balanceOf(window.walletDireccionConectada);
                   const balanceUsdt = parseFloat(ethers.utils.formatUnits(balanceWei, 18));
                   balanceElem.innerText = `Saldo: ${balanceUsdt.toFixed(2)} USDT`;
               }
@@ -1213,7 +1212,7 @@
           const outElem = document.getElementById('swapExpectedOut');
           const amount = parseFloat(amountStr);
           
-          if (isNaN(amount) || amount <= 0 || PRECIO_TOKEN_USD <= 0) {
+          if (isNaN(amount) || amount <= 0 || window.PRECIO_TOKEN_USD <= 0) {
               outElem.innerText = `Recibirás aprox: 0.00 NEX`;
               return;
           }
@@ -1222,14 +1221,13 @@
           let nexAmount = 0;
           
           if (currency === 'BNB') {
-              nexAmount = (amount * PRECIO_BNB_USD) / PRECIO_TOKEN_USD;
+              nexAmount = (amount * window.PRECIO_BNB_USD) / window.PRECIO_TOKEN_USD;
           } else {
-              nexAmount = amount / PRECIO_TOKEN_USD;
+              nexAmount = amount / window.PRECIO_TOKEN_USD;
           }
           
           outElem.innerText = `Recibirás aprox: ${window.formatearMoneda(nexAmount, 2)} NEX`;
       };
-      // ----------------------------------------------------
 
       window.ejecutarSwapWeb3 = async function() {
         const currency = document.getElementById('swapCurrency').value;
@@ -1350,7 +1348,7 @@
       window.consultarSaldoOnChain = async function(address) {
         if (!address) return;
         try {
-          walletDireccionConectada = ethers.utils.getAddress(address);
+          window.walletDireccionConectada = ethers.utils.getAddress(address);
           
           let provider;
           if (typeof window.ethereum !== 'undefined') {
@@ -1360,16 +1358,16 @@
           }
 
           const contract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, provider);
-          const rawBalance = await contract.balanceOf(walletDireccionConectada);
+          const rawBalance = await contract.balanceOf(window.walletDireccionConectada);
           const formattedBalance = parseFloat(ethers.utils.formatUnits(rawBalance, 18));
           
-          tokensActualesUsuario = formattedBalance;
+          window.tokensActualesUsuario = formattedBalance;
           document.getElementById('userTokens').innerText = window.formatearMoneda(formattedBalance) + ' NEX';
           document.getElementById('walletWarningBanner').style.display = 'none';
-          document.getElementById('userDisplay').innerText = walletDireccionConectada.substring(0, 6) + "..." + walletDireccionConectada.substring(38);
+          document.getElementById('userDisplay').innerText = window.walletDireccionConectada.substring(0, 6) + "..." + window.walletDireccionConectada.substring(38);
           
           window.recalcularBalanceUsuario();
-          window.cargarHistorialOnChainReal(walletDireccionConectada);
+          window.cargarHistorialOnChainReal(window.walletDireccionConectada);
         } catch (error) {
             console.error("Error al consultar saldo:", error);
         }
@@ -1377,7 +1375,7 @@
 
       onAuthStateChanged(auth, async (user) => {
         if (user) {
-          usuarioActual = user;
+          window.usuarioActual = user;
           
           onSnapshot(doc(db, "usuarios", user.uid), (uSnap) => {
               if (uSnap.exists() && uSnap.data().banned === true) {
@@ -1426,7 +1424,7 @@
             }
             return;
           }
-          usuarioActual = null;
+          window.usuarioActual = null;
           document.getElementById('appContent').style.display = 'none';
           document.getElementById('welcomeSection').style.display = 'block';
           
@@ -1490,14 +1488,13 @@
       window.cerrarModal = function(id) { document.getElementById(id).classList.remove('show'); };
 
       window.abrirModalCanjear = function() {
-          if (typeof window.ethereum === 'undefined' || !walletDireccionConectada) {
+          if (typeof window.ethereum === 'undefined' || !window.walletDireccionConectada) {
               return alert("Por favor, conecta tu billetera primero para poder canjear.");
           }
           document.getElementById('swapAmountIn').value = '';
           document.getElementById('swapExpectedOut').innerText = 'Recibirás aprox: 0.00 NEX';
           document.getElementById('modalCanjear').classList.add('show');
           
-          // Carga el saldo de la billetera apenas abre la ventana
           window.actualizarSaldosSwap();
       };
 
