@@ -1,1075 +1,1558 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- ETIQUETA SEO PARA GOOGLE -->
-    <meta name="description" content="NeX Shopping - A sua loja online de confiança para celulares, ferramentas e eletrônicos. Encontre as melhores ofertas com segurança e rapidez.">
-    <title>NeX shopping</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Bienvenido a NEX Token, el ecosistema descentralizado oficial en la red BNB Smart Chain. Administra tu portafolio, conecta tu billetera Web3 y opera de forma rápida y segura.">
+    <title>NEX Token - Ecosistema Descentralizado</title>
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4729162767039305" crossorigin="anonymous"></script>
+    <link rel="icon" href="https://i.postimg.cc/cHk815mV/image-0.jpg" type="image/png">
     
+    <!-- Librería Ethers.js para conectar con la Blockchain BNB -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js" type="text/javascript"></script>
+
     <style>
         :root {
-            --color-primario: #1e40af; --color-fondo: #f3f4f6; --color-texto: #1f2937;
-            --color-gris: #6b7280; --color-rojo: #ef4444; --color-verde: #10b981;
-            --color-whatsapp: #25D366; --color-azul-claro: #3b82f6; --color-rosa: #ec4899;
-            --color-admin: #000000;
+            --bg-dark: #090d16;
+            --card-bg: #111827;
+            --border-color: #1f2937;
+            --primary-cyan: #38bdf8;
+            --primary-gold: #f59e0b;
+            --green-up: #10b981;
+            --red-down: #ef4444;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --main-font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --container-max-width: 1200px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--color-fondo); padding-top: 65px; padding-bottom: 70px; overflow-x: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            background-color: var(--bg-dark); 
+            color: var(--text-main); 
+            font-family: var(--main-font); 
+            min-height: 100vh; 
+            padding: 16px; 
+            padding-top: 70px; 
+        }
+
+        .top-bar { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            height: 55px; 
+            background-color: rgba(17, 24, 39, 0.98); 
+            backdrop-filter: blur(8px); 
+            border-bottom: 1px solid var(--border-color); 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0 16px; 
+            z-index: 1000; 
+        }
+        .user-info-bar { 
+            font-size: 13px; 
+            color: var(--primary-cyan); 
+            font-weight: bold; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            max-width: 180px; 
+        }
+        .top-actions { display: flex; gap: 8px; align-items: center; }
         
-        /* BLOQUEO DE SCROLL HASTA QUE INICIEN SESIÓN */
-        body.bloqueado { overflow: hidden; }
+        /* TODOS LOS BOTONES DE ARRIBA AHORA USAN ESTE ESTILO IDÉNTICO */
+        .btn-top { 
+            background: rgba(255, 255, 255, 0.08); 
+            border: 1px solid var(--border-color); 
+            color: var(--text-main); 
+            padding: 6px 12px; 
+            border-radius: 6px; 
+            font-size: 12px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: background 0.3s;
+        }
+        .btn-top:hover { background: rgba(255, 255, 255, 0.15); }
 
-        .hidden { display: none !important; }
+        .btn-auth { 
+            background: var(--primary-cyan); 
+            color: #000; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            font-size: 12px; 
+            cursor: pointer; 
+            transition: background 0.3s; 
+        }
+        .btn-provider { 
+            width: 100%; 
+            padding: 10px; 
+            margin-top: 8px; 
+            border-radius: 6px; 
+            border: 1px solid var(--border-color); 
+            font-weight: bold; 
+            font-size: 13px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px; 
+        }
+        .btn-google { background: #ffffff; color: #000000; }
+        .btn-apple { background: #000000; color: #ffffff; border-color: #333; }
 
-        /* === PANTALLA DE LOGIN / BIENVENIDA === */
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-primario); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; transition: opacity 0.5s ease; }
-        .login-box { background: white; width: 100%; max-width: 350px; padding: 30px 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; }
-        .login-title { font-size: 2rem; font-weight: 800; color: var(--color-primario); margin-bottom: 5px; }
-        .login-subtitle { font-size: 1rem; color: var(--color-gris); margin-bottom: 25px; }
-        .btn-login { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: none; font-weight: bold; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .btn-google { background: white; color: #333; border: 1px solid #ddd; }
-        .btn-apple { background: black; color: white; }
-        .btn-email { background: var(--color-azul-claro); color: white; }
+        .container { 
+            max-width: var(--container-max-width); 
+            margin: 0 auto; 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 20px; 
+        }
+        @media (min-width: 768px) { 
+            .container { grid-template-columns: 2fr 1fr; } 
+        }
 
-        /* === HEADER === */
-        .header { position: fixed; top: 0; left: 0; width: 100%; background-color: var(--color-primario); padding: 12px 15px; display: flex; align-items: center; gap: 15px; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .logo-text { color: white; font-weight: 800; font-size: 1.2rem; }
-        .search-container { flex: 1; background-color: white; border-radius: 20px; padding: 8px 15px; display: flex; align-items: center; gap: 10px; }
-        .search-container input { border: none; outline: none; width: 100%; font-size: 0.95rem; background: transparent;}
-        .header-icon { color: white; font-size: 1.2rem; cursor: pointer;}
+        .card { 
+            background-color: var(--card-bg); 
+            border: 1px solid var(--border-color); 
+            border-radius: 16px; 
+            padding: 20px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3); 
+            margin-bottom: 20px; 
+        }
 
-        /* === VISTAS COMUNES === */
-        .screen-header { padding: 20px; font-size: 1.5rem; font-weight: bold; background: white; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
-        .screen-content { padding: 20px; text-align: center; color: var(--color-gris); }
+        .welcome-card { max-width: 450px; margin: 40px auto; text-align: center; }
+        .welcome-card h2 { color: var(--primary-cyan); margin-bottom: 10px; }
+        .welcome-card p { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
 
-        /* === INICIO & PRODUCTOS === */
-        .quick-actions { display: flex; overflow-x: auto; padding: 20px 15px; gap: 20px; background: white; scrollbar-width: none; }
-        .quick-actions::-webkit-scrollbar { display: none; }
-        .action-item { display: flex; flex-direction: column; align-items: center; min-width: 65px; gap: 8px; cursor: pointer;}
-        .action-icon { width: 48px; height: 48px; background-color: #eff6ff; color: var(--color-primario); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
-        .action-text { font-size: 0.75rem; font-weight: 500; text-align: center; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .stat-box { 
+            background: var(--bg-dark); 
+            padding: 12px; 
+            border-radius: 8px; 
+            border: 1px solid var(--border-color); 
+            position: relative; 
+        }
+        .stat-box span { font-size: 12px; color: var(--text-muted); }
+        .stat-box h4 { font-size: 17px; color: var(--text-main); margin-top: 4px; }
+
+        .currency-selector {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--primary-cyan);
+            font-size: 11px;
+            font-weight: bold;
+            padding: 3px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            outline: none;
+            margin-top: 4px;
+            width: 100%;
+        }
+
+        .btn-action { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 10px; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 15px; 
+            cursor: pointer; 
+        }
+        .btn-buy { background-color: var(--green-up); color: #fff; display: none !important; }
+        .btn-sell { background-color: var(--red-down); color: #fff; display: none !important; }
+        .btn-send { background-color: #f59e0b; color: #000; }
+
+        #bannedScreen { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: #000; 
+            z-index: 9999; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            color: var(--red-down); 
+            text-align: center; 
+            padding: 20px; 
+        } 
         
-        .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 15px 20px 15px; margin-top: 15px;}
-        .product-card { background: white; border-radius: 8px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative;}
-        .product-img-placeholder { width: 100%; aspect-ratio: 1; background-color: #f8fafc; border-radius: 6px; margin-bottom: 12px; display: flex; justify-content: center; align-items: center; color: #cbd5e1; font-size: 2.5rem; position: relative; }
+        .web3-btn { display: block; margin-top: 10px; font-size: 14px; }
+
+        .dynamic-banner { 
+            position: relative; 
+            width: 100%; 
+            max-width: var(--container-max-width); 
+            margin: 0 auto 20px auto; 
+            display: none; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            border: 1px solid var(--border-color); 
+        }
+        .dynamic-banner img { width: 100%; display: block; max-height: 250px; object-fit: cover; }
+        .banner-overlay-text { 
+            position: absolute; 
+            top: 50%; 
+            left: 0; 
+            width: 100%; 
+            transform: translateY(-50%); 
+            text-align: center; 
+            font-size: 24px; 
+            font-weight: 900; 
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.8); 
+            pointer-events: none; 
+            white-space: nowrap; 
+        }
+        .moving-text { animation: slideText 10s linear infinite; }
+        @keyframes slideText { 0% { transform: translate(100%, -50%); } 100% { transform: translate(-100%, -50%); } }
+
+        .modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.85); 
+            z-index: 2000; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .modal.show { display: flex !important; }
+        .modal-content { 
+            background: var(--card-bg); 
+            padding: 24px; 
+            border-radius: 12px; 
+            width: 90%; 
+            max-width: 500px; 
+            border: 1px solid var(--border-color); 
+            max-height: 90vh; 
+            overflow-y: auto; 
+        }
+        .modal-content h3 { color: var(--primary-cyan); margin-bottom: 15px; }
+        .field { margin-bottom: 12px; }
+        .field label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        .field input, .field select { 
+            width: 100%; 
+            padding: 10px; 
+            background: var(--bg-dark); 
+            border: 1px solid var(--border-color); 
+            color: var(--text-main); 
+            border-radius: 6px; 
+        }
+        .btn-gen { 
+            background: var(--border-color); 
+            color: var(--primary-cyan); 
+            border: 1px solid var(--primary-cyan); 
+            padding: 6px; 
+            font-size: 11px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin-top: 4px; 
+        }
+
+        .quote-box {
+            background: var(--bg-dark);
+            border: 1px dashed var(--primary-cyan);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 12px 0;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .wallet-option-btn { 
+            width: 100%; 
+            padding: 14px; 
+            margin-top: 10px; 
+            border-radius: 10px; 
+            border: 1px solid var(--border-color); 
+            font-weight: bold; 
+            font-size: 15px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 12px; 
+            transition: transform 0.2s, background 0.2s; 
+        }
+        .wallet-option-btn:active { transform: scale(0.98); }
+        .btn-metamask-choice { background: #e2761b; color: #ffffff; }
+        .btn-trust-choice { background: #0500ff; color: #ffffff; }
+
+        .historial-item { 
+            background: var(--bg-dark); 
+            padding: 10px; 
+            border-radius: 6px; 
+            border: 1px solid var(--border-color); 
+            margin-bottom: 8px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .historial-tipo { font-weight: bold; font-size: 12px; }
+        .tipo-compra { color: var(--green-up); }
+        .tipo-venta { color: var(--red-down); }
+        .tipo-envio { color: var(--primary-gold); }
+
+        .chat-box { 
+            background: var(--bg-dark); 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            height: 250px; 
+            overflow-y: auto; 
+            padding: 10px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
+            margin-bottom: 10px; 
+        }
+        .chat-msg { max-width: 80%; padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 1.4; }
+        .msg-user { align-self: flex-end; background: var(--primary-cyan); color: #000; font-weight: 500; }
+        .msg-admin { align-self: flex-start; background: var(--border-color); color: #fff; }
+        .chat-input-container { display: flex; gap: 8px; }
+        .chat-input-container input { flex: 1; padding: 8px; background: var(--bg-dark); border: 1px solid var(--border-color); color: white; border-radius: 6px; }
+
+        .admin-tabs { display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { 
+            background: var(--bg-dark); 
+            color: var(--text-muted); 
+            border: 1px solid var(--border-color); 
+            padding: 8px 12px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            font-weight: bold; 
+            white-space: nowrap; 
+        }
+        .tab-btn.active { background: var(--primary-cyan); color: #000; border-color: var(--primary-cyan); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         
-        .discount-badge { position: absolute; top: 5px; left: 5px; background: var(--color-rojo); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
-        .old-price { text-decoration: line-through; color: var(--color-gris); font-size: 0.8rem; margin-bottom: -3px; display: block; }
-        .product-price { font-size: 1.2rem; font-weight: bold; }
-        .product-shipping { font-size: 0.7rem; color: var(--color-verde); font-weight: 600; margin: 4px 0; }
-        .product-title { font-size: 0.85rem; color: var(--color-gris); line-height: 1.3; margin-bottom: 10px;}
-        .stock-info { font-size: 0.7rem; color: var(--color-rojo); font-weight: bold; margin-bottom: 10px; display: block;}
+        .admin-user-card { 
+            background: var(--bg-dark); 
+            padding: 10px; 
+            border-radius: 6px; 
+            border: 1px solid var(--border-color); 
+            margin-bottom: 8px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
 
-        /* === CARRITO === */
-        #view-cart { padding-bottom: 70px; }
-        .cart-item { background: white; margin: 10px 15px; padding: 15px; border-radius: 10px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .cart-checkbox { width: 20px; height: 20px; accent-color: var(--color-primario); }
-        .cart-img { width: 60px; height: 60px; background: #f8fafc; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #cbd5e1; }
-        .cart-details { flex: 1; }
-        .cart-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; }
-        .cart-item-price { font-size: 1.1rem; color: var(--color-primario); font-weight: bold; }
-        .btn-delete { background: none; border: none; color: var(--color-rojo); font-size: 1.2rem; padding: 10px; cursor: pointer; }
-        .checkout-bar { position: fixed; bottom: 65px; left: 0; width: 100%; background: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); border-top: 1px solid #e5e7eb; z-index: 999; }
-        .checkout-total { font-size: 1.2rem; font-weight: bold; }
-        .btn-buy { background: var(--color-primario); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer;}
-
-        /* === MENU MÁS Y PERFIL === */
-        #view-more { background-color: white; min-height: 100vh; padding-bottom: 20px; }
-        .profile-header { background-color: var(--color-primario); padding: 20px 15px 30px 15px; color: white; display: flex; align-items: center; gap: 15px; cursor: pointer;}
-        .profile-avatar { width: 60px; height: 60px; background-color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--color-primario); font-size: 1.5rem; font-weight: bold; }
-        .menu-section { margin-top: 20px; border-top: 8px solid var(--color-fondo); }
-        .menu-title { padding: 20px 15px 10px 15px; font-size: 0.9rem; color: var(--color-gris); font-weight: 600; }
-        .menu-item { display: flex; align-items: center; padding: 16px 20px; background: white; border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: background-color 0.2s;}
-        .menu-item:active { background-color: #f9fafb; }
-        .menu-icon { width: 30px; font-size: 1.2rem; color: var(--color-gris); text-align: center; margin-right: 15px; }
-        .menu-text { flex: 1; font-size: 0.95rem; color: var(--color-texto); }
-        .tag { font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; font-weight: bold; color: white; margin-left: 10px; }
-        .tag-green { background-color: var(--color-verde); }
-        .tag-blue { background-color: var(--color-azul-claro); }
-
-        /* === SUB-PANTALLAS === */
-        #sub-screen-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--color-fondo); z-index: 2000; transform: translateX(100%); transition: transform 0.3s ease; overflow-y: auto; padding-bottom: 20px; }
-        #sub-screen-container.active { transform: translateX(0); } 
-        .sub-header { position: sticky; top: 0; background-color: var(--color-primario); color: white; padding: 15px 20px; display: flex; align-items: center; gap: 20px; z-index: 2001; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: background-color 0.3s;}
-        .sub-header i { font-size: 1.3rem; cursor: pointer; padding: 5px; }
-        #sub-content { padding: 0; }
-        
-        .form-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
-        .form-input:disabled { background-color: #e9ecef; color: #495057; cursor: not-allowed; }
-        .btn-primary { width: 100%; padding: 12px; background-color: var(--color-primario); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; }
-        .list-card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-
-        /* CHAT CORREGIDO: FIJO ABAJO Y NO SE MUEVE CON EL TECLADO */
-        .chat-area { display: flex; flex-direction: column; height: calc(100vh - 60px); background: #ece5dd; position: relative; overflow: hidden; } 
-        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 75px; }
-        .msg { max-width: 80%; padding: 10px 15px; border-radius: 15px; font-size: 0.9rem; line-height: 1.4; position: relative; box-shadow: 0 1px 1px rgba(0,0,0,0.1); word-break: break-word; }
-        .msg.received { background: white; align-self: flex-start; border-top-left-radius: 0; }
-        .msg.sent { background: #dcf8c6; align-self: flex-end; border-top-right-radius: 0; }
-        .chat-input-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px 15px; display: flex; gap: 10px; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 3000; }
-        .chat-input-bar input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 20px; outline: none; font-size: 0.95rem; background: #fff; }
-        .chat-input-bar button { background: var(--color-primario); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-
-        /* NAVEGACIÓN INFERIOR COMPACTA */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; justify-space-around; padding: 10px 0; padding-bottom: env(safe-area-inset-bottom, 10px); box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--color-gris); font-size: 0.65rem; cursor: pointer; width: 20%; text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding: 0 2px; }
-        .nav-item.active { color: var(--color-primario); }
-        .nav-item i { font-size: 1.2rem; transition: transform 0.2s;}
-        .nav-item.active i { transform: scale(1.1); }
-        .nav-item span { width: 100%; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .chart-container { 
+            position: relative; 
+            margin-top: 15px; 
+            height: 500px; 
+            width: 100%; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            background: #090d16; 
+            border: 1px solid var(--border-color); 
+        }
+        .chart-container iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
-<body class="bloqueado">
+<body>
 
-    <!-- === PANTALLA DE BIENVENIDA === -->
-    <div id="login-screen">
-        <div class="login-box">
-            <div class="login-title">NeX</div>
-            <div class="login-subtitle">Bem-vindo ao NeX Shopping</div>
-            
-            <button class="btn-login btn-google" onclick="iniciarSesionApp('Google')">
-                <i class="fa-brands fa-google" style="color: #DB4437; font-size: 1.2rem;"></i> Entrar com Google
-            </button>
-            <button class="btn-login btn-apple" onclick="iniciarSesionApp('Apple')">
-                <i class="fa-brands fa-apple" style="font-size: 1.2rem;"></i> Entrar com Apple
-            </button>
-            <button class="btn-login btn-email" onclick="iniciarSesionApp('E-mail')">
-                <i class="fa-solid fa-envelope" style="font-size: 1.2rem;"></i> Entrar com E-mail
-            </button>
-        </div>
-    </div>
-
-    <header class="header">
-        <div class="logo-text">NeX</div>
-        <div class="search-container">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="main-search-input" data-i18n="search" placeholder="Buscar em NeX..." oninput="filtrarProductos(this.value)">
-        </div>
-        <div class="header-icon" onclick="abrirSubPantalla('Notificações', 'notificacoes')"><i class="fa-regular fa-bell"></i></div>
-    </header>
-
-    <!-- VISTA INICIO -->
-    <div id="view-home" class="view">
-        <div class="quick-actions">
-            <div class="action-item" onclick="buscarAccionRapida('ofertas')">
-                <div class="action-icon"><i class="fa-solid fa-tag"></i></div>
-                <span class="action-text" data-i18n="offers">Ofertas</span>
-            </div>
-            <div class="action-item" onclick="cargarUbicacionYMostrarSub()">
-                <div class="action-icon"><i class="fa-solid fa-location-dot"></i></div>
-                <span class="action-text" data-i18n="location">Endereço</span>
-            </div>
-            <div class="action-item" onclick="buscarAccionRapida('celulares')">
-                <div class="action-icon"><i class="fa-solid fa-mobile-screen"></i></div>
-                <span class="action-text" data-i18n="phones">Celulares</span>
-            </div>
-            <div class="action-item" onclick="buscarAccionRapida('ferramentas')">
-                <div class="action-icon"><i class="fa-solid fa-toolbox"></i></div>
-                <span class="action-text" data-i18n="tools">Ferramentas</span>
-            </div>
-        </div>
+    <div class="top-bar">
+        <div id="userDisplay" class="user-info-bar">Invitado</div>
         
-        <!-- CATÁLOGO CONECTADO A ALIEXPRESS -->
-        <div class="products-grid" id="products-grid">
-            <div style="grid-column: span 2; text-align: center; padding: 40px; color: var(--color-gris);">
-                <i class="fa-solid fa-box-open" style="font-size: 3rem; margin-bottom: 10px; color: #cbd5e1;"></i>
-                <p>Nenhum produto cadastrado ainda.</p>
-            </div>
+        <!-- AHORA TODOS LOS BOTONES TIENEN LA MISMA CLASE btn-top PARA SER IDÉNTICOS -->
+        <div class="top-actions">
+            <button class="btn-top" id="helpBtn" onclick="abrirHelpModal()" style="display: none;">💬 Soporte</button>
+            <button class="btn-top" id="authBtn" onclick="abrirAuthModal()">Ingresar</button>
+            <button class="btn-top" id="btnLogoutTop" style="display: none;" onclick="ejecutarCerrarSesion()" title="Cerrar Sesión">🚪 Salir</button>
+            <button class="btn-top" onclick="abrirLoginAdminModal()" title="Acceso Admin" style="padding: 6px 10px;">⋮</button>
         </div>
     </div>
 
-    <!-- VISTA CATEGORÍAS -->
-    <div id="view-categories" class="view hidden">
-        <div class="screen-header" data-i18n="nav_categories">Categorias</div>
-        <div class="screen-content">
-            <i class="fa-solid fa-border-all" style="font-size:3rem; margin-bottom:10px;"></i>
-            <p data-i18n="cat_desc">Explora nossas categorias aqui.</p>
-        </div>
-    </div>
+    <div id="welcomeSection" class="card welcome-card">
+        <h2>Bienvenido al token NEX</h2>
+        <p>Inicia sesión o crea tu cuenta para acceder a tu portafolio y operar dentro del ecosistema.</p>
 
-    <!-- VISTA NEX TOKEN (CON MONEDA PERSONALIZADA NeX) -->
-    <div id="view-token" class="view hidden">
-        <div class="screen-header" style="display: flex; align-items: center; gap: 15px;">
-            <i class="fa-solid fa-arrow-left" onclick="cambiarVista(document.querySelector('.bottom-nav .nav-item:first-child'), 'view-home')" style="font-size:1.3rem; cursor:pointer;"></i>
-            <span data-i18n="token_title">NeX Token</span>
-        </div>
-        <div class="screen-content" style="padding-top: 30px; padding-bottom: 40px; text-align: center;">
-            <!-- MONEDA DORADA PERSONALIZADA NeX -->
-            <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; box-shadow: 0 10px 20px rgba(245, 158, 11, 0.4); border: 4px solid #fef3c7; margin-bottom: 20px;">
-                <span style="color: white; font-weight: 900; font-size: 1.8rem; letter-spacing: 1px; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">NeX</span>
-            </div>
-
-            <h2 style="color: var(--color-primario); font-size: 1.5rem; margin-bottom: 15px;" data-i18n="token_welcome">Bem-vindo à nossa criptomoeda NeX Token</h2>
-            
-            <p style="color: var(--color-texto); font-size: 0.95rem; line-height: 1.5; margin-bottom: 20px; text-align: left;" data-i18n="token_desc">
-                Você tem a oportunidade de ganhar investindo pouco dinheiro, apenas $1, $2, $3 ou $4 dólares. A partir daí, pode investir o quanto quiser! Não é necessário adicionar muito dinheiro para começar.
-            </p>
-            
-            <div style="background-color: #fef2f2; border-left: 4px solid var(--color-rojo); padding: 12px; margin-bottom: 25px; text-align: left; border-radius: 4px;">
-                <p style="color: var(--color-rojo); font-size: 0.85rem; font-weight: 600; line-height: 1.4;" data-i18n="token_disclaimer">
-                    <i class="fa-solid fa-circle-exclamation"></i> Lembre-se: Você tem a oportunidade de ganhar, mas não é uma garantia. Como em todo lugar, também há o risco de perder.
-                </p>
-            </div>
-            
-            <p style="color: var(--color-gris); font-size: 0.9rem; margin-bottom: 15px;" data-i18n="token_invest">Se quiser investir, toque aqui:</p>
-            
-            <button class="btn-primary" onclick="window.open('https://nexvoltk.com.br', '_blank')" style="display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1.1rem; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <i class="fa-solid fa-arrow-up-right-from-square"></i> <span data-i18n="token_btn">Investir Agora</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- VISTA CARRITO -->
-    <div id="view-cart" class="view hidden">
-        <div class="screen-header">
-            <span data-i18n="cart_title">Meu Carrinho</span>
-            <button onclick="abrirSubPantalla('Rastreio de Pacotes', 'rastreio')" style="background: var(--color-primario); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; cursor: pointer;"><i class="fa-solid fa-truck-fast"></i> Rastrear Pacote</button>
-        </div>
-        <div id="user-cart-container" style="padding: 20px; text-align: center; color: var(--color-gris);">Seu carrinho está vazio.</div>
-        <div class="checkout-bar" id="checkout-bar-element">
-            <div>
-                <div style="font-size: 0.8rem; color: var(--color-gris);" data-i18n="total_pay">Total a pagar</div>
-                <div class="checkout-total" id="total-price">R$ 0.00</div>
-            </div>
-            <!-- Botón de compra seguro -->
-            <button class="btn-buy" data-i18n="buy_btn" onclick="procesarCompra()">Comprar</button>
-        </div>
-    </div>
-
-    <!-- VISTA MÁS -->
-    <div id="view-more" class="view hidden">
-        <div class="profile-header" style="margin-top:-10px;">
-            <div class="profile-avatar"><i class="fa-solid fa-user"></i></div>
-            <div>
-                <h2 style="font-size: 1.2rem; margin-bottom: 2px;" id="user-display-name" data-i18n="guest_user">Usuário Convidado</h2>
-                <p style="font-size: 0.8rem; opacity: 0.9;" id="user-display-email" data-i18n="login_prompt">Faça login com seu e-mail</p>
-            </div>
-        </div>
-
-        <div class="menu-section" style="border-top:none;">
-            <div class="menu-item" onclick="cargarUbicacionYMostrarSub()">
-                <i class="fa-solid fa-map-location-dot menu-icon"></i>
-                <span class="menu-text" data-i18n="my_address">Adicionar minha Localização</span>
-            </div>
-            <div class="menu-item" onclick="abrirSubPantalla('Idioma / Language', 'idiomas')">
-                <i class="fa-solid fa-globe menu-icon"></i>
-                <span class="menu-text" data-i18n="language_settings">Idioma / Language</span>
-            </div>
-        </div>
-
-        <div class="menu-section">
-            <div class="menu-title" data-i18n="my_activity">Minha atividade</div>
-            <div class="menu-item" onclick="abrirSubPantalla('Minhas compras e Rastreio', 'rastreio')">
-                <i class="fa-solid fa-bag-shopping menu-icon"></i><span class="menu-text" data-i18n="my_purchases">Minhas compras</span>
-            </div>
-            <div class="menu-item" onclick="abrirSubPantalla('Notificações', 'notificacoes')">
-                <i class="fa-regular fa-bell menu-icon"></i><span class="menu-text" data-i18n="notifications">Notificações</span>
-            </div>
-            <div class="menu-item" onclick="abrirSubPantalla('Favoritos', 'generica')">
-                <i class="fa-regular fa-heart menu-icon"></i><span class="menu-text" data-i18n="favorites">Favoritos</span>
-            </div>
-        </div>
-
-        <div class="menu-section">
-            <div class="menu-title" data-i18n="discover">Descubra</div>
-            <div class="menu-item" onclick="abrirSubPantalla('Cupons', 'generica')">
-                <i class="fa-solid fa-ticket menu-icon"></i><span class="menu-text" data-i18n="coupons">Cupons</span>
-            </div>
-            <div class="menu-item" onclick="abrirSubPantalla('Seguros', 'generica')">
-                <i class="fa-solid fa-shield-halved menu-icon"></i><span class="menu-text" data-i18n="insurance">Seguros e assistências</span><span class="tag tag-blue" data-i18n="new_tag">NOVO</span>
-            </div>
-        </div>
+        <button class="btn-provider btn-google" id="btnGoogleWelcome" onclick="ejecutarLoginGoogle()">Continuar con Google</button>
+        <button class="btn-provider btn-apple" id="btnAppleWelcome" onclick="ejecutarLoginApple()">Continuar con Apple</button>
         
-        <div class="menu-section">
-            <div class="menu-title" data-i18n="support_title">Atendimento</div>
-            <div class="menu-item" onclick="abrirChatCliente()">
-                <i class="fa-solid fa-headset menu-icon" style="color:var(--color-primario);"></i>
-                <span class="menu-text" data-i18n="support_btn">Falar com Suporte (Ajuda)</span>
+        <button class="btn-auth" style="width: 100%; padding: 10px; margin-top:10px; background: var(--border-color); color: white;" onclick="abrirAuthModal()">Iniciar con Correo</button>
+    </div>
+
+    <div id="appContent" style="display: none;">
+        
+        <div id="walletWarningBanner" style="background: rgba(245, 158, 11, 0.15); border: 1px solid var(--primary-gold); padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 20px;">⚠️</span>
+            <div>
+                <strong style="color: var(--primary-gold); font-size: 13px; display: block;">Aviso Importante:</strong>
+                <span style="font-size: 12px; color: var(--text-muted);">Debes conectar una billetera (MetaMask o Trust Wallet) para que todas las funciones de la página operen correctamente.</span>
             </div>
         </div>
 
-        <div class="menu-section">
-            <div class="menu-item" onclick="abrirSubPantalla('Configurações', 'generica')">
-                <i class="fa-solid fa-gear menu-icon"></i><span class="menu-text" data-i18n="settings">Configurações</span>
-            </div>
+        <div id="bannerTopContainer" class="dynamic-banner">
+            <img id="bannerTopImg" src="" alt="Promoción NEX">
+            <div id="bannerTopText" class="banner-overlay-text"></div>
         </div>
 
-        <!-- BOTÓN OCULTO DEL ADMINISTRADOR -->
-        <div class="menu-section">
-            <div class="menu-item" onclick="abrirSubPantalla('Acesso Restrito', 'login-admin')">
-                <i class="fa-solid fa-eye menu-icon" style="color:var(--color-admin);"></i>
-                <div style="flex:1;">
-                    <span class="menu-text" style="display:block; font-weight:bold; color:var(--color-admin);" data-i18n="admin_nex">Administração NeX</span>
+        <div class="container">
+            <div class="card" id="userDashboard">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>Mi Portafolio NEX</h3>
                 </div>
-                <i class="fa-solid fa-lock" style="color:var(--color-gris); font-size:0.8rem;"></i>
-            </div>
-        </div>
-    </div>
 
-    <!-- CONTENEDOR SUB-PANTALLAS -->
-    <div id="sub-screen-container">
-        <div class="sub-header" id="sub-header"></div>
-        <div id="sub-content"></div>
-    </div>
-
-    <!-- NAVEGACIÓN INFERIOR -->
-    <nav class="bottom-nav">
-        <div class="nav-item active" onclick="cambiarVista(this, 'view-home')">
-            <i class="fa-solid fa-house"></i><span data-i18n="nav_home">Início</span>
-        </div>
-        <div class="nav-item" onclick="cambiarVista(this, 'view-categories')">
-            <i class="fa-solid fa-border-all"></i><span data-i18n="nav_categories">Categorias</span>
-        </div>
-        
-        <div class="nav-item" onclick="cambiarVista(this, 'view-token')">
-            <i style="font-style: normal; font-weight: 900; font-size: 1.2rem; line-height: 1;">NeX</i>
-            <span data-i18n="nav_token">NeX Token</span>
-        </div>
-
-        <div class="nav-item" onclick="cambiarVista(this, 'view-cart')">
-            <i class="fa-solid fa-cart-shopping"></i><span data-i18n="nav_cart">Carrinho</span>
-        </div>
-        <div class="nav-item" onclick="cambiarVista(this, 'view-more')">
-            <i class="fa-solid fa-bars"></i><span data-i18n="nav_more">Mais</span>
-        </div>
-    </nav>
-
-    <!-- === FIREBASE, LÓGICA Y API DE DROPSHIPPING === -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-analytics.js";
-        import { getFirestore, collection, addDoc, setDoc, doc, getDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBXQNXxZuJgVrCqKlVBV2Ssx5vIF-Oc5oo",
-            authDomain: "nexshopping-f01c0.firebaseapp.com",
-            projectId: "nexshopping-f01c0",
-            storageBucket: "nexshopping-f01c0.firebasestorage.app",
-            messagingSenderId: "779921167689",
-            appId: "1:779921167689:web:a0857b6ff758dcc1b5b698",
-            measurementId: "G-8TBC24TJY7"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
-        
-        const auth = getAuth(app);
-        const googleProvider = new GoogleAuthProvider();
-        const appleProvider = new OAuthProvider('apple.com');
-
-        // ==============================================================================
-        // CONFIGURACIÓN Y CONEXIÓN A TRAVÉS DE SERVERLESS FUNCTION EN VERCEL (ALIEXPRESS)
-        // ==============================================================================
-        
-        window.MARGEN_GANANCIA = 1.30; 
-
-        window.cargarProductosProveedor = async function() {
-            const grid = document.getElementById('products-grid');
-            if(!grid) return;
-            
-            grid.innerHTML = '<div style="grid-column: span 2; text-align: center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--color-primario);"></i><p>Carregando catálogo do fornecedor...</p></div>';
-
-            try {
-                // AQUÍ EMPIEZA LA BÚSQUEDA DE PRODUCTOS POR NOMBRE
-                // ESTOS SON TODOS LOS NOMBRES QUE PEDISTE, TRADUCIDOS AL PORTUGUÉS:
-                const misNombres = [
-                    'roupa masculina', // (Ropa de hombre)
-                    'roupa feminina', // (Ropa de mujer)
-                    'acessórios para celular', // (Accesorios de teléfono)
-                    'celular', // (Teléfono)
-                    'relógio masculino', // (Relojes de hombre)
-                    'relógio feminino', // (Relojes de mujer)
-                    'sapatos', // (Zapatos)
-                    'shorts', // (Shorts)
-                    'luvas', // (Guantes)
-                    'ferramentas para conserto de celular', // (Herramientas para arreglar teléfono)
-                    'ferramentas de construção' // (Herramientas de construcción)
-                ]; 
-                
-                const multiplesLlamadas = misNombres.map(nombre => {
-                    return fetch('/api/productos', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            method: 'aliexpress.ds.recommend.feed.get', 
-                            country: 'BR',
-                            target_currency: 'BRL',
-                            target_language: 'PT',
-                            keywords: nombre 
-                        })
-                    }).then(respuesta => respuesta.json()).catch(err => ({error: true})); // Evita que un fallo detenga a las demais
-                });
-
-                // Esperamos que TODAS las categorías respondan
-                const resultadosDeTodas = await Promise.all(multiplesLlamadas);
-                
-                let todosLosProductosExternos = [];
-
-                // Juntamos todos los productos en una sola lista gigante
-                resultadosDeTodas.forEach(resultado => {
-                    if (!resultado.error && resultado.aliexpress_ds_recommend_feed_get_response) {
-                        const respuestaAli = resultado.aliexpress_ds_recommend_feed_get_response;
-                        const productosDeEstaCategoria = respuestaAli?.result?.products?.product || [];
-                        todosLosProductosExternos = todosLosProductosExternos.concat(productosDeEstaCategoria);
-                    }
-                });
-
-                // Para que la página no se vea rara, mezclamos los productos al azar (Opcional, pero se ve mejor)
-                todosLosProductosExternos.sort(() => Math.random() - 0.5);
-
-                grid.innerHTML = ''; 
-                
-                if (todosLosProductosExternos.length === 0) {
-                     grid.innerHTML = '<div style="grid-column: span 2; text-align: center; padding: 40px; color: var(--color-gris);"><i class="fa-solid fa-box-open" style="font-size: 3rem; margin-bottom: 10px; color: #cbd5e1;"></i><p>Nenhum produto encontrado na API.</p></div>';
-                     return;
-                }
-
-                // Dibujamos todos los productos en la pantalla
-                todosLosProductosExternos.forEach(prod => {
-                    const precioFabrica = parseFloat(prod.target_sale_price) || 10.00;
-                    const precioVenta = (precioFabrica * window.MARGEN_GANANCIA).toFixed(2);
-                    const nombreProd = prod.product_title || "Produto NeX";
-                    const imagenProd = prod.product_main_image_url || "";
-                    const idProd = prod.product_id || "1";
-
-                    grid.innerHTML += `
-                        <div class="product-card">
-                            <div class="product-img-placeholder" style="background-image: url('${imagenProd}'); background-size: cover; background-position: center;"></div>
-                            <h3 class="product-title">${nombreProd}</h3>
-                            <div class="product-price">R$ ${precioVenta}</div>
-                            <span class="product-shipping">Em Estoque</span>
-                            <button onclick="agregarAlCarrito('${idProd}', '${nombreProd.replace(/'/g, "")}', ${precioVenta}, '<img src=&quot;${imagenProd}&quot; style=&quot;width:100%;height:100%;object-fit:cover;border-radius:6px;&quot;>')" class="btn-primary" style="padding: 8px; font-size: 0.8rem; margin-top: 10px;">
-                                <i class="fa-solid fa-cart-plus"></i> Adicionar
-                            </button>
-                        </div>
-                    `;
-                });
-            } catch (error) {
-                console.error(error);
-                grid.innerHTML = '<div style="grid-column: span 2; text-align: center; color: var(--color-rojo); padding: 20px;">Erro ao carregar catálogo. Verifique sua conexão.</div>';
-            }
-        };
-
-        window.iniciarSincronizacionStock = function() {
-            setInterval(() => {
-                console.log("Sincronizando stock e preços com o fornecedor via API...");
-                window.cargarProductosProveedor(); 
-            }, 300000);
-        };
-
-        // Guardar la ubicación permanentemente y bloquear cambios futuros
-        window.guardarUbicacionUsuario = async function() {
-            if(window.usuarioActualEmail === "invitado@nex.com") {
-                alert("Por favor, faça login para salvar seu endereço.");
-                return;
-            }
-
-            const pais = document.getElementById('dir-pais').value;
-            const estado = document.getElementById('dir-estado').value;
-            const ciudad = document.getElementById('dir-ciudad').value;
-            const cep = document.getElementById('dir-cep').value;
-            const calle = document.getElementById('dir-calle').value;
-            const complemento = document.getElementById('dir-complemento').value;
-
-            if(!pais || !ciudad || !calle) {
-                alert("Por favor, preencha pelo menos o País, Cidade e Endereço.");
-                return;
-            }
-
-            const userDocId = window.usuarioActualEmail.toLowerCase().replace(/[^a-z0-9]/g, '_');
-            
-            try {
-                await setDoc(doc(db, "direcciones_usuarios", userDocId), {
-                    email: window.usuarioActualEmail,
-                    pais, estado, ciudad, cep, calle, complemento,
-                    bloqueado: true,
-                    actualizado: serverTimestamp()
-                }, { merge: true });
-
-                alert("Endereço salvo com sucesso! Após a compra, este endereço ficará fixo para envio. Caso precise alterá-lo posteriormente, entre em contato com o suporte.");
-                cerrarSubPantalla();
-            } catch (error) {
-                alert("Erro ao salvar endereço.");
-            }
-        };
-
-        window.cargarUbicacionYMostrarSub = async function() {
-            if(window.usuarioActualEmail === "invitado@nex.com") {
-                alert("Por favor, faça login primeiro.");
-                return;
-            }
-
-            const userDocId = window.usuarioActualEmail.toLowerCase().replace(/[^a-z0-9]/g, '_');
-            const dirRef = doc(db, "direcciones_usuarios", userDocId);
-            const dirSnap = await getDoc(dirRef);
-
-            let datos = { pais: '', estado: '', ciudad: '', cep: '', calle: '', complemento: '', bloqueado: false };
-            if(dirSnap.exists()) {
-                datos = dirSnap.data();
-            }
-
-            abrirSubPantalla('Endereço de Entrega', 'ubicacion', datos);
-        };
-
-        window.procesarCompra = async function() {
-            if(window.usuarioActualEmail === "invitado@nex.com") {
-                alert("Por favor, faça login para finalizar a compra.");
-                return;
-            }
-
-            const userDocId = window.usuarioActualEmail.toLowerCase().replace(/[^a-z0-9]/g, '_');
-            const dirRef = doc(db, "direcciones_usuarios", userDocId);
-            const dirSnap = await getDoc(dirRef);
-
-            if(!dirSnap.exists()) {
-                alert("Por favor, adicione sua Localização (Endereço) antes de comprar.");
-                window.cargarUbicacionYMostrarSub();
-                return;
-            }
-
-            const direccionGuardada = dirSnap.data();
-
-            await setDoc(dirRef, { bloqueado: true }, { merge: true });
-
-            const items = [];
-            let totalCompra = 0;
-            document.querySelectorAll('.cart-item').forEach(producto => {
-                const checkbox = producto.querySelector('.cart-checkbox');
-                if (checkbox && checkbox.checked) {
-                    const precioVal = parseFloat(producto.querySelector('.cart-item-price').getAttribute('data-price'));
-                    totalCompra += precioVal;
-                    items.push({
-                        id_producto_proveedor: producto.getAttribute('data-id'),
-                        nombre: producto.querySelector('.cart-title').innerText,
-                        precio: precioVal,
-                        cantidad: 1, 
-                        color_variacion: "Padrão"
-                    });
-                }
-            });
-
-            if(items.length === 0) {
-                alert("Selecione pelo menos um produto no carrinho.");
-                return;
-            }
-
-            const payloadPedido = {
-                cliente_email: window.usuarioActualEmail,
-                direccion_envio: direccionGuardada,
-                productos: items,
-                total_pagado: totalCompra,
-                estado_paquete: "Processando no Fornecedor (AliExpress)",
-                codigo_seguimiento: "AE" + Math.floor(100000000 + Math.random() * 900000000) + "BR",
-                fecha_orden: serverTimestamp()
-            };
-
-            try {
-                alert("Processando pagamento via terminal de recebimento e enviando pedido ao fornecedor...");
-                
-                await addDoc(collection(db, "pedidos_enviados_proveedor"), payloadPedido);
-
-                alert("Compra concluída com sucesso! O pacote foi enviado ao fornecedor e o endereço está bloqueado para segurança logística. Se precisar alterar algo, contate o suporte.");
-                document.getElementById('user-cart-container').innerHTML = 'Seu carrinho está vazio.';
-                document.getElementById('total-price').innerText = 'R$ 0.00';
-            } catch (error) {
-                alert("Erro na conexão com a API do fornecedor.");
-            }
-        };
-
-        window.agregarAlCarrito = function(id, nombre, precio, imagenHtml) {
-            const container = document.getElementById('user-cart-container');
-            if(container.innerText === "Seu carrinho está vazio.") container.innerHTML = '';
-
-            container.innerHTML += `
-                <div class="cart-item" data-id="${id}">
-                    <input type="checkbox" class="cart-checkbox" checked onchange="calcularTotal()">
-                    <div class="cart-img">${imagenHtml}</div>
-                    <div class="cart-details">
-                        <div class="cart-title">${nombre}</div>
-                        <div class="cart-item-price" data-price="${precio}">R$ ${precio}</div>
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <span>Balance Tokens NEX</span>
+                        <h4 id="userTokens">0.00 NEX</h4>
+                        <input type="hidden" id="currencySelect" value="USD">
                     </div>
-                    <button class="btn-delete" onclick="this.parentElement.remove(); calcularTotal();"><i class="fa-solid fa-trash"></i></button>
+
+                    <div class="stat-box">
+                        <span>Variación (24h)</span>
+                        <h4 id="userProfit" style="color: var(--green-up);">0.00%</h4>
+                    </div>
                 </div>
-            `;
-            calcularTotal();
-            alert("Produto adicionado ao carrinho!");
-        };
 
-        window.usuarioActualEmail = "invitado@nex.com";
+                <div id="realTradeSection" style="margin-top: 15px; display: block;">
+                    <button class="btn-action web3-btn" style="background: #1fc7d4; color: white; border: none; font-weight: bold;" onclick="abrirModalCanjear()">
+                        🔄 Canjear / Comprar NEX
+                    </button>
+                    <button class="btn-action btn-send" onclick="abrirModalEnviarTokens()">
+                        📤 Enviar Tokens a Otra Billetera
+                    </button>
+                    <button class="btn-action web3-btn" style="background: #f3ba2f; color: #000; border: none; font-weight: bold;" onclick="abrirWalletChoiceModal()">
+                        🦊 Conectar con MetaMask o Trust Wallet
+                    </button>
+                </div>
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                window.usuarioActualEmail = user.email || "usuario@nex.com";
-                document.getElementById('user-display-name').innerText = user.displayName || "Usuário NeX";
-                document.getElementById('user-display-email').innerText = window.usuarioActualEmail;
+                <div style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="color: var(--text-main); font-size: 14px;">📜 Historial On-Chain Real</h4>
+                        <button class="btn-gen" style="padding: 4px 8px;" onclick="toggleHistorial()">Mostrar / Ocultar</button>
+                    </div>
+                    <div id="historialLista" style="display: none; margin-top: 10px; font-size: 13px; max-height: 250px; overflow-y: auto;">
+                        <p style="color: var(--text-muted); text-align: center;">Conecta tu billetera para cargar transacciones reales.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Mercado NEX Token ($NEX)</h2>
+                <h1 id="tokenPrice" style="font-size: 2.2rem; margin-top: 10px;">Cargando...</h1>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 5px;">
+                    Red: <strong id="tokenNet" style="color: #38bdf8;">BNB Smart Chain (Mainnet)</strong>
+                </p>
                 
-                const loginScreen = document.getElementById('login-screen');
-                if (loginScreen) {
-                    loginScreen.style.opacity = '0';
-                    setTimeout(() => {
-                        loginScreen.style.display = 'none';
-                        document.body.classList.remove('bloqueado');
-                    }, 500);
-                }
-            }
-        });
-        
-        window.iniciarSesionApp = async function(metodo) {
-            let correo = "";
-            let nombreUsuario = "Usuário NeX";
+                <div class="chart-container">
+                    <iframe 
+                        id="geckoterminal-embed" 
+                        title="GeckoTerminal NEX Chart" 
+                        src="https://www.geckoterminal.com/bsc/tokens/0x44B1c3Cd218D73368AD865C1cf8bd6E1Dd15c59A?embed=1&info=0&swaps=0&grayscale=0&light_chart=0" 
+                        allow="clipboard-write" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+        </div>
 
+        <div id="bannerMiddleContainer" class="dynamic-banner"><img id="bannerMiddleImg" src=""></div>
+        <div id="bannerBottomContainer" class="dynamic-banner"><img id="bannerBottomImg" src=""></div>
+    </div>
+
+    <!-- MODAL CANJEAR CON SALDO Y CALCULADORA -->
+    <div id="modalCanjear" class="modal">
+        <div class="modal-content">
+            <h3 style="color: var(--primary-cyan);">🔄 Canjear por NEX</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Compra NEX directamente usando el saldo en tu billetera conectada.</p>
+            
+            <div class="field">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                    <label>Quiero pagar usando:</label>
+                    <span id="swapUserBalance" style="font-size: 11px; color: var(--primary-gold); font-weight: bold; margin-bottom: 4px;">Saldo: 0.00</span>
+                </div>
+                <!-- Al cambiar de moneda, actualiza el saldo y recalcula los NEX -->
+                <select id="swapCurrency" onchange="window.actualizarSaldosSwap(); window.calcularRecepcionNEX();">
+                    <option value="BNB">BNB (Moneda Principal)</option>
+                    <option value="USDT">USDT (Tether BEP-20)</option>
+                </select>
+            </div>
+            
+            <div class="field">
+                <label>Cantidad a gastar:</label>
+                <!-- Al escribir, calcula los NEX en vivo -->
+                <input type="number" id="swapAmountIn" placeholder="Ej. 0.05" oninput="window.calcularRecepcionNEX();">
+                <div id="swapExpectedOut" style="font-size: 12px; color: var(--green-up); margin-top: 6px; font-weight: bold;">Recibirás aprox: 0.00 NEX</div>
+            </div>
+
+            <button class="btn-auth" style="width:100%; margin-top:10px; background: #1fc7d4; color: white; font-size: 14px;" onclick="ejecutarSwapWeb3()">Confirmar y Canjear</button>
+            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('modalCanjear')">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="sendTokensModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color: var(--primary-gold);">📤 Enviar NEX Real (Red BNB)</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Transfiere tokens directamente en la cadena de bloques BSC.</p>
+            <div class="field">
+                <label>Dirección de Destino (0x...)</label>
+                <input type="text" id="sendDestinationAddress" placeholder="0xDireccionDeBilletera">
+            </div>
+            <div class="field">
+                <label>Cantidad de Tokens NEX a Enviar</label>
+                <input type="number" id="sendTokenAmount" placeholder="Ej. 50">
+            </div>
+            <button class="btn-auth" style="width:100%; margin-top:10px; background: #f59e0b; color: #000;" onclick="ejecutarEnvioTokensWeb3()">Confirmar y Enviar</button>
+            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('sendTokensModal')">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="walletChoiceModal" class="modal">
+        <div class="modal-content" style="text-align: center;">
+            <h3>Conecta tu Billetera</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Selecciona tu billetera para vincular y sincronizar tus tokens NEX:</p>
+            
+            <button class="wallet-option-btn btn-metamask-choice" onclick="vincularTokenWeb3('metamask')">
+                🦊 MetaMask
+            </button>
+            <button class="wallet-option-btn btn-trust-choice" onclick="vincularTokenWeb3('trustwallet')">
+                🛡️ Trust Wallet
+            </button>
+            
+            <button class="btn-gen" style="width:100%; margin-top:15px; border:none;" onclick="cerrarModal('walletChoiceModal')">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="adminAuthModal" class="modal">
+        <div class="modal-content">
+            <h3>Acceso Administrativo</h3>
+            <div class="field"><label>Usuario</label><input type="text" id="adminUserInput" placeholder="Escribe tu usuario"></div>
+            <div class="field"><label>Contraseña</label><input type="password" id="adminPassInput" placeholder="Escribe tu contraseña"></div>
+            <button class="btn-auth" style="width:100%; margin-top:10px;" onclick="validarCredencialesAdmin()">Ingresar a Panel</button>
+            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('adminAuthModal')">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Acceso de Usuario</h3>
+            <button class="btn-provider btn-google" id="btnGoogleModal" onclick="ejecutarLoginGoogle()">Continuar con Google</button>
+            <button class="btn-provider btn-apple" id="btnAppleModal" onclick="ejecutarLoginApple()">Continuar con Apple</button>
+            <div style="margin: 15px 0; color: var(--text-muted); font-size: 12px; text-align: center;">- O CORREO -</div>
+            <div class="field"><label>Correo Electrónico</label><input type="email" id="authEmail" placeholder="tu@correo.com"></div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn-auth" style="flex:1;" onclick="enviarCodigoEmail()">Enviar Enlace de Acceso</button>
+            </div>
+            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarAuthModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <h3>Soporte en Vivo</h3>
+            <div id="userChatBox" class="chat-box"></div>
+            <div class="chat-input-container">
+                <input type="text" id="userChatMessage" placeholder="Escribe aquí...">
+                <button class="btn-auth" onclick="enviarMensajeSoporte()">Enviar</button>
+            </div>
+            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarHelpModal()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- PANEL ADMINISTRATIVO -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3>Centro de Comando NEX</h3>
+                <span style="font-size: 12px; color: var(--primary-cyan);">Visitas Totales: <b id="adminVisitasCount">0</b></span>
+            </div>
+            
+            <div class="admin-tabs">
+                <button class="tab-btn active" onclick="cambiarPestañaAdmin('tabMercado', this)">💰 Mercado</button>
+                <button class="tab-btn" onclick="cambiarPestañaAdmin('tabDiseno', this)">🎨 Diseño</button>
+                <button class="tab-btn" onclick="cambiarPestañaAdmin('tabUsuarios', this)">👥 Usuarios & Seguridad</button>
+                <button class="tab-btn" onclick="cambiarPestañaAdmin('tabChat', this)">💬 Chat</button>
+            </div>
+
+            <div id="tabMercado" class="tab-content active">
+                <h4 style="color: var(--primary-gold); margin-bottom: 10px;">Estado del Proyecto</h4>
+                <div class="field">
+                    <label>Modo Web3 vs Simulación</label>
+                    <select id="adminRealMode">
+                        <option value="false">Modo Simulación (Pruebas Internas)</option>
+                        <option value="true">MODO REAL (Conexión PancakeSwap / BNB)</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Habilitar Comercio (Activar Compra/Venta)</label>
+                    <select id="adminTradingMode">
+                        <option value="yes">Activado (Los usuarios pueden operar)</option>
+                        <option value="no">Desactivado (Botones ocultos)</option>
+                    </select>
+                </div>
+                <hr style="border-color: var(--border-color); margin: 15px 0;">
+                <p style="font-size: 12px; color: var(--text-muted);">El precio de la moneda se calcula y se actualiza de forma automática y autónoma directamente desde la red BNB Chain (PancakeSwap).</p>
+            </div>
+
+            <div id="tabDiseno" class="tab-content">
+                <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Colores de la Web</h4>
+                <div class="field">
+                    <label>Color Principal de Botones / Acentos</label>
+                    <input type="color" id="adminColorMain" value="#38bdf8" style="height: 40px;">
+                </div>
+                <hr style="border-color: var(--border-color); margin: 15px 0;">
+                <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Banner Publicitario</h4>
+                <div class="field"><label>URL de Foto</label><input type="text" id="adminImageUrl" placeholder="https://..."></div>
+                <div class="field"><label>Texto Encima de Foto</label><input type="text" id="adminBannerText"></div>
+                <div class="field"><label>Color de Letras</label><input type="color" id="adminBannerColor" value="#ffffff" style="height: 40px;"></div>
+                <div class="field"><label>Mover Texto (Marquesina)</label>
+                    <select id="adminBannerMove"><option value="no">Fijo</option><option value="yes">Animado</option></select>
+                </div>
+                <div class="field"><label>Posición</label>
+                    <select id="adminImagePosition">
+                        <option value="none">Oculto</option>
+                        <option value="top">Arriba</option>
+                        <option value="middle">Medio</option>
+                        <option value="bottom">Abajo</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="tabUsuarios" class="tab-content">
+                <div style="margin-bottom: 15px;">
+                    <h4 style="color: var(--primary-cyan); margin-bottom: 8px;">👀 Registro de Entradas (Gente que va entrando)</h4>
+                    <div id="listaVisitasAdmin" style="max-height: 120px; overflow-y: auto; background: var(--bg-dark); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);">
+                        <p style="color:var(--text-muted); font-size:11px;">Cargando lista de visitas...</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="color: var(--primary-gold); margin-bottom: 8px;">👥 Personas Registradas (Usuarios Nuevos)</h4>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">Lista de personas unidas con correo, Google o Apple. Usa el botón al lado para expulsar al que haga algo mal.</p>
+                    <div id="listaUsuariosAdmin" style="max-height: 200px; overflow-y: auto;">
+                    </div>
+                </div>
+            </div>
+
+            <div id="tabChat" class="tab-content">
+                <div id="adminChatListContainer">
+                    <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Mensajes de Usuarios</h4>
+                    <div id="adminChatUsersList" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                        <p style="color:var(--text-muted); font-size: 12px;">Cargando chats...</p>
+                    </div>
+                </div>
+                
+                <div id="adminChatActiveContainer" style="display: none;">
+                    <button class="btn-gen" style="margin-bottom: 10px; background: var(--border-color); color: white; border: none; padding: 6px 12px;" onclick="volverListaChatAdmin()">⬅ Volver a la lista</button>
+                    <h4 id="adminChatActiveTitle" style="color: var(--primary-gold); margin-bottom: 10px;">Chat con...</h4>
+                    <div id="adminChatBox" class="chat-box"></div>
+                    <div class="chat-input-container">
+                        <input type="text" id="adminReplyMessage" placeholder="Escribir respuesta...">
+                        <button class="btn-auth" onclick="enviarRespuestaAdmin()">Responder</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn-auth" style="flex:1; background: var(--green-up); color: white;" onclick="guardarAjustesAdmin()">💾 Guardar Ajustes</button>
+                <button class="btn-gen" style="flex:1; background: var(--border-color); color: white;" onclick="cerrarAdminModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="bannedScreen">
+        <h1>⛔ CUENTA SUSPENDIDA ⛔</h1>
+        <p>Has violado los términos de seguridad de NEX Token.</p>
+        <p>El acceso a este ecosistema ha sido revocado.</p>
+    </div>
+
+    <!-- FIREBASE & LÓGICA INTEGRADA REAL -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+      import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, signOut, onAuthStateChanged, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+      import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, addDoc, query, orderBy, serverTimestamp, setLogLevel, limit } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+      setLogLevel('silent');
+
+      const firebaseConfig = { apiKey: "AIzaSyBJoAAzTcWn_K7gXydwwbesG_gERwBq8Us", authDomain: "nexk-131a4.firebaseapp.com", projectId: "nexk-131a4" };
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+      
+      const googleProvider = new GoogleAuthProvider();
+      const appleProvider = new OAuthProvider('apple.com');
+
+      let usuarioActual = null;
+      let tokensActualesUsuario = 0;
+      let PRECIO_TOKEN_USD = 0.01;
+      let PRECIO_BNB_USD = 600; 
+      let CAMBIO_24H_PORCENTAJE = 0;
+      let walletDireccionConectada = null;
+      let chatListenerUsuario = null;
+      let chatListenerAdmin = null;
+      let chatAdminUidActual = null;
+
+      const TOKEN_CONTRACT_ADDRESS = "0x44B1c3Cd218D73368AD865C1cf8bd6E1Dd15c59A";
+      const PANCAKE_ROUTER_ADDRESS = "0x10ED43335D0f0511c7826814731894B72813462D";
+      const PANCAKE_FACTORY_ADDRESS = "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73";
+      const WBNB_ADDRESS = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
+      const USDT_BSC_ADDRESS = "0x55d398326f99059fF775485246999027B3197955";
+
+      const BSC_RPC_NODES = [
+          "https://bsc-dataseed.binance.org/",
+          "https://bsc-dataseed1.defibit.io/",
+          "https://bsc-dataseed1.ninicoin.io/",
+          "https://rpc.ankr.com/bsc"
+      ];
+
+      const ERC20_ABI = [
+          "function balanceOf(address owner) view returns (uint256)",
+          "function transfer(address to, uint256 amount) returns (bool)",
+          "function approve(address spender, uint256 amount) returns (bool)",
+          "function allowance(address owner, address spender) view returns (uint256)",
+          "function decimals() view returns (uint8)"
+      ];
+
+      const ROUTER_ABI = [
+          "function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) payable returns (uint[] memory amounts)",
+          "function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) returns (uint[] memory amounts)",
+          "function swapExactTokensForTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) returns (uint[] memory amounts)"
+      ];
+
+      const FACTORY_ABI = [
+          "function getPair(address tokenA, address tokenB) external view returns (address pair)"
+      ];
+
+      const PAIR_ABI = [
+          "function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)",
+          "function token0() external view returns (address)"
+      ];
+
+      async function registrarVisitaPagina() {
+          try {
+              if (!sessionStorage.getItem("nex_visita_contada")) {
+                  const statRef = doc(db, "estadisticas", "general");
+                  await setDoc(statRef, { visitas: increment(1) }, { merge: true });
+                  
+                  await addDoc(collection(db, "visitas_log"), {
+                      fecha: serverTimestamp(),
+                      dispositivo: navigator.userAgent.includes("Mobile") ? "Móvil" : "PC",
+                      plataforma: navigator.platform || "Desconocida"
+                  });
+
+                  sessionStorage.setItem("nex_visita_contada", "true");
+              }
+          } catch(e){}
+      }
+      registrarVisitaPagina();
+
+      onSnapshot(doc(db, "estadisticas", "general"), (snap) => {
+          if (snap.exists() && snap.data().visitas !== undefined) {
+              const countElem = document.getElementById('adminVisitasCount');
+              if (countElem) countElem.innerText = snap.data().visitas;
+          }
+      });
+
+      onSnapshot(query(collection(db, "visitas_log"), orderBy("fecha", "desc"), limit(50)), (snap) => {
+          const listaDiv = document.getElementById('listaVisitasAdmin');
+          if(!listaDiv) return;
+          listaDiv.innerHTML = '';
+          snap.forEach(documento => {
+              const data = documento.data();
+              const fecha = data.fecha ? data.fecha.toDate().toLocaleString() : 'Justo ahora...';
+              const d = document.createElement('div');
+              d.style.cssText = "border-bottom: 1px solid var(--border-color); padding: 5px 0; font-size: 11px; color: #fff; display: flex; justify-content: space-between;";
+              d.innerHTML = `<span>🟢 Nueva entrada</span> <span style="color:var(--text-muted);">${fecha} - ${data.dispositivo} (${data.plataforma})</span>`;
+              listaDiv.appendChild(d);
+          });
+      });
+
+      async function registrarOActualizarUsuarioDB(u, proveedor = 'email') {
+          if (!u) return;
+          try {
+              const uRef = doc(db, "usuarios", u.uid);
+              const snap = await getDoc(uRef);
+              if (!snap.exists()) {
+                  await setDoc(uRef, {
+                      uid: u.uid,
+                      email: u.email || "Sin Correo",
+                      nombre: u.displayName || u.email || "Usuario NEX",
+                      proveedor: proveedor,
+                      banned: false,
+                      fechaRegistro: serverTimestamp()
+                  });
+              }
+          } catch(e) {}
+      }
+
+      const actionCodeSettings = {
+          url: window.location.href.split('?')[0],
+          handleCodeInApp: true,
+      };
+
+      window.enviarCodigoEmail = async function() {
+          const email = document.getElementById('authEmail').value.trim();
+          if(!email) return alert("Ingresa tu correo electrónico.");
+          try {
+              await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+              window.localStorage.setItem('emailForSignIn', email);
+              window.cerrarAuthModal();
+              alert("Te hemos enviado un enlace de confirmación a tu correo. Abre tu correo e ingresa mediante el enlace.");
+          } catch(e) { 
+              alert("Error al enviar el enlace: " + e.message); 
+          }
+      };
+
+      async function verificarEnlaceCorreoAcceso() {
+          if (isSignInWithEmailLink(auth, window.location.href)) {
+              let email = window.localStorage.getItem('emailForSignIn');
+              if (!email) {
+                  email = window.prompt('Por favor confirma tu correo electrónico:');
+              }
+              if (email) {
+                  try {
+                      const res = await signInWithEmailLink(auth, email, window.location.href);
+                      window.localStorage.removeItem('emailForSignIn');
+                      await registrarOActualizarUsuarioDB(res.user, 'correo-enlace');
+                      alert("¡Correo verificado con éxito!");
+                  } catch(e) {
+                      alert("Error al validar el enlace de confirmación: " + e.message);
+                  }
+              }
+          }
+      }
+      verificarEnlaceCorreoAcceso();
+
+      window.ejecutarLoginGoogle = async function() {
+          try {
+              const res = await signInWithPopup(auth, googleProvider);
+              await registrarOActualizarUsuarioDB(res.user, 'google');
+              window.cerrarAuthModal();
+          } catch(e) { alert("Error con Google: " + e.message); }
+      };
+
+      window.ejecutarLoginApple = async function() {
+          try {
+              const res = await signInWithPopup(auth, appleProvider);
+              await registrarOActualizarUsuarioDB(res.user, 'apple');
+              window.cerrarAuthModal();
+          } catch(e) { alert("Error con Apple: " + e.message); }
+      };
+
+      window.ejecutarCerrarSesion = async function() {
+          try {
+              localStorage.removeItem("nex_sesion_activa");
+              await signOut(auth);
+              window.location.reload();
+          } catch(e) {
+              alert("Error al cerrar sesión: " + e.message);
+          }
+      };
+
+      onSnapshot(collection(db, "usuarios"), (snap) => {
+          const listaDiv = document.getElementById('listaUsuariosAdmin');
+          const chatListContainer = document.getElementById('adminChatUsersList');
+          if(listaDiv) listaDiv.innerHTML = '';
+          
+          let usuariosChat = [];
+
+          snap.forEach(documento => {
+              const data = documento.data();
+              
+              if (listaDiv) {
+                  const d = document.createElement('div');
+                  d.className = 'admin-user-card';
+                  d.innerHTML = `
+                      <div>
+                          <strong style="font-size:12px; color:var(--primary-cyan);">${data.nombre || 'Usuario'}</strong>
+                          <div style="font-size:11px; color:var(--text-muted);">${data.email || 'Sin Correo'} | ${data.proveedor || 'Red'}</div>
+                          <div style="font-size:10px; color:${data.banned ? 'var(--red-down)' : 'var(--green-up)'};">${data.banned ? '⛔ SUSPENDIDO' : '✅ ACTIVO'}</div>
+                      </div>
+                      <div>
+                          <button class="btn-gen" style="background:var(--red-down); color:white; border:none; padding:5px 8px; font-weight:bold;" onclick="expulsarUsuarioAdmin('${data.uid}', ${!data.banned})">
+                              ${data.banned ? 'Reactivar' : '🔴 Expulsar'}
+                          </button>
+                      </div>
+                  `;
+                  listaDiv.appendChild(d);
+              }
+
+              if (data.ultimoMensajeAt) {
+                  usuariosChat.push(data);
+              }
+          });
+
+          usuariosChat.sort((a, b) => b.ultimoMensajeAt?.toMillis() - a.ultimoMensajeAt?.toMillis());
+
+          if(chatListContainer) {
+              chatListContainer.innerHTML = '';
+              if(usuariosChat.length === 0) {
+                  chatListContainer.innerHTML = '<p style="color:var(--text-muted); font-size:12px;">No hay mensajes de usuarios aún.</p>';
+              }
+              usuariosChat.forEach(data => {
+                  const div = document.createElement('div');
+                  div.style.cssText = "background: var(--bg-dark); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;";
+                  div.onmouseover = () => div.style.background = 'rgba(56, 189, 248, 0.1)';
+                  div.onmouseout = () => div.style.background = 'var(--bg-dark)';
+                  div.onclick = () => window.abrirChatUsuarioAdmin(data.uid, data.nombre || data.email);
+                  
+                  const dot = data.unreadAdmin ? '<span style="color: #10b981; font-size: 16px;" title="Nuevo mensaje">🟢</span>' : '';
+                  div.innerHTML = `
+                      <div style="display: flex; flex-direction: column;">
+                          <strong style="color: var(--text-main); font-size: 13px;">${data.nombre || data.email}</strong>
+                          <span style="font-size: 11px; color: var(--text-muted);">${data.email || ''}</span>
+                      </div>
+                      <div>${dot}</div>
+                  `;
+                  chatListContainer.appendChild(div);
+              });
+          }
+      });
+
+      window.expulsarUsuarioAdmin = async function(uid, banStatus) {
+          try {
+              await updateDoc(doc(db, "usuarios", uid), { banned: banStatus });
+              alert(banStatus ? "Usuario expulsado y bloqueado." : "Acceso reactivado.");
+          } catch(e) { alert("Error al cambiar estado del usuario: " + e.message); }
+      };
+
+      function escucharChatUsuario(uid) {
+          if (chatListenerUsuario) chatListenerUsuario();
+          const q = query(collection(db, "chats", uid, "mensajes"), orderBy("timestamp", "asc"));
+          chatListenerUsuario = onSnapshot(q, (snap) => {
+              const box = document.getElementById('userChatBox');
+              if(!box) return;
+              box.innerHTML = '';
+              snap.forEach(m => {
+                  const data = m.data();
+                  const div = document.createElement('div');
+                  div.className = `chat-msg ${data.sender === 'admin' ? 'msg-admin' : 'msg-user'}`;
+                  div.innerText = data.texto;
+                  box.appendChild(div);
+              });
+              box.scrollTop = box.scrollHeight;
+          });
+      }
+
+      window.enviarMensajeSoporte = async function() {
+          const input = document.getElementById('userChatMessage');
+          const msg = input.value.trim();
+          if(!msg || !usuarioActual) return;
+          try {
+              await addDoc(collection(db, "chats", usuarioActual.uid, "mensajes"), {
+                  texto: msg,
+                  sender: 'user',
+                  timestamp: serverTimestamp()
+              });
+              await setDoc(doc(db, "usuarios", usuarioActual.uid), {
+                  ultimoMensajeAt: serverTimestamp(),
+                  unreadAdmin: true
+              }, { merge: true });
+              input.value = '';
+          } catch(e) { alert("Error al enviar mensaje: " + e.message); }
+      };
+
+      window.abrirChatUsuarioAdmin = async function(uid, nombreUsuario) {
+          chatAdminUidActual = uid;
+          document.getElementById('adminChatListContainer').style.display = 'none';
+          document.getElementById('adminChatActiveContainer').style.display = 'block';
+          document.getElementById('adminChatActiveTitle').innerText = "Chat con " + nombreUsuario;
+          
+          try {
+              await setDoc(doc(db, "usuarios", uid), { unreadAdmin: false }, { merge: true });
+          } catch(e) {}
+
+          if (chatListenerAdmin) chatListenerAdmin();
+          const q = query(collection(db, "chats", uid, "mensajes"), orderBy("timestamp", "asc"));
+          chatListenerAdmin = onSnapshot(q, (snap) => {
+              const box = document.getElementById('adminChatBox');
+              if(!box) return;
+              box.innerHTML = '';
+              snap.forEach(m => {
+                  const data = m.data();
+                  const div = document.createElement('div');
+                  div.className = `chat-msg ${data.sender === 'admin' ? 'msg-admin' : 'msg-user'}`;
+                  div.innerText = data.texto;
+                  box.appendChild(div);
+              });
+              box.scrollTop = box.scrollHeight;
+          });
+      };
+
+      window.volverListaChatAdmin = function() {
+          chatAdminUidActual = null;
+          if (chatListenerAdmin) {
+              chatListenerAdmin();
+              chatListenerAdmin = null;
+          }
+          document.getElementById('adminChatActiveContainer').style.display = 'none';
+          document.getElementById('adminChatListContainer').style.display = 'block';
+      };
+
+      window.enviarRespuestaAdmin = async function() {
+          const uid = chatAdminUidActual;
+          const input = document.getElementById('adminReplyMessage');
+          const msg = input.value.trim();
+          if(!uid || !msg) return alert("Asegúrate de haber seleccionado un usuario y escrito un mensaje.");
+          try {
+              await addDoc(collection(db, "chats", uid, "mensajes"), {
+                  texto: msg,
+                  sender: 'admin',
+                  timestamp: serverTimestamp()
+              });
+              await setDoc(doc(db, "usuarios", uid), {
+                  unreadAdmin: false
+              }, { merge: true });
+              input.value = '';
+          } catch(e) { alert("Error al enviar respuesta: " + e.message); }
+      };
+
+      window.guardarAjustesAdmin = async function() {
+          try {
+              const col = document.getElementById('adminColorMain').value;
+              const mode = document.getElementById('adminTradingMode').value;
+              await setDoc(doc(db, "configuracion", "general"), {
+                  colorBotones: col,
+                  tradingHabilitado: mode
+              }, { merge: true });
+              alert("Configuración guardada exitosamente.");
+          } catch(e) { alert("Error al guardar: " + e.message); }
+      };
+
+      window.obtenerProveedorBSC = function() {
+        if (typeof window.ethereum !== 'undefined') {
             try {
-                await setPersistence(auth, browserLocalPersistence);
+                return new ethers.providers.Web3Provider(window.ethereum);
+            } catch(e) {}
+        }
+        for (let url of BSC_RPC_NODES) {
+          try {
+            return new ethers.providers.JsonRpcProvider(url);
+          } catch(e) {}
+        }
+        return new ethers.providers.JsonRpcProvider(BSC_RPC_NODES[0]);
+      };
 
-                if (metodo === 'Google' || metodo === 'Apple') {
-                    const provider = metodo === 'Google' ? googleProvider : appleProvider;
-                    const result = await signInWithPopup(auth, provider);
-                    correo = result.user.email;
-                    if (result.user.displayName) nombreUsuario = result.user.displayName;
-                } else {
-                    correo = prompt("Confirme seu e-mail para continuar com " + metodo + ":");
-                    if(!correo) return;
-                }
+      window.formatearMoneda = function(valor, maxDec = 8) {
+        if (isNaN(valor) || valor === 0) return "0.00";
+        if (valor < 0.000001) return valor.toFixed(maxDec);
+        if (valor < 0.01) return valor.toFixed(6);
+        if (valor < 1) return valor.toFixed(4);
+        return valor.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+      };
 
-                window.usuarioActualEmail = correo;
-                const userDocId = correo.toLowerCase().replace(/[^a-z0-9]/g, '_');
-                const userRef = doc(db, "usuarios", userDocId);
-                const userSnap = await getDoc(userRef);
+      window.actualizarPrecioTokenEnVivo = async function() {
+        try {
+          const resBnb = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT");
+          const dataBnb = await resBnb.json();
+          if (dataBnb && dataBnb.price) {
+            PRECIO_BNB_USD = parseFloat(dataBnb.price);
+          }
+        } catch(e) {}
 
-                if (!userSnap.exists()) {
-                    await setDoc(userRef, {
-                        email: correo,
-                        nombre: nombreUsuario,
-                        metodo: metodo,
-                        data_registro: serverTimestamp()
-                    });
-                }
-
-                const esCelular = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                await addDoc(collection(db, "visitas"), {
-                    dispositivo: esCelular ? "celular" : "pc",
-                    timestamp: serverTimestamp()
-                });
-
-                document.getElementById('user-display-name').innerText = nombreUsuario;
-                document.getElementById('user-display-email').innerText = correo;
-                
-                document.getElementById('login-screen').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('login-screen').style.display = 'none';
-                    document.body.classList.remove('bloqueado');
-                }, 500);
-
-            } catch(error) {
-                if (error.code === 'auth/multi-factor-auth-required') {
-                    alert("O sistema requer verificação em duas etapas (2FA).");
-                } else if (error.code !== 'auth/popup-closed-by-user') {
-                    alert("Erro ao iniciar sessão: " + error.message);
-                }
-            }
-        };
-
-        // ADMINISTRADOR
-        window.cargarDatosAdminFirebase = function() {
-            onSnapshot(collection(db, "visitas"), (snapshot) => {
-                let contadorCelular = 0, contadorPC = 0;
-                snapshot.forEach(doc => { 
-                    if(doc.data().dispositivo === 'celular') contadorCelular++; 
-                    else contadorPC++; 
-                });
-                const elCel = document.getElementById('admin-visitas-celular');
-                const elPc = document.getElementById('admin-visitas-pc');
-                if(elCel) elCel.innerText = contadorCelular;
-                if(elPc) elPc.innerText = contadorPC;
-            });
-
-            onSnapshot(collection(db, "usuarios"), (snapshot) => {
-                const lista = document.getElementById('admin-lista-usuarios');
-                if(!lista) return;
-                
-                lista.innerHTML = '';
-                if(snapshot.empty) { 
-                    lista.innerHTML = '<div style="padding:20px; text-align:center; color:var(--color-gris);">Nenhum usuário registrado ainda.</div>'; 
-                    return; 
-                }
-
-                snapshot.forEach(docUsuario => {
-                    const data = docUsuario.data();
-                    const iconHTML = data.metodo === 'Google' ? '<i class="fa-brands fa-google" style="color:#DB4437;"></i>' : 
-                                     data.metodo === 'Apple' ? '<i class="fa-brands fa-apple"></i>' : 
-                                     '<i class="fa-solid fa-envelope" style="color:var(--color-azul-claro);"></i>';
-                    
-                    lista.innerHTML += `
-                        <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #f0f0f0;">
-                            <div style="display:flex; align-items:center; gap:12px;">
-                                <div style="width:40px; height:40px; background:#f3f4f6; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:1.2rem;">
-                                    ${iconHTML}
-                                </div>
-                                <div>
-                                    <div style="font-weight:bold; font-size:0.95rem; color:var(--color-texto);">${data.email}</div>
-                                    <div style="font-size:0.75rem; color:var(--color-gris);">Entrou com ${data.metodo}</div>
-                                </div>
-                            </div>
-                            <button onclick="expulsarUsuario('${docUsuario.id}')" style="background:#fef2f2; color:var(--color-rojo); border:1px solid #fecaca; padding:6px 12px; border-radius:6px; font-weight:bold; font-size:0.8rem; cursor:pointer;">Expulsar</button>
-                        </div>
-                    `;
-                });
-            });
-
-            onSnapshot(collection(db, "chats_soporte"), (snapshot) => {
-                const listaChats = document.getElementById('admin-lista-chats');
-                if(!listaChats) return;
-
-                listaChats.innerHTML = '';
-                let chatsPendentes = 0;
-
-                snapshot.forEach(docChat => {
-                    const data = docChat.data();
-                    if(data.estado === 'respondido') return;
-
-                    chatsPendentes++;
-                    const clienteEmailId = docChat.id;
-                    listaChats.innerHTML += `
-                        <div onclick="abrirChatAdmin('${clienteEmailId}')" style="display:flex; align-items:center; justify-content:space-between; padding:15px; background:white; border-bottom:1px solid #f0f0f0; cursor:pointer;">
-                            <div style="display:flex; align-items:center; gap:12px;">
-                                <div style="position:relative;">
-                                    <div style="width:45px; height:45px; background:#e0e7ff; color:var(--color-primario); border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:bold; font-size:1.1rem;"><i class="fa-solid fa-user"></i></div>
-                                    <div style="position:absolute; bottom:0; right:0; width:12px; height:12px; background:var(--color-whatsapp); border:2px solid white; border-radius:50%;"></div>
-                                </div>
-                                <div>
-                                    <div style="font-weight:bold; font-size:0.95rem; color:var(--color-texto);">${clienteEmailId.replace(/_/g, '@')}</div>
-                                    <div style="font-size:0.8rem; color:var(--color-gris);">Nova mensagem - Toque para responder</div>
-                                </div>
-                            </div>
-                            <i class="fa-solid fa-chevron-right" style="color:var(--color-gris);"></i>
-                        </div>
-                    `;
-                });
-
-                if(chatsPendentes === 0) {
-                    listaChats.innerHTML = '<div style="padding:20px; text-align:center; color:var(--color-gris);">Nenhuma mensagem nova pendente.</div>';
-                }
-            });
-        };
-
-        window.expulsarUsuario = async function(idDocumento) {
-            if(confirm("Tem certeza que deseja expulsar e apagar este usuário do sistema?")) {
-                try { await deleteDoc(doc(db, "usuarios", idDocumento)); } catch(error) { alert("Erro ao tentar expulsar o usuário."); }
-            }
-        };
-
-        window.abrirChatCliente = function() {
-            const salaId = window.usuarioActualEmail.toLowerCase().replace(/[^a-z0-9]/g, '_');
-            abrirSubPantalla('Suporte NeX (Privado)', 'chat-cliente', salaId);
-        };
-
-        window.abrirChatAdmin = function(clienteEmailId) {
-            abrirSubPantalla('Respondendo Cliente', 'chat-admin-resp', clienteEmailId);
-        };
-
-        let unsubscribeChat = null;
-        window.iniciarChatFirebase = function(salaId, esAdmin) {
-            const chatBox = document.getElementById('chat-box');
-            if(!chatBox) return;
+        try {
+          const provider = new ethers.providers.JsonRpcProvider(BSC_RPC_NODES[0]);
+          const factory = new ethers.Contract(PANCAKE_FACTORY_ADDRESS, FACTORY_ABI, provider);
+          const pairAddress = await factory.getPair(TOKEN_CONTRACT_ADDRESS, WBNB_ADDRESS);
+          
+          if (pairAddress && pairAddress !== ethers.constants.AddressZero) {
+            const pairContract = new ethers.Contract(pairAddress, PAIR_ABI, provider);
+            const reserves = await pairContract.getReserves();
+            const token0 = await pairContract.token0();
             
-            if (unsubscribeChat) unsubscribeChat();
-            
-            const q = query(collection(db, `chats_soporte/${salaId}/mensagens`), orderBy("timestamp", "asc"));
-            unsubscribeChat = onSnapshot(q, (snapshot) => {
-                chatBox.innerHTML = ''; 
-                if(snapshot.empty) {
-                    chatBox.innerHTML = '<div style="text-align:center; color:var(--color-gris); padding:20px;">Envie sua mensagem privada.</div>';
-                    return;
-                }
-                snapshot.forEach((docMsg) => {
-                    const data = docMsg.data();
-                    const div = document.createElement('div');
-                    const esMio = esAdmin ? (data.remetente === 'admin') : (data.remetente === 'cliente');
-                    div.className = esMio ? 'msg sent' : 'msg received';
-                    div.innerText = data.texto;
-                    chatBox.appendChild(div);
-                });
-                chatBox.scrollTop = chatBox.scrollHeight;
-            });
-        };
+            let reserveBNB, reserveToken;
+            if (token0.toLowerCase() === WBNB_ADDRESS.toLowerCase()) {
+              reserveBNB = parseFloat(ethers.utils.formatEther(reserves.reserve0));
+              reserveToken = parseFloat(ethers.utils.formatUnits(reserves.reserve1, 18));
+            } else {
+              reserveBNB = parseFloat(ethers.utils.formatEther(reserves.reserve1));
+              reserveToken = parseFloat(ethers.utils.formatUnits(reserves.reserve0, 18));
+            }
 
-        window.enviarMensajeFirebase = async function(salaId, texto, remetente) {
-            try { 
-                await addDoc(collection(db, `chats_soporte/${salaId}/mensagens`), { 
-                    texto: texto, 
-                    remetente: remetente, 
-                    timestamp: serverTimestamp() 
-                }); 
+            if (reserveToken > 0 && reserveBNB > 0) {
+              const bnbPerToken = reserveBNB / reserveToken;
+              PRECIO_TOKEN_USD = bnbPerToken * PRECIO_BNB_USD;
+            }
+          }
+        } catch (e) {}
+
+        if (document.getElementById('tokenPrice')) {
+          document.getElementById('tokenPrice').innerText = `$${window.formatearMoneda(PRECIO_TOKEN_USD)} USD`;
+        }
+        window.recalcularBalanceUsuario();
+        window.calcularRecepcionNEX(); // Recalcula si el usuario tiene abierta la ventana
+      };
+
+      window.cargarHistorialOnChainReal = async function(address) {
+        const lista = document.getElementById('historialLista');
+        if (!address) return;
+
+        try {
+          lista.innerHTML = '<p style="color:var(--text-muted);text-align:center;">Cargando transacciones...</p>';
+          const url = `https://api.bscscan.com/api?module=account&action=tokentx&contractaddress=${TOKEN_CONTRACT_ADDRESS}&address=${address}&page=1&offset=25&sort=desc&apikey=YHQ8E3F2X85FUDZ5XZS4H1B45476R24XV6`;
+          const res = await fetch(url);
+          const data = await res.json();
+
+          if (data.status === "1" && data.result && data.result.length > 0) {
+            lista.innerHTML = '';
+
+            data.result.forEach(tx => {
+              const esRecibido = tx.to.toLowerCase() === address.toLowerCase();
+              const cantidad = parseFloat(ethers.utils.formatUnits(tx.value, parseInt(tx.tokenDecimal || 18))).toFixed(2);
+              const fecha = new Date(parseInt(tx.timeStamp) * 1000).toLocaleString();
+              const txHash = tx.hash;
+
+              let textoTipo = "RECIBIDO";
+              let tipoClase = "tipo-compra";
+              let signo = "+";
+
+              if (esRecibido) {
+                  textoTipo = "RECIBIDO";
+                  tipoClase = "tipo-compra";
+              } else {
+                  textoTipo = "ENVIADO";
+                  tipoClase = "tipo-envio";
+                  signo = "-";
+              }
+
+              const d = document.createElement('div');
+              d.className = 'historial-item';
+
+              d.innerHTML = `
+                <div>
+                  <span class="historial-tipo ${tipoClase}">${textoTipo}</span>
+                  <div style="font-size:11px;color:var(--text-muted);">${fecha}</div>
+                  <a href="https://bscscan.com/tx/${txHash}" target="_blank" style="font-size:10px; color:var(--primary-cyan); text-decoration:none;">Ver en BscScan ↗️</a>
+                </div>
+                <div style="font-weight:bold; color: ${esRecibido ? 'var(--green-up)' : 'var(--red-down)'};">
+                  ${signo}${cantidad} NEX
+                </div>
+              `;
+              lista.appendChild(d);
+            });
+          } else {
+            lista.innerHTML = '<p style="color:var(--text-muted);text-align:center;">No se encontraron transacciones recientes de NEX en esta billetera.</p>';
+          }
+        } catch (err) {
+          console.error("Error historial:", err);
+          lista.innerHTML = '<p style="color:var(--red-down);text-align:center;">Error al conectar con el explorador BSCScan. Inténtalo más tarde.</p>';
+        }
+      };
+
+      window.recalcularBalanceUsuario = function() { 
+        const profitElem = document.getElementById('userProfit');
+
+        if (profitElem) {
+            const signo = CAMBIO_24H_PORCENTAJE >= 0 ? '+' : '';
+            profitElem.innerText = `${signo}${CAMBIO_24H_PORCENTAJE.toFixed(2)}%`;
+            profitElem.style.color = CAMBIO_24H_PORCENTAJE >= 0 ? 'var(--green-up)' : 'var(--red-down)';
+        }
+      };
+
+      window.asegurarRedBNB = async function() {
+        if (typeof window.ethereum !== 'undefined') {
+          try {
+            await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x38' }] });
+          } catch (switchError) {
+            if (switchError.code === 4902) {
+              try {
+                await window.ethereum.request({
+                  method: 'wallet_addEthereumChain',
+                  params: [{
+                    chainId: '0x38',
+                    chainName: 'BNB Smart Chain Mainnet',
+                    nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
+                    rpcUrls: BSC_RPC_NODES,
+                    blockExplorerUrls: ['https://bscscan.com/']
+                  }]
+                });
+              } catch (addError) {}
+            }
+          }
+        }
+      };
+
+      // --- FUNCIONES NUEVAS: SALDO Y CALCULADORA EN VIVO ---
+      window.actualizarSaldosSwap = async function() {
+          const balanceElem = document.getElementById('swapUserBalance');
+          if (!walletDireccionConectada || typeof window.ethereum === 'undefined') {
+              balanceElem.innerText = 'Saldo: 0.00';
+              return;
+          }
+          
+          const currency = document.getElementById('swapCurrency').value;
+          balanceElem.innerText = 'Cargando saldo...';
+          
+          try {
+              const provider = new ethers.providers.Web3Provider(window.ethereum);
+              if (currency === 'BNB') {
+                  const balanceWei = await provider.getBalance(walletDireccionConectada);
+                  const balanceBnb = parseFloat(ethers.utils.formatEther(balanceWei));
+                  balanceElem.innerText = `Saldo: ${balanceBnb.toFixed(4)} BNB`;
+              } else {
+                  const usdtContract = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, provider);
+                  const balanceWei = await usdtContract.balanceOf(walletDireccionConectada);
+                  const balanceUsdt = parseFloat(ethers.utils.formatUnits(balanceWei, 18));
+                  balanceElem.innerText = `Saldo: ${balanceUsdt.toFixed(2)} USDT`;
+              }
+          } catch (error) {
+              balanceElem.innerText = 'Saldo: Error';
+              console.error("Error al cargar saldo:", error);
+          }
+      };
+
+      window.calcularRecepcionNEX = function() {
+          const amountStr = document.getElementById('swapAmountIn').value.trim();
+          const outElem = document.getElementById('swapExpectedOut');
+          const amount = parseFloat(amountStr);
+          
+          if (isNaN(amount) || amount <= 0 || PRECIO_TOKEN_USD <= 0) {
+              outElem.innerText = `Recibirás aprox: 0.00 NEX`;
+              return;
+          }
+
+          const currency = document.getElementById('swapCurrency').value;
+          let nexAmount = 0;
+          
+          if (currency === 'BNB') {
+              nexAmount = (amount * PRECIO_BNB_USD) / PRECIO_TOKEN_USD;
+          } else {
+              nexAmount = amount / PRECIO_TOKEN_USD;
+          }
+          
+          outElem.innerText = `Recibirás aprox: ${window.formatearMoneda(nexAmount, 2)} NEX`;
+      };
+      // ----------------------------------------------------
+
+      window.ejecutarSwapWeb3 = async function() {
+        const currency = document.getElementById('swapCurrency').value;
+        const amountInStr = document.getElementById('swapAmountIn').value.trim();
+        const amountIn = parseFloat(amountInStr);
+
+        if (!amountInStr || isNaN(amountIn) || amountIn <= 0) {
+            return alert("Ingresa una cantidad válida.");
+        }
+
+        if (typeof window.ethereum === 'undefined') {
+            return alert("Abre esta página desde tu billetera (MetaMask o Trust Wallet).");
+        }
+
+        try {
+            await window.asegurarRedBNB();
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            const signer = provider.getSigner();
+            const walletUser = await signer.getAddress();
+            
+            const routerContract = new ethers.Contract(PANCAKE_ROUTER_ADDRESS, ROUTER_ABI, signer);
+            const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
+            
+            if (currency === 'BNB') {
+                const amountInWei = ethers.utils.parseEther(amountInStr);
+                const path = [WBNB_ADDRESS, TOKEN_CONTRACT_ADDRESS];
                 
-                await setDoc(doc(db, "chats_soporte", salaId), { 
-                    ultimo_contacto: serverTimestamp(),
-                    estado: remetente === 'admin' ? 'respondido' : 'pendente' 
-                }, { merge: true }); 
-            } catch (error) {}
-        };
+                alert("Confirma la transacción en tu billetera para comprar con BNB...");
+                const tx = await routerContract.swapExactETHForTokens(
+                    0, 
+                    path,
+                    walletUser,
+                    deadline,
+                    { value: amountInWei }
+                );
+                alert("Procesando compra en la cadena BNB Smart Chain...");
+                await tx.wait();
+                alert("¡Compra completada exitosamente!");
+                
+            } else if (currency === 'USDT') {
+                const amountInWei = ethers.utils.parseUnits(amountInStr, 18);
+                const path = [USDT_BSC_ADDRESS, TOKEN_CONTRACT_ADDRESS];
+                
+                const usdtContract = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, signer);
+                
+                alert("Paso 1: Confirma la aprobación de USDT en tu billetera...");
+                const txApprove = await usdtContract.approve(PANCAKE_ROUTER_ADDRESS, amountInWei);
+                await txApprove.wait();
+                
+                alert("Paso 2: Ahora, confirma el intercambio (Swap) en tu billetera...");
+                const txSwap = await routerContract.swapExactTokensForTokens(
+                    amountInWei,
+                    0, 
+                    path,
+                    walletUser,
+                    deadline
+                );
+                alert("Procesando compra en la cadena BNB Smart Chain...");
+                await txSwap.wait();
+                alert("¡Compra completada exitosamente!");
+            }
+
+            window.cerrarModal('modalCanjear');
+            document.getElementById('swapAmountIn').value = '';
+            window.consultarSaldoOnChain(walletUser);
+
+        } catch (error) {
+            console.error("Error en canje:", error);
+            alert("No se pudo completar el canje: " + (error.reason || error.message || "La transacción fue cancelada o hubo un error."));
+        }
+      };
+
+      window.ejecutarEnvioTokensWeb3 = async function() {
+        const destino = document.getElementById('sendDestinationAddress').value.trim();
+        const cantidadStr = document.getElementById('sendTokenAmount').value.trim();
+        const cantidad = parseFloat(cantidadStr);
+
+        if (!destino || !ethers.utils.isAddress(destino)) {
+            return alert("Ingresa una dirección de destino válida (0x...).");
+        }
+
+        if (!cantidadStr || isNaN(cantidad) || cantidad <= 0) {
+            return alert("Ingresa una cantidad válida de tokens a enviar.");
+        }
+
+        if (typeof window.ethereum === 'undefined') {
+            return alert("Abre esta página desde tu billetera (MetaMask o Trust Wallet).");
+        }
+
+        try {
+            await window.asegurarRedBNB();
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            const signer = provider.getSigner();
+            const walletUser = await signer.getAddress();
+
+            const contract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, signer);
+            const parsedAmount = ethers.utils.parseUnits(cantidadStr, 18);
+
+            alert("Confirma el envío en tu billetera...");
+            const tx = await contract.transfer(destino, parsedAmount);
+            alert("Procesando envío en la cadena BNB Smart Chain...");
+            await tx.wait();
+
+            alert("¡Envío completado exitosamente!");
+            window.cerrarModal('sendTokensModal');
+            document.getElementById('sendDestinationAddress').value = '';
+            document.getElementById('sendTokenAmount').value = '';
+            window.consultarSaldoOnChain(walletUser);
+
+        } catch (error) {
+            console.error("Error en envío:", error);
+            alert("No se pudo completar el envío: " + (error.reason || error.message || "Error RPC o firma cancelada."));
+        }
+      };
+
+      window.consultarSaldoOnChain = async function(address) {
+        if (!address) return;
+        try {
+          walletDireccionConectada = ethers.utils.getAddress(address);
+          
+          let provider;
+          if (typeof window.ethereum !== 'undefined') {
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+          } else {
+            provider = new ethers.providers.JsonRpcProvider(BSC_RPC_NODES[0]);
+          }
+
+          const contract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, provider);
+          const rawBalance = await contract.balanceOf(walletDireccionConectada);
+          const formattedBalance = parseFloat(ethers.utils.formatUnits(rawBalance, 18));
+          
+          tokensActualesUsuario = formattedBalance;
+          document.getElementById('userTokens').innerText = window.formatearMoneda(formattedBalance) + ' NEX';
+          document.getElementById('walletWarningBanner').style.display = 'none';
+          document.getElementById('userDisplay').innerText = walletDireccionConectada.substring(0, 6) + "..." + walletDireccionConectada.substring(38);
+          
+          window.recalcularBalanceUsuario();
+          window.cargarHistorialOnChainReal(walletDireccionConectada);
+        } catch (error) {
+            console.error("Error al consultar saldo:", error);
+        }
+      };
+
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          usuarioActual = user;
+          
+          onSnapshot(doc(db, "usuarios", user.uid), (uSnap) => {
+              if (uSnap.exists() && uSnap.data().banned === true) {
+                  document.getElementById('bannedScreen').style.display = 'flex';
+                  return;
+              } else {
+                  document.getElementById('bannedScreen').style.display = 'none';
+              }
+          });
+
+          localStorage.setItem("nex_sesion_activa", "true");
+          document.getElementById('welcomeSection').style.display = 'none';
+          document.getElementById('appContent').style.display = 'block';
+          
+          document.getElementById('helpBtn').style.display = 'inline-block';
+          document.getElementById('btnLogoutTop').style.display = 'inline-block'; 
+          document.getElementById('authBtn').style.display = 'none';
+          
+          document.getElementById('userDisplay').innerText = user.email || user.displayName || "Usuario NEX";
+
+          escucharChatUsuario(user.uid);
+
+          if (typeof window.ethereum !== 'undefined') {
+            try {
+              const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+              if (accounts && accounts.length > 0) {
+                window.consultarSaldoOnChain(accounts[0]);
+              }
+            } catch (e) {}
+          }
+        } else {
+          if (typeof window.ethereum !== 'undefined' || localStorage.getItem("nex_sesion_activa") === "true" || window.location.search.includes("autologin=true")) {
+            document.getElementById('welcomeSection').style.display = 'none';
+            document.getElementById('appContent').style.display = 'block';
+            
+            document.getElementById('btnLogoutTop').style.display = 'inline-block';
+            document.getElementById('authBtn').style.display = 'none';
+            
+            if (typeof window.ethereum !== 'undefined') {
+              try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (accounts && accounts.length > 0) {
+                  window.consultarSaldoOnChain(accounts[0]);
+                }
+              } catch(e) {}
+            }
+            return;
+          }
+          usuarioActual = null;
+          document.getElementById('appContent').style.display = 'none';
+          document.getElementById('welcomeSection').style.display = 'block';
+          
+          document.getElementById('helpBtn').style.display = 'none';
+          document.getElementById('btnLogoutTop').style.display = 'none'; 
+          document.getElementById('authBtn').style.display = 'inline-block';
+        }
+      });
+
+      window.onload = async () => {
+          if (localStorage.getItem("nex_sesion_activa") === "true" || window.location.search.includes("autologin=true") || typeof window.ethereum !== 'undefined') {
+              document.getElementById('welcomeSection').style.display = 'none';
+              document.getElementById('appContent').style.display = 'block';
+              
+              document.getElementById('btnLogoutTop').style.display = 'inline-block';
+              document.getElementById('authBtn').style.display = 'none';
+          } else {
+              document.getElementById('appContent').style.display = 'none';
+              document.getElementById('welcomeSection').style.display = 'block';
+              
+              document.getElementById('btnLogoutTop').style.display = 'none';
+              document.getElementById('authBtn').style.display = 'inline-block';
+          }
+          await window.asegurarRedBNB();
+          await window.actualizarPrecioTokenEnVivo();
+          setInterval(window.actualizarPrecioTokenEnVivo, 12000);
+
+          if (typeof window.ethereum !== 'undefined') {
+              try {
+                  const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                  if (accounts.length > 0) {
+                      window.consultarSaldoOnChain(accounts[0]);
+                  }
+              } catch(e) {}
+          }
+      };
+
+      const docRefConfig = doc(db, "configuracion", "general");
+      onSnapshot(docRefConfig, (snap) => {
+        if (snap.exists()) {
+          const d = snap.data();
+          if(d.colorBotones) document.documentElement.style.setProperty('--primary-cyan', d.colorBotones);
+          document.getElementById('realTradeSection').style.display = d.tradingHabilitado !== "no" ? 'block' : 'none';
+        }
+      });
+
+      window.toggleHistorial = function() { 
+        const div = document.getElementById('historialLista'); 
+        div.style.display = div.style.display === 'none' ? 'block' : 'none'; 
+      };
     </script>
 
-    <!-- SCRIPT DE IDIOMAS Y UI -->
     <script>
-        const dic = {
-            'pt': { search:"Buscar em NeX...", offers:"Ofertas", location:"Endereço", phones:"Celulares", tools:"Ferramentas", nav_categories:"Categorias", cat_desc:"Explora nossas categorias aqui.", cart_title:"Meu Carrinho", total_pay:"Total a pagar", buy_btn:"Comprar", guest_user:"Usuário Convidado", login_prompt:"Faça login com seu e-mail", my_address:"Adicionar minha Localização", language_settings:"Idioma / Language", my_activity:"Minha atividade", my_purchases:"Minhas compras", notifications:"Notificações", favorites:"Favoritos", discover:"Descubra", coupons:"Cupons", insurance:"Seguros e assistências", new_tag:"NOVO", sell_nex:"Vender no NeX", seller_area:"Área do Vendedor", settings:"Configurações", admin_nex:"Administração NeX", support_title:"Atendimento", support_btn:"Falar com Suporte (Ajuda)", nav_home:"Início", nav_cart:"Carrinho", nav_more:"Mais", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Bem-vindo à nossa criptomoeda NeX Token", token_invest:"Se quiser investir, toque aqui:", token_btn:"Investir Agora", token_desc:"Você tem a oportunidade de ganhar investindo pouco dinheiro, apenas $1, $2, $3 ou $4 dólares. A partir daí, pode investir o quanto quiser! Não é necessário adicionar muito dinheiro para começar.", token_disclaimer:"Lembre-se: Você tem a oportunidade de ganhar, mas não é uma garantia. Como em todo lugar, também há o risco de perder." },
-            'es': { search:"Buscar en NeX...", offers:"Ofertas", location:"Ubicación", phones:"Celulares", tools:"Herramientas", nav_categories:"Categorías", cat_desc:"Explora nuestras categorías aquí.", cart_title:"Mi Carrito", total_pay:"Total a pagar", buy_btn:"Comprar", guest_user:"Usuario Invitado", login_prompt:"Inicia sesión con tu correo", my_address:"Agregar mi Ubicación", language_settings:"Idioma / Language", my_activity:"Mi actividad", my_purchases:"Mis compras", notifications:"Notificaciones", favorites:"Favoritos", discover:"Descubre", coupons:"Cupones", insurance:"Seguros y asistencias", new_tag:"NUEVO", sell_nex:"Vender en NeX", seller_area:"Área de Vendedores", settings:"Configuraciones", admin_nex:"Administración NeX", support_title:"Atención al Cliente", support_btn:"Hablar con Soporte", nav_home:"Inicio", nav_cart:"Carrito", nav_more:"Más", nav_token:"NeX Token", token_title:"NeX Token", token_welcome:"Bienvenido a nuestra criptomoeda NeX Token", token_invest:"Si quieres invertir, toca aquí:", token_btn:"Invertir Ahora", token_desc:"Tienes la oportunidad de ganar invirtiendo poco dinero, solo $1, $2, $3 o $4 dólares. ¡A partir de ahí puedes invertir lo que quieras! No es necesario agregar mucho dinero para empezar.", token_disclaimer:"Recuerda: Tienes la oportunidad de ganar, pero no es una garantía. Como en todo lugar, existe el riesgo de perder." }
-        };
+      window.abrirAuthModal = function() { document.getElementById('authModal').classList.add('show'); };
+      window.cerrarAuthModal = function() { document.getElementById('authModal').classList.remove('show'); };
+      window.abrirHelpModal = function() { document.getElementById('helpModal').classList.add('show'); };
+      window.cerrarHelpModal = function() { document.getElementById('helpModal').classList.remove('show'); };
+      
+      window.abrirLoginAdminModal = function() { document.getElementById('adminAuthModal').classList.add('show'); };
+      window.cerrarAdminModal = function() { document.getElementById('adminModal').classList.remove('show'); };
+      window.cerrarModal = function(id) { document.getElementById(id).classList.remove('show'); };
 
-        let idiomaActual = 'pt';
-        function aplicarIdioma(lang) {
-            idiomaActual = lang;
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (dic[lang] && dic[lang][key]) {
-                    if (el.tagName === 'INPUT') el.placeholder = dic[lang][key];
-                    else el.innerHTML = dic[lang][key];
-                }
-            });
+      window.abrirModalCanjear = function() {
+          if (typeof window.ethereum === 'undefined' || !walletDireccionConectada) {
+              return alert("Por favor, conecta tu billetera primero para poder canjear.");
+          }
+          document.getElementById('swapAmountIn').value = '';
+          document.getElementById('swapExpectedOut').innerText = 'Recibirás aprox: 0.00 NEX';
+          document.getElementById('modalCanjear').classList.add('show');
+          
+          // Carga el saldo de la billetera apenas abre la ventana
+          window.actualizarSaldosSwap();
+      };
+
+      window.validarCredencialesAdmin = function() {
+        const u = document.getElementById('adminUserInput').value;
+        const p = document.getElementById('adminPassInput').value;
+        if(u === "admin" && p === "200832") {
+            cerrarModal('adminAuthModal');
+            document.getElementById('adminModal').classList.add('show');
+            document.getElementById('adminUserInput').value = '';
+            document.getElementById('adminPassInput').value = '';
+        } else {
+            alert("Credenciales incorrectas");
         }
+      };
+
+      window.cambiarPestañaAdmin = function(tabId, btn) {
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(c => c.classList.remove('active'));
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons.forEach(b => b.classList.remove('active'));
         
-        window.onload = function() { 
-            const userLangFull = navigator.language || navigator.userLanguage;
-            let langCode = userLangFull.split('-')[0];
-            if (!dic[langCode]) langCode = 'pt';
-            aplicarIdioma(langCode); 
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
+      };
 
-            if(window.cargarProductosProveedor) {
-                window.cargarProductosProveedor();
-                window.iniciarSincronizacionStock();
+      window.abrirWalletChoiceModal = function() { document.getElementById('walletChoiceModal').classList.add('show'); };
+      window.abrirModalEnviarTokens = function() { document.getElementById('sendTokensModal').classList.add('show'); };
+
+      window.vincularTokenWeb3 = async function(walletType) {
+        cerrarModal('walletChoiceModal');
+        
+        if (typeof window.ethereum !== 'undefined') {
+          try {
+            if (window.asegurarRedBNB) await window.asegurarRedBNB();
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            if (accounts && accounts.length > 0) {
+              window.consultarSaldoOnChain(accounts[0]);
+              return;
             }
-        };
-
-        function cambiarVista(btn, id) {
-            if (!id) return;
-            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-            if(btn) btn.classList.add('active');
-            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-
-            const checkoutBar = document.getElementById('checkout-bar-element');
-            if(id === 'view-cart' && checkoutBar) { 
-                checkoutBar.classList.remove('hidden'); 
-                window.calcularTotal(); 
-            } else if(checkoutBar) { 
-                checkoutBar.classList.add('hidden'); 
-            }
+          } catch (error) {
+            alert("Debes autorizar la conexión con tu billetera.");
+          }
+        } else {
+          localStorage.setItem("nex_sesion_activa", "true");
+          const baseUrl = window.location.origin + window.location.pathname;
+          const targetUrl = `${baseUrl}?autologin=true`;
+          
+          if (walletType === 'metamask') {
+            window.location.href = `https://metamask.app.link/dapp/${targetUrl.replace(/^https?:\/\//, '')}`;
+          } else if (walletType === 'trustwallet') {
+            window.location.href = `https://link.trustwallet.com/open_url?coin_id=60&url=${encodeURIComponent(targetUrl)}`;
+          }
         }
-
-        function buscarAccionRapida(tipo) {
-            const searchInput = document.getElementById('main-search-input');
-            let terminoBusqueda = '';
-            if(tipo === 'ofertas') terminoBusqueda = dic[idiomaActual]['offers'] || 'Ofertas';
-            else if (tipo === 'celulares') terminoBusqueda = dic[idiomaActual]['phones'] || 'Celulares';
-            else if (tipo === 'ferramentas') terminoBusqueda = dic[idiomaActual]['tools'] || 'Ferramentas';
-            
-            searchInput.value = terminoBusqueda;
-            filtrarProductos(terminoBusqueda);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function filtrarProductos(termino) {}
-
-        window.calcularTotal = function() {
-            let total = 0;
-            document.querySelectorAll('.cart-item').forEach(producto => {
-                const checkbox = producto.querySelector('.cart-checkbox');
-                if (checkbox && checkbox.checked) total += parseFloat(producto.querySelector('.cart-item-price').getAttribute('data-price'));
-            });
-            const totalPriceEl = document.getElementById('total-price');
-            if(totalPriceEl) totalPriceEl.innerText = 'R$ ' + total.toFixed(2);
-        };
-
-        function verificarAdmin() {
-            const codigo = document.getElementById('admin-pin').value;
-            if(codigo === '200832') { 
-                abrirSubPantalla('Painel Central (Administração)', 'dashboard-admin'); 
-            } else { 
-                alert('Código incorreto. Acesso negado.'); 
-                document.getElementById('admin-pin').value = ''; 
-            }
-        }
-
-        function abrirSubPantalla(titulo, id, datosUbicacion) {
-            const content = document.getElementById('sub-content');
-            const header = document.getElementById('sub-header');
-            content.style.padding = '0'; 
-
-            header.innerHTML = `<i class="fa-solid fa-arrow-left" onclick="cerrarSubPantalla()" style="font-size:1.3rem; cursor:pointer; padding:5px;"></i><h2 id="sub-title">${titulo}</h2>`;
-
-            if (id.includes('admin')) { 
-                header.style.backgroundColor = 'var(--color-admin)'; 
-            } else { 
-                header.style.backgroundColor = 'var(--color-primario)'; 
-            }
-            
-            let html = '';
-
-            switch(id) {
-                case 'login-admin':
-                    content.style.padding = '20px';
-                    html = `
-                        <div class="list-card" style="text-align:center; border: 2px solid var(--color-admin);">
-                            <i class="fa-solid fa-user-secret" style="font-size:3rem; color:var(--color-admin); margin-bottom:10px;"></i>
-                            <h3 style="margin-bottom:5px;">Acesso Restrito</h3>
-                            <p style="font-size:0.8rem; color:var(--color-gris); margin-bottom:15px;">Digite o código de administrador para entrar.</p>
-                            <input type="password" id="admin-pin" class="form-input" placeholder="Código" style="text-align:center; font-size:1.5rem; letter-spacing:5px;">
-                            <button class="btn-primary" style="background:var(--color-admin);" onclick="verificarAdmin()">Verificar</button>
-                        </div>`;
-                    break;
-                case 'dashboard-admin':
-                    content.style.padding = '15px'; 
-                    html = `
-                        <h3 style="margin-bottom:10px; font-size:1.1rem; color:var(--color-admin);"><i class="fa-solid fa-chart-pie"></i> Analítica de Acessos</h3>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:25px;">
-                            <div style="background:white; padding:15px; border-radius:8px; border-left:4px solid var(--color-azul-claro); box-shadow:0 1px 3px rgba(0,0,0,0.1); text-align:center;">
-                                <i class="fa-solid fa-mobile-screen" style="font-size:1.5rem; color:var(--color-gris); margin-bottom:5px;"></i>
-                                <span style="display:block; font-size:0.8rem; color:var(--color-gris);">Via Celular</span>
-                                <h3 id="admin-visitas-celular" style="color:var(--color-texto); font-size:1.5rem;">0</h3>
-                            </div>
-                            <div style="background:white; padding:15px; border-radius:8px; border-left:4px solid var(--color-rosa); box-shadow:0 1px 3px rgba(0,0,0,0.1); text-align:center;">
-                                <i class="fa-solid fa-desktop" style="font-size:1.5rem; color:var(--color-gris); margin-bottom:5px;"></i>
-                                <span style="display:block; font-size:0.8rem; color:var(--color-gris);">Via Computador</span>
-                                <h3 id="admin-visitas-pc" style="color:var(--color-texto); font-size:1.5rem;">0</h3>
-                            </div>
-                        </div>
-
-                        <h3 style="margin-bottom:10px; font-size:1.1rem; color:var(--color-admin);"><i class="fa-solid fa-toolbox"></i> Ferramentas de Gestão</h3>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:25px;">
-                            <button onclick="alert('Cupom gerado com sucesso.');" class="btn-primary" style="background:var(--color-admin); font-size:0.85rem; padding:12px;"><i class="fa-solid fa-ticket"></i> Gerar Cupons</button>
-                            <button onclick="alert('Catálogo sincronizado.');" class="btn-primary" style="background:var(--color-admin); font-size:0.85rem; padding:12px;"><i class="fa-solid fa-sync"></i> Sincronizar Loja</button>
-                        </div>
-
-                        <h3 style="margin-bottom:10px; font-size:1.1rem; color:var(--color-admin);"><i class="fa-solid fa-comments"></i> Chats Privados de Clientes pendentes</h3>
-                        <div id="admin-lista-chats" style="background:white; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); overflow:hidden; margin-bottom:25px;">
-                            <div style="padding:20px; text-align:center; color:var(--color-gris);">Carregando conversas...</div>
-                        </div>
-
-                        <h3 style="margin-bottom:10px; font-size:1.1rem; color:var(--color-admin);"><i class="fa-solid fa-users"></i> Usuários Registrados</h3>
-                        <div id="admin-lista-usuarios" style="background:white; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); overflow:hidden;">
-                            <div style="padding:20px; text-align:center; color:var(--color-gris);">Carregando base de dados...</div>
-                        </div>`;
-                    
-                    setTimeout(() => { if(window.cargarDatosAdminFirebase) window.cargarDatosAdminFirebase(); }, 200);
-                    break;
-                case 'ubicacion':
-                    content.style.padding = '20px';
-                    const isBloqueado = datosUbicacion && datosUbicacion.bloqueado;
-                    html = `
-                        <div class="list-card">
-                            <h3 style="margin-bottom:5px;"><i class="fa-solid fa-house" style="color:var(--color-primario);"></i> Endereço de Entrega / Shipping Address</h3>
-                            <p style="font-size:0.8rem; color:var(--color-gris); margin-bottom:15px;">
-                                ${isBloqueado ? '<b style="color:var(--color-rojo);">Endereço bloqueado após a compra/envio.</b> Para alterações, contate o suporte.' : 'Informe os dados para envio. Ficarão fixos após finalizar a compra.'}
-                            </p>
-                            
-                            <label style="font-size:0.8rem; font-weight:bold;">País / Country</label>
-                            <input type="text" id="dir-pais" class="form-input" value="${datosUbicacion?.pais || ''}" ${isBloqueado ? 'disabled' : ''} placeholder="Ex: Brasil, USA, España...">
-
-                            <label style="font-size:0.8rem; font-weight:bold;">Estado / Província / State</label>
-                            <input type="text" id="dir-estado" class="form-input" value="${datosUbicacion?.estado || ''}" ${isBloqueado ? 'disabled' : ''} placeholder="Ex: Amapá, Florida, Madrid...">
-                            
-                            <label style="font-size:0.8rem; font-weight:bold;">Cidade / City</label>
-                            <input type="text" id="dir-ciudad" class="form-input" value="${datosUbicacion?.ciudad || ''}" ${isBloqueado ? 'disabled' : ''} placeholder="Ex: Macapá, Miami, Barcelona...">
-                            
-                            <label style="font-size:0.8rem; font-weight:bold;">Código Postal / Zip Code / CEP</label>
-                            <input type="text" id="dir-cep" class="form-input" value="${datosUbicacion?.cep || ''}" ${isBloqueado ? 'disabled' : ''} placeholder="Ex: 68900-000, 33101, 28001...">
-                            
-                            <label style="font-size:0.8rem; font-weight:bold;">Endereço (Rua, Número) / Street Address</label>
-                            <input type="text" id="dir-calle" class="form-input" value="${datosUbicacion?.calle || ''}" ${isBloqueado ? 'disabled' : ''} placeholder="Endereço completo / Full address">
-                            
-                            <label style="font-size:0.8rem; font-weight:bold;">Complemento / Apt / Suite (Opcional)</label>
-                            <input type="text" id="dir-complemento" class="form-input" value="${datosUbicacion?.complemento || ''}" ${isBloqueado ? 'disabled' : ''} placeholder="Apt, Bloco, Casa 2...">
-                            
-                            ${isBloqueado ? 
-                                `<button class="btn-primary" style="background:var(--color-gris); cursor:not-allowed;" disabled>Endereço Bloqueado (Em Trânsito)</button>` : 
-                                `<button class="btn-primary" onclick="guardarUbicacionUsuario()">Salvar Endereço</button>`
-                            }
-                        </div>`;
-                    break;
-                case 'rastreio':
-                    content.style.padding = '20px';
-                    html = `
-                        <div class="list-card" style="text-align: left;">
-                            <h3 style="margin-bottom:10px; color: var(--color-primario);"><i class="fa-solid fa-truck-fast"></i> Acompanhe seu Pacote</h3>
-                            <p style="font-size:0.85rem; color:var(--color-gris); margin-bottom:15px;">Aqui você vê por onde anda o seu pedido enviado pelo fornecedor:</p>
-                            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                                <div style="font-size: 0.9rem; font-weight: bold; margin-bottom: 5px;">📦 Pedido Recente</div>
-                                <div style="font-size: 0.8rem; color: var(--color-gris); margin-bottom: 8px;">Código de Rastreio: <span style="font-weight: bold; color: var(--color-texto);">Gerado automaticamente ao finalizar compra</span></div>
-                                <div style="font-size: 0.85rem; color: var(--color-verde); font-weight: bold;"><i class="fa-solid fa-circle-check"></i> Status: Em trânsito pelo fornecedor (AliExpress)</div>
-                            </div>
-                        </div>`;
-                    break;
-                case 'idiomas':
-                    content.style.padding = '20px';
-                    html = `
-                        <div class="list-card">
-                            <div class="menu-item" style="padding:10px 0;" onclick="aplicarIdioma('pt'); cerrarSubPantalla();"><span>🇧🇷 Português</span></div>
-                            <div class="menu-item" style="padding:10px 0;" onclick="aplicarIdioma('es'); cerrarSubPantalla();"><span>🇪🇸 Español</span></div>
-                        </div>`;
-                    break;
-                case 'chat-cliente':
-                    html = `
-                        <div class="chat-area">
-                            <div class="chat-messages" id="chat-box"><div class="msg received">Conectando ao suporte privado...</div></div>
-                            <div class="chat-input-bar">
-                                <input type="text" id="chat-input" placeholder="Digite sua mensagem privada...">
-                                <button onclick="enviarMensajeCliente('${datosUbicacion}')"><i class="fa-solid fa-paper-plane"></i></button>
-                            </div>
-                        </div>`;
-                    setTimeout(() => { if(window.iniciarChatFirebase) window.iniciarChatFirebase(datosUbicacion, false); }, 100);
-                    break;
-                case 'chat-admin-resp':
-                    html = `
-                        <div class="chat-area">
-                            <div class="chat-messages" id="chat-box"><div class="msg received">Carregando conversa privada...</div></div>
-                            <div class="chat-input-bar">
-                                <input type="text" id="chat-input" placeholder="Responder privadamente como Administrador...">
-                                <button onclick="enviarMensajeAdmin('${datosUbicacion}')"><i class="fa-solid fa-paper-plane"></i></button>
-                            </div>
-                        </div>`;
-                    setTimeout(() => { if(window.iniciarChatFirebase) window.iniciarChatFirebase(datosUbicacion, true); }, 100);
-                    break;
-                case 'generica':
-                    content.style.padding = '40px 20px';
-                    html = `<div style="text-align:center;"><i class="fa-solid fa-gear" style="font-size:3rem; color:#cbd5e1; margin-bottom:15px;"></i><h3>${titulo}</h3><p style="color:var(--color-gris);">Em desenvolvimento.</p></div>`;
-                    break;
-            }
-
-            content.innerHTML = html;
-            document.getElementById('sub-screen-container').classList.add('active');
-        }
-
-        function cerrarSubPantalla() {
-            document.getElementById('sub-screen-container').classList.remove('active');
-        }
-
-        window.enviarMensajeCliente = function(salaId) {
-            const input = document.getElementById('chat-input');
-            const texto = input.value.trim();
-            if(texto !== "") {
-                window.enviarMensajeFirebase(salaId, texto, 'cliente');
-                input.value = "";
-            }
-        };
-
-        window.enviarMensajeAdmin = function(salaId) {
-            const input = document.getElementById('chat-input');
-            const texto = input.value.trim();
-            if(texto !== "") {
-                window.enviarMensajeFirebase(salaId, texto, 'admin');
-                input.value = "";
-            }
-        };
-
-        const checkoutBarElem = document.getElementById('checkout-bar-element');
-        if(checkoutBarElem) checkoutBarElem.classList.add('hidden');
+      };
     </script>
 </body>
 </html>
