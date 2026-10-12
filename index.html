@@ -377,21 +377,34 @@
             grid.innerHTML = '<div style="grid-column: span 2; text-align: center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--color-primario);"></i><p>Carregando catálogo do fornecedor...</p></div>';
 
             try {
-                // AQUÍ EMPIEZA LA MAGIA DE LAS 8 CATEGORÍAS AL MISMO TIEMPO
-                const misCategorias = ['509', '200000119', '1420', '100003109', '100003070', '1511', '322', '1524']; 
+                // AQUÍ EMPIEZA LA BÚSQUEDA DE PRODUCTOS POR NOMBRE
+                // ESTOS SON TODOS LOS NOMBRES QUE PEDISTE, TRADUCIDOS AL PORTUGUÉS:
+                const misNombres = [
+                    'roupa masculina', // (Ropa de hombre)
+                    'roupa feminina', // (Ropa de mujer)
+                    'acessórios para celular', // (Accesorios de teléfono)
+                    'celular', // (Teléfono)
+                    'relógio masculino', // (Relojes de hombre)
+                    'relógio feminino', // (Relojes de mujer)
+                    'sapatos', // (Zapatos)
+                    'shorts', // (Shorts)
+                    'luvas', // (Guantes)
+                    'ferramentas para conserto de celular', // (Herramientas para arreglar teléfono)
+                    'ferramentas de construção' // (Herramientas de construcción)
+                ]; 
                 
-                const multiplesLlamadas = misCategorias.map(id => {
+                const multiplesLlamadas = misNombres.map(nombre => {
                     return fetch('/api/productos', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            method: 'aliexpress.ds.recommend.feed.get',
+                            method: 'aliexpress.ds.recommend.feed.get', 
                             country: 'BR',
                             target_currency: 'BRL',
                             target_language: 'PT',
-                            category_id: id 
+                            keywords: nombre 
                         })
-                    }).then(respuesta => respuesta.json()).catch(err => ({error: true})); // Evita que un fallo detenga a las demás
+                    }).then(respuesta => respuesta.json()).catch(err => ({error: true})); // Evita que un fallo detenga a las demais
                 });
 
                 // Esperamos que TODAS las categorías respondan
