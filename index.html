@@ -475,7 +475,6 @@
                     <label>Quiero pagar usando:</label>
                     <span id="swapUserBalance" style="font-size: 11px; color: var(--primary-gold); font-weight: bold; margin-bottom: 4px;">Saldo: Cargando...</span>
                 </div>
-                <!-- Al cambiar de moneda, actualiza el saldo y recalcula los NEX -->
                 <select id="swapCurrency" onchange="window.actualizarSaldosSwap(); window.calcularRecepcionNEX();">
                     <option value="BNB">BNB (Moneda Principal)</option>
                     <option value="USDT">USDT (Tether BEP-20)</option>
@@ -484,7 +483,6 @@
             
             <div class="field">
                 <label>Cantidad a gastar:</label>
-                <!-- Al escribir, calcula los NEX en vivo -->
                 <input type="number" id="swapAmountIn" placeholder="Ej. 0.05" oninput="window.calcularRecepcionNEX();">
                 <div id="swapExpectedOut" style="font-size: 13px; color: var(--green-up); margin-top: 6px; font-weight: bold;">Recibirás aprox: 0.00 NEX</div>
             </div>
@@ -687,7 +685,6 @@
       const googleProvider = new GoogleAuthProvider();
       const appleProvider = new OAuthProvider('apple.com');
 
-      // HACEMOS ESTAS VARIABLES GLOBALES DESDE EL INICIO PARA EVITAR EL ERROR
       window.usuarioActual = null;
       window.tokensActualesUsuario = 0;
       window.PRECIO_TOKEN_USD = 0.01;
@@ -699,11 +696,12 @@
       let chatListenerAdmin = null;
       let chatAdminUidActual = null;
 
-      const TOKEN_CONTRACT_ADDRESS = "0x44B1c3Cd218D73368AD865C1cf8bd6E1Dd15c59A";
-      const PANCAKE_ROUTER_ADDRESS = "0x10ED43335D0f0511c7826814731894B72813462D";
-      const PANCAKE_FACTORY_ADDRESS = "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73";
-      const WBNB_ADDRESS = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
-      const USDT_BSC_ADDRESS = "0x55d398326f99059fF775485246999027B3197955";
+      // DIRECCIONES FORMATEADAS CON CHECKSUM CORRECTO DE ETHERS
+      const TOKEN_CONTRACT_ADDRESS = ethers.utils.getAddress("0x44B1c3Cd218D73368AD865C1cf8bd6E1Dd15c59A");
+      const PANCAKE_ROUTER_ADDRESS = ethers.utils.getAddress("0x10ED43335D0f0511c7826814731894B72813462D");
+      const PANCAKE_FACTORY_ADDRESS = ethers.utils.getAddress("0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73");
+      const WBNB_ADDRESS = ethers.utils.getAddress("0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c");
+      const USDT_BSC_ADDRESS = ethers.utils.getAddress("0x55d398326f99059fF775485246999027B3197955");
 
       const BSC_RPC_NODES = [
           "https://bsc-dataseed.binance.org/",
