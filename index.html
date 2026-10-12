@@ -452,7 +452,7 @@
                     <iframe 
                         id="geckoterminal-embed" 
                         title="GeckoTerminal NEX Chart" 
-                        src="https://www.geckoterminal.com/bsc/tokens/0x44b1c3cd218d73368ad865c1cf8bd6e1dd15c59a?embed=1&info=0&swaps=0&grayscale=0&light_chart=0" 
+                        src="https://www.geckoterminal.com/bsc/tokens/0x44B1c3Cd218D73368AD865C1cf8bd6E1Dd15c59A?embed=1&info=0&swaps=0&grayscale=0&light_chart=0" 
                         allow="clipboard-write" 
                         allowfullscreen>
                     </iframe>
@@ -699,11 +699,11 @@
       let chatListenerAdmin = null;
       let chatAdminUidActual = null;
 
-      const TOKEN_CONTRACT_ADDRESS = "0x44b1c3cd218d73368ad865c1cf8bd6e1dd15c59a";
-      const PANCAKE_ROUTER_ADDRESS = "0x10ed43335d0f0511c7826814731894b72813462d";
-      const PANCAKE_FACTORY_ADDRESS = "0xca143ce32fe78f1f7019d7d551a6402fc5350c73";
-      const WBNB_ADDRESS = "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c";
-      const USDT_BSC_ADDRESS = "0x55d398326f99059ff775485246999027b3197955";
+      const TOKEN_CONTRACT_ADDRESS = "0x44B1c3Cd218D73368AD865C1cf8bd6E1Dd15c59A".toLowerCase();
+      const PANCAKE_ROUTER_ADDRESS = "0x10ED43335D0f0511c7826814731894B72813462D".toLowerCase();
+      const PANCAKE_FACTORY_ADDRESS = "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73".toLowerCase();
+      const WBNB_ADDRESS = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c".toLowerCase();
+      const USDT_BSC_ADDRESS = "0x55d398326f99059fF775485246999027B3197955".toLowerCase();
 
       const BSC_RPC_NODES = [
           "https://bsc-dataseed.binance.org/",
@@ -1190,6 +1190,7 @@
           balanceElem.innerText = 'Cargando saldo...';
           
           try {
+              await window.asegurarRedBNB();
               const provider = new ethers.providers.Web3Provider(window.ethereum);
               if (currency === 'BNB') {
                   const balanceWei = await provider.getBalance(window.walletDireccionConectada);
@@ -1249,6 +1250,24 @@
             const signer = provider.getSigner();
             const walletUser = await signer.getAddress();
             
+            const balanceWei = await provider.getBalance(walletUser);
+            const balanceBnb = parseFloat(ethers.utils.formatEther(balanceWei));
+
+            if (currency === 'BNB') {
+                if (balanceBnb < (amountIn + 0.0005)) {
+                    return alert("Saldo insuficiente. No tienes suficiente BNB en tu billetera para pagar esta cantidad más la comisión de red. Recarga BNB para evitar errores.");
+                }
+            } else if (currency === 'USDT') {
+                if (balanceBnb < 0.0005) {
+                    return alert("Necesitas al menos un poco de BNB (aprox. 0.0005) para pagar la comisión de gas de la transacción, aunque pagues con USDT.");
+                }
+                const usdtContractTest = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, provider);
+                const usdtBal = await usdtContractTest.balanceOf(walletUser);
+                if (parseFloat(ethers.utils.formatUnits(usdtBal, 18)) < amountIn) {
+                    return alert("No tienes suficiente saldo de USDT para realizar esta compra.");
+                }
+            }
+
             const routerContract = new ethers.Contract(PANCAKE_ROUTER_ADDRESS, ROUTER_ABI, signer);
             const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
             
