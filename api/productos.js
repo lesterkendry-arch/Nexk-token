@@ -42,7 +42,7 @@ module.exports = async (req, res) => {
     }
 
     try {
-        // Atrapamos los datos que envía tu index.html (como el category_id)
+        // Atrapamos los datos que envía tu index.html
         const requestData = req.body || {};
 
         // Construimos los parámetros para AliExpress
@@ -50,8 +50,7 @@ module.exports = async (req, res) => {
             app_key: APP_KEY,
             timestamp: getFormattedTimestamp(),
             sign_method: 'md5',
-            feed_name: 'bestseller', // AliExpress a veces exige esto para devolver productos
-            ...requestData // Esto inyecta automáticamente el method y la categoría
+            ...requestData // Esto inyecta automáticamente el method y los IDs
         };
 
         // Generamos la firma de seguridad
@@ -59,18 +58,24 @@ module.exports = async (req, res) => {
 
         // Convertimos todo a formato de URL
         const urlParams = new URLSearchParams(apiParams).toString();
-        const url = `https://api-sg.aliexpress.com/sync?${urlParams}`;
+        
+        // Ya no ponemos los parámetros en la URL, solo el endpoint base
+        const url = `https://api-sg.aliexpress.com/sync`;
 
-        // Hacemos la llamada final a AliExpress
+        // Hacemos la llamada final a AliExpress enviando los datos en el body
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
-            }
+            },
+            body: urlParams
         });
 
         const data = await response.json();
         
+        // Imprimimos la respuesta en la consola de Vercel/Acode para depurar
+        console.log("Respuesta de AliExpress:", data);
+
         // Devolvemos los productos a tu página
         return res.status(200).json(data);
         
