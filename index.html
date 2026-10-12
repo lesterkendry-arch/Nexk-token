@@ -389,7 +389,8 @@
                             country: 'BR',
                             target_currency: 'BRL',
                             target_language: 'PT',
-                            category_id: id 
+                            category_id: id,
+                            feed_name: 'bestseller'
                         })
                     }).then(respuesta => respuesta.json()).catch(err => ({error: true})); // Evita que un fallo detenga a las demás
                 });
