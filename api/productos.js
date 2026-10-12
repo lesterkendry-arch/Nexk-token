@@ -1,7 +1,6 @@
 const crypto = require('crypto');
 
 // Tus credenciales de AliExpress
-// (Nota: Ten cuidado de no compartir estos códigos en público, son las llaves de tu negocio)
 const APP_KEY = '552568';
 const APP_SECRET = 'QwLFTLfIFh3Ksg0JvoDmXDhHXQaXTQVT';
 
@@ -51,22 +50,39 @@ module.exports = async (req, res) => {
             try { requestData = JSON.parse(requestData); } catch(e) {}
         }
 
-        // ==========================================
-        // INTERCEPTAMOS LA BÚSQUEDA POR NOMBRE
-        // ==========================================
-        let isKeywordSearch = false;
-        
-        // Si el HTML nos manda "keywords" (nombres), forzamos el buscador por texto
+        // ========================================================================
+        // EL TRADUCTOR: Convierte los nombres de tu HTML a los números de AliExpress
+        // ========================================================================
+        const diccionarioCategorias = {
+            'roupa masculina': '200000343',
+            'roupa feminina': '200000348',
+            'acessórios para celular': '380230',
+            'celular': '5090301',
+            'relógio masculino': '1010893',
+            'relógio feminino': '1010892',
+            'sapatos': '322',
+            'shorts': '200000350',
+            'luvas': '200000216',
+            'ferramentas para conserto de celular': '1420', // ID de Herramientas
+            'ferramentas de construção': '100007304'      // ID de Herramientas manuales/construcción
+        };
+
+        // Si el HTML nos manda palabras ("keywords"), hacemos el truco
         if (requestData.keywords) {
-            requestData.method = 'aliexpress.affiliate.product.query';
-            isKeywordSearch = true;
+            // Buscamos el número en nuestro diccionario (si no existe, usa 509 por defecto)
+            const numeroCategoria = diccionarioCategorias[requestData.keywords] || '509';
             
-            // La API de búsqueda por texto a veces exige un tracking_id, agregamos uno por defecto
-            if (!requestData.tracking_id) {
-                requestData.tracking_id = 'NeXShopping'; 
-            }
+            // Le decimos a AliExpress que usaremos su API oficial para Dropshippers
+            requestData.method = 'aliexpress.ds.recommend.feed.get';
+            
+            // Le pasamos el número que quiere
+            requestData.category_id = numeroCategoria;
+            
+            // BORRAMOS la palabra original, porque si AliExpress ve texto en esta API, da error
+            delete requestData.keywords;
         }
 
+        // Construimos todos los parámetros
         const apiParams = {
             app_key: APP_KEY,
             timestamp: getFormattedTimestamp(),
@@ -76,6 +92,7 @@ module.exports = async (req, res) => {
             ...requestData
         };
 
+        // Generamos la firma de seguridad
         apiParams.sign = generateSign(apiParams, APP_SECRET);
 
         let bodyString = '';
@@ -94,34 +111,8 @@ module.exports = async (req, res) => {
             body: bodyString
         });
 
-        let data = await response.json();
+        const data = await response.json();
         
-        // ==========================================
-        // TRUCO PARA NO ROMPER EL HTML FRONTAL
-        // ==========================================
-        // Si usamos el buscador de texto, AliExpress nos devuelve un objeto llamado 'aliexpress_affiliate_product_query_response'.
-        // Pero tu HTML está esperando 'aliexpress_ds_recommend_feed_get_response'.
-        // Aquí lo renombramos para que el HTML reciba exactamente lo que espera y dibuje los productos sin dar error.
-        if (isKeywordSearch && data.aliexpress_affiliate_product_query_response) {
-            const resultInfo = data.aliexpress_affiliate_product_query_response.resp_result?.result;
-            let productosEncontrados = [];
-            
-            if (resultInfo && resultInfo.products && resultInfo.products.product) {
-                productosEncontrados = resultInfo.products.product;
-            }
-
-            // Sobrescribimos la variable 'data' con la estructura falsa para el HTML
-            data = {
-                aliexpress_ds_recommend_feed_get_response: {
-                    result: {
-                        products: {
-                            product: productosEncontrados
-                        }
-                    }
-                }
-            };
-        }
-
         console.log("Respuesta de AliExpress enviada a NeX:", JSON.stringify(data).substring(0, 200) + '...');
         return res.status(200).json(data);
         
