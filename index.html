@@ -696,6 +696,7 @@
       let chatListenerAdmin = null;
       let chatAdminUidActual = null;
 
+      // DIRECCIONES FORMATEADAS CON CHECKSUM CORRECTO DE ETHERS
       const TOKEN_CONTRACT_ADDRESS = ethers.utils.getAddress("0x44B1c3Cd218D73368AD865C1cf8bd6E1Dd15c59A");
       const PANCAKE_ROUTER_ADDRESS = ethers.utils.getAddress("0x10ED43335D0f0511c7826814731894B72813462D");
       const PANCAKE_FACTORY_ADDRESS = ethers.utils.getAddress("0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73");
@@ -831,9 +832,7 @@
           try {
               const res = await signInWithPopup(auth, googleProvider);
               await registrarOActualizarUsuarioDB(res.user, 'google');
-              localStorage.setItem("nex_sesion_activa", "true");
               window.cerrarAuthModal();
-              window.location.reload();
           } catch(e) { alert("Error con Google: " + e.message); }
       };
 
@@ -841,9 +840,7 @@
           try {
               const res = await signInWithPopup(auth, appleProvider);
               await registrarOActualizarUsuarioDB(res.user, 'apple');
-              localStorage.setItem("nex_sesion_activa", "true");
               window.cerrarAuthModal();
-              window.location.reload();
           } catch(e) { alert("Error con Apple: " + e.message); }
       };
 
@@ -1025,6 +1022,20 @@
               }, { merge: true });
               alert("Configuración guardada exitosamente.");
           } catch(e) { alert("Error al guardar: " + e.message); }
+      };
+
+      window.obtenerProveedorBSC = function() {
+        if (typeof window.ethereum !== 'undefined') {
+            try {
+                return new ethers.providers.Web3Provider(window.ethereum);
+            } catch(e) {}
+        }
+        for (let url of BSC_RPC_NODES) {
+          try {
+            return new ethers.providers.JsonRpcProvider(url);
+          } catch(e) {}
+        }
+        return new ethers.providers.JsonRpcProvider(BSC_RPC_NODES[0]);
       };
 
       window.formatearMoneda = function(valor, maxDec = 8) {
@@ -1394,9 +1405,10 @@
             } catch (e) {}
           }
         } else {
-          if (localStorage.getItem("nex_sesion_activa") === "true" || window.location.search.includes("autologin=true") || typeof window.ethereum !== 'undefined') {
+          if (typeof window.ethereum !== 'undefined' || localStorage.getItem("nex_sesion_activa") === "true" || window.location.search.includes("autologin=true")) {
             document.getElementById('welcomeSection').style.display = 'none';
             document.getElementById('appContent').style.display = 'block';
+            
             document.getElementById('btnLogoutTop').style.display = 'inline-block';
             document.getElementById('authBtn').style.display = 'none';
             
@@ -1408,15 +1420,15 @@
                 }
               } catch(e) {}
             }
-          } else {
-            window.usuarioActual = null;
-            document.getElementById('appContent').style.display = 'none';
-            document.getElementById('welcomeSection').style.display = 'block';
-            
-            document.getElementById('helpBtn').style.display = 'none';
-            document.getElementById('btnLogoutTop').style.display = 'none'; 
-            document.getElementById('authBtn').style.display = 'inline-block';
+            return;
           }
+          window.usuarioActual = null;
+          document.getElementById('appContent').style.display = 'none';
+          document.getElementById('welcomeSection').style.display = 'block';
+          
+          document.getElementById('helpBtn').style.display = 'none';
+          document.getElementById('btnLogoutTop').style.display = 'none'; 
+          document.getElementById('authBtn').style.display = 'inline-block';
         }
       });
 
@@ -1424,11 +1436,13 @@
           if (localStorage.getItem("nex_sesion_activa") === "true" || window.location.search.includes("autologin=true") || typeof window.ethereum !== 'undefined') {
               document.getElementById('welcomeSection').style.display = 'none';
               document.getElementById('appContent').style.display = 'block';
+              
               document.getElementById('btnLogoutTop').style.display = 'inline-block';
               document.getElementById('authBtn').style.display = 'none';
           } else {
               document.getElementById('appContent').style.display = 'none';
               document.getElementById('welcomeSection').style.display = 'block';
+              
               document.getElementById('btnLogoutTop').style.display = 'none';
               document.getElementById('authBtn').style.display = 'inline-block';
           }
