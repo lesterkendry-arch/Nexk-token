@@ -45,24 +45,26 @@ module.exports = async (req, res) => {
         // Atrapamos los datos que envía tu index.html
         const requestData = req.body || {};
 
-        // Construimos los parámetros para AliExpress
+        // Construimos los parámetros para AliExpress (AQUÍ ESTÁ LA SOLUCIÓN)
         const apiParams = {
             app_key: APP_KEY,
             timestamp: getFormattedTimestamp(),
             sign_method: 'md5',
-            ...requestData // Esto inyecta automáticamente el method y los IDs
+            v: '2.0',           // <-- Parámetro de sistema obligatorio que faltaba
+            format: 'json',     // <-- Parámetro de sistema obligatorio
+            ...requestData
         };
 
-        // Generamos la firma de seguridad
+        // Generamos la firma de seguridad (la firma ahora incluye 'v' y 'format')
         apiParams.sign = generateSign(apiParams, APP_SECRET);
 
         // Convertimos todo a formato de URL
         const urlParams = new URLSearchParams(apiParams).toString();
         
-        // Ya no ponemos los parámetros en la URL, solo el endpoint base
+        // URL base de la API de AliExpress
         const url = `https://api-sg.aliexpress.com/sync`;
 
-        // Hacemos la llamada final a AliExpress enviando los datos en el body
+        // Hacemos la llamada final enviando los datos en el body
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -73,7 +75,7 @@ module.exports = async (req, res) => {
 
         const data = await response.json();
         
-        // Imprimimos la respuesta en la consola de Vercel/Acode para depurar
+        // Imprimimos la respuesta para saber exactamente qué dice AliExpress
         console.log("Respuesta de AliExpress:", data);
 
         // Devolvemos los productos a tu página
