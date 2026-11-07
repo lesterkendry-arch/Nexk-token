@@ -137,7 +137,8 @@
             position: relative; 
         }
         .stat-box span { font-size: 12px; color: var(--text-muted); }
-        .stat-box h4 { font-size: 17px; color: var(--text-main); margin-top: 4px; }
+        .stat-box h4 { font-size: 17px; color: var(--text-main); margin-top: 4px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+        .stat-box .balance-detail { display: block; margin-top: 5px; font-size: 10px; color: var(--text-muted); line-height: 1.4; }
 
         .currency-selector {
             background: var(--card-bg);
@@ -407,14 +408,27 @@
 
                 <div class="stat-grid">
                     <div class="stat-box">
-                        <span>Balance Tokens NEX</span>
-                        <h4 id="userTokens">0.00 NEX</h4>
+                        <span>Saldo NEX</span>
+                        <h4 id="userTokens" aria-live="polite">Conecta la billetera</h4>
                         <input type="hidden" id="currencySelect" value="USD">
                     </div>
 
                     <div class="stat-box">
-                        <span>Variación (24h)</span>
-                        <h4 id="userProfit" style="color: var(--green-up);">0.00%</h4>
+                        <span>Cambio de precio NEX (24 h)</span>
+                        <h4 id="userProfit" aria-live="polite">—</h4>
+                        <span class="balance-detail">Cambio de mercado, no ganancia personal.</span>
+                    </div>
+
+                    <div class="stat-box">
+                        <span>Saldo real de USDT</span>
+                        <h4 id="userUsdtBalance" aria-live="polite">Conecta la billetera</h4>
+                        <span class="balance-detail" id="userUsdtBalanceNote">Saldo en BNB Smart Chain; actualiza cada 30 s</span>
+                    </div>
+
+                    <div class="stat-box">
+                        <span>Saldo real de BNB</span>
+                        <h4 id="userBnbBalance" aria-live="polite">Conecta la billetera</h4>
+                        <span class="balance-detail" id="userBnbBalanceNote">Saldo en BNB Smart Chain; actualiza cada 30 s</span>
                     </div>
                 </div>
 
@@ -486,7 +500,7 @@
                 <label>Cantidad a gastar:</label>
                 <!-- Al escribir, calcula los NEX en vivo -->
                 <input type="number" id="swapAmountIn" placeholder="Ej. 0.05" oninput="window.calcularRecepcionNEX();">
-                <div id="swapExpectedOut" style="font-size: 13px; color: var(--green-up); margin-top: 6px; font-weight: bold;">Recibirás aprox: 0.00 NEX</div>
+                <div id="swapExpectedOut" style="font-size: 13px; color: var(--green-up); margin-top: 6px; font-weight: bold;">Ingresa una cantidad para cotizar.</div>
             </div>
 
             <button class="btn-auth" style="width:100%; margin-top:10px; background: #1fc7d4; color: white; font-size: 14px;" onclick="ejecutarSwapWeb3()">✅ Confirmar y Comprar</button>
@@ -690,10 +704,14 @@
       // HACEMOS ESTAS VARIABLES GLOBALES DESDE EL INICIO PARA EVITAR EL ERROR
       window.usuarioActual = null;
       window.tokensActualesUsuario = 0;
-      window.PRECIO_TOKEN_USD = 0.01;
-      window.PRECIO_BNB_USD = 600; 
-      window.CAMBIO_24H_PORCENTAJE = 0;
+      window.PRECIO_TOKEN_USD = null;
+      window.PRECIO_BNB_USD = null;
+      window.CAMBIO_24H_PORCENTAJE = null;
       window.walletDireccionConectada = null;
+      let walletBalanceRequestId = 0;
+      let walletBalanceRefreshTimer = null;
+      let swapQuoteRequestId = 0;
+      let swapQuoteTimer = null;
       
       let chatListenerUsuario = null;
       let chatListenerAdmin = null;
@@ -704,6 +722,8 @@
       const PANCAKE_FACTORY_ADDRESS = "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73".toLowerCase();
       const WBNB_ADDRESS = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c".toLowerCase();
       const USDT_BSC_ADDRESS = "0x55d398326f99059fF775485246999027B3197955".toLowerCase();
+      const MAX_SLIPPAGE_BPS = 100;
+      const BASIS_POINTS = 10000;
 
       const BSC_RPC_NODES = [
           "https://bsc-dataseed.binance.org/",
@@ -723,7 +743,8 @@
       const ROUTER_ABI = [
           "function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) payable returns (uint[] memory amounts)",
           "function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) returns (uint[] memory amounts)",
-          "function swapExactTokensForTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) returns (uint[] memory amounts)"
+          "function swapExactTokensForTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) returns (uint[] memory amounts)",
+          "function getAmountsOut(uint amountIn, address[] calldata path) view returns (uint[] memory amounts)"
       ];
 
       const FACTORY_ABI = [
@@ -1027,16 +1048,6 @@
       };
 
       window.obtenerProveedorBSC = function() {
-        if (typeof window.ethereum !== 'undefined') {
-            try {
-                return new ethers.providers.Web3Provider(window.ethereum);
-            } catch(e) {}
-        }
-        for (let url of BSC_RPC_NODES) {
-          try {
-            return new ethers.providers.JsonRpcProvider(url);
-          } catch(e) {}
-        }
         return new ethers.providers.JsonRpcProvider(BSC_RPC_NODES[0]);
       };
 
@@ -1048,46 +1059,201 @@
         return valor.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
       };
 
-      window.actualizarPrecioTokenEnVivo = async function() {
+      function formatearSaldoReal(balanceWei, decimals, symbol) {
+        const exact = ethers.utils.formatUnits(balanceWei, decimals);
+        const numeric = Number(exact);
+        let display = new Intl.NumberFormat('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 8
+        }).format(numeric);
+
+        if (!balanceWei.isZero() && numeric < 0.000000005) {
+          display = `< 0.00000001`;
+        }
+
+        return { exact, display: `${display} ${symbol}` };
+      }
+
+      function mostrarWalletSinConectar() {
+        walletBalanceRequestId++;
+        window.tokensActualesUsuario = 0;
+        const usdtBalance = document.getElementById('userUsdtBalance');
+        const bnbBalance = document.getElementById('userBnbBalance');
+        const usdtNote = document.getElementById('userUsdtBalanceNote');
+        const bnbNote = document.getElementById('userBnbBalanceNote');
+        const tokenBalance = document.getElementById('userTokens');
+
+        if (usdtBalance) usdtBalance.innerText = 'Conecta la billetera';
+        if (bnbBalance) bnbBalance.innerText = 'Conecta la billetera';
+        if (usdtNote) usdtNote.innerText = 'Saldo en BNB Smart Chain; actualiza cada 30 s';
+        if (bnbNote) bnbNote.innerText = 'Saldo en BNB Smart Chain; actualiza cada 30 s';
+        if (tokenBalance) tokenBalance.innerText = 'Conecta la billetera';
+      }
+
+      window.actualizarSaldosReales = async function(address = window.walletDireccionConectada) {
+        const usdtBalanceElem = document.getElementById('userUsdtBalance');
+        const bnbBalanceElem = document.getElementById('userBnbBalance');
+        const usdtNoteElem = document.getElementById('userUsdtBalanceNote');
+        const bnbNoteElem = document.getElementById('userBnbBalanceNote');
+
+        if (!address) {
+          mostrarWalletSinConectar();
+          return;
+        }
+
+        let walletAddress;
         try {
-          const resBnb = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT");
-          const dataBnb = await resBnb.json();
-          if (dataBnb && dataBnb.price) {
-            window.PRECIO_BNB_USD = parseFloat(dataBnb.price);
-          }
-        } catch(e) {}
+          walletAddress = ethers.utils.getAddress(address);
+        } catch (error) {
+          if (usdtBalanceElem) usdtBalanceElem.innerText = 'Dirección inválida';
+          if (bnbBalanceElem) bnbBalanceElem.innerText = 'Dirección inválida';
+          return;
+        }
+
+        const requestId = ++walletBalanceRequestId;
+        if (usdtBalanceElem) usdtBalanceElem.innerText = 'Consultando...';
+        if (bnbBalanceElem) bnbBalanceElem.innerText = 'Consultando...';
+        if (usdtNoteElem) usdtNoteElem.innerText = 'Lectura directa de BNB Smart Chain';
+        if (bnbNoteElem) bnbNoteElem.innerText = 'Lectura directa de BNB Smart Chain';
 
         try {
-          const provider = new ethers.providers.JsonRpcProvider(BSC_RPC_NODES[0]);
+          const provider = window.obtenerProveedorBSC();
+          const usdtContract = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, provider);
+          const [bnbResult, usdtBalanceResult, usdtDecimalsResult] = await Promise.allSettled([
+            provider.getBalance(walletAddress),
+            usdtContract.balanceOf(walletAddress),
+            usdtContract.decimals()
+          ]);
+
+          if (requestId !== walletBalanceRequestId || window.walletDireccionConectada !== walletAddress) return;
+
+          if (usdtBalanceResult.status === 'fulfilled' && usdtDecimalsResult.status === 'fulfilled') {
+            const usdt = formatearSaldoReal(usdtBalanceResult.value, Number(usdtDecimalsResult.value), 'USDT');
+            if (usdtBalanceElem) {
+              usdtBalanceElem.innerText = usdt.display;
+              usdtBalanceElem.title = `${usdt.exact} USDT`;
+            }
+            if (usdtNoteElem) usdtNoteElem.innerText = 'Saldo exacto en BNB Smart Chain; actualiza cada 30 s';
+          } else {
+            if (usdtBalanceElem) usdtBalanceElem.innerText = 'No disponible';
+            if (usdtNoteElem) usdtNoteElem.innerText = 'No se pudo consultar el saldo USDT';
+          }
+
+          if (bnbResult.status === 'fulfilled') {
+            const bnb = formatearSaldoReal(bnbResult.value, 18, 'BNB');
+            const bnbAmount = Number(ethers.utils.formatEther(bnbResult.value));
+            if (bnbBalanceElem) {
+              bnbBalanceElem.innerText = bnb.display;
+              bnbBalanceElem.title = `${bnb.exact} BNB`;
+            }
+            if (Number.isFinite(window.PRECIO_BNB_USD) && window.PRECIO_BNB_USD > 0) {
+              const bnbUsd = bnbAmount * window.PRECIO_BNB_USD;
+              if (bnbNoteElem) bnbNoteElem.innerText = `≈ $${window.formatearMoneda(bnbUsd, 2)} USD al precio actual; saldo cada 30 s`;
+            } else {
+              if (bnbNoteElem) bnbNoteElem.innerText = 'Cotización USD no disponible; saldo cada 30 s';
+            }
+          } else {
+            if (bnbBalanceElem) bnbBalanceElem.innerText = 'No disponible';
+            if (bnbNoteElem) bnbNoteElem.innerText = 'No se pudo consultar el saldo BNB';
+          }
+        } catch (error) {
+          if (requestId !== walletBalanceRequestId) return;
+          if (usdtBalanceElem) usdtBalanceElem.innerText = 'No disponible';
+          if (bnbBalanceElem) bnbBalanceElem.innerText = 'No disponible';
+          if (usdtNoteElem) usdtNoteElem.innerText = 'No se pudo consultar BNB Smart Chain';
+          if (bnbNoteElem) bnbNoteElem.innerText = 'No se pudo consultar BNB Smart Chain';
+          console.error('Error al consultar saldos reales:', error);
+        }
+      };
+
+      window.actualizarPrecioTokenEnVivo = async function() {
+        window.PRECIO_BNB_USD = null;
+        window.PRECIO_TOKEN_USD = null;
+
+        try {
+          const resBnb = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT");
+          if (!resBnb.ok) throw new Error(`Cotización BNB respondió ${resBnb.status}`);
+          const dataBnb = await resBnb.json();
+          const bnbPrice = Number(dataBnb?.price);
+          if (!Number.isFinite(bnbPrice) || bnbPrice <= 0) throw new Error('Cotización BNB inválida');
+          window.PRECIO_BNB_USD = bnbPrice;
+        } catch (error) {
+          console.warn('No se pudo obtener el precio de BNB:', error);
+        }
+
+        try {
+          const provider = window.obtenerProveedorBSC();
           const factory = new ethers.Contract(PANCAKE_FACTORY_ADDRESS, FACTORY_ABI, provider);
           const pairAddress = await factory.getPair(TOKEN_CONTRACT_ADDRESS, WBNB_ADDRESS);
           
           if (pairAddress && pairAddress !== ethers.constants.AddressZero) {
             const pairContract = new ethers.Contract(pairAddress, PAIR_ABI, provider);
+            const tokenContract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, provider);
+            const tokenDecimals = Number(await tokenContract.decimals());
             const reserves = await pairContract.getReserves();
             const token0 = await pairContract.token0();
             
             let reserveBNB, reserveToken;
             if (token0.toLowerCase() === WBNB_ADDRESS.toLowerCase()) {
               reserveBNB = parseFloat(ethers.utils.formatEther(reserves.reserve0));
-              reserveToken = parseFloat(ethers.utils.formatUnits(reserves.reserve1, 18));
+              reserveToken = parseFloat(ethers.utils.formatUnits(reserves.reserve1, tokenDecimals));
             } else {
               reserveBNB = parseFloat(ethers.utils.formatEther(reserves.reserve1));
-              reserveToken = parseFloat(ethers.utils.formatUnits(reserves.reserve0, 18));
+              reserveToken = parseFloat(ethers.utils.formatUnits(reserves.reserve0, tokenDecimals));
             }
 
             if (reserveToken > 0 && reserveBNB > 0) {
               const bnbPerToken = reserveBNB / reserveToken;
-              window.PRECIO_TOKEN_USD = bnbPerToken * window.PRECIO_BNB_USD;
+              if (Number.isFinite(window.PRECIO_BNB_USD) && window.PRECIO_BNB_USD > 0) {
+                const tokenPrice = bnbPerToken * window.PRECIO_BNB_USD;
+                if (Number.isFinite(tokenPrice) && tokenPrice > 0) {
+                  window.PRECIO_TOKEN_USD = tokenPrice;
+                }
+              }
             }
           }
-        } catch (e) {}
+        } catch (error) {
+          console.warn('No se pudo consultar el precio de NEX en BNB Chain:', error);
+        }
 
         if (document.getElementById('tokenPrice')) {
-          document.getElementById('tokenPrice').innerText = `$${window.formatearMoneda(window.PRECIO_TOKEN_USD)} USD`;
+          document.getElementById('tokenPrice').innerText =
+            Number.isFinite(window.PRECIO_TOKEN_USD) && window.PRECIO_TOKEN_USD > 0
+              ? `$${window.formatearMoneda(window.PRECIO_TOKEN_USD)} USD`
+              : 'Precio no disponible';
         }
         window.recalcularBalanceUsuario();
         window.calcularRecepcionNEX();
+      };
+
+      window.actualizarCambioPrecio24h = async function() {
+        const profitElem = document.getElementById('userProfit');
+        window.CAMBIO_24H_PORCENTAJE = null;
+        if (profitElem) {
+          profitElem.innerText = '—';
+          profitElem.style.color = 'var(--text-muted)';
+        }
+
+        try {
+          const response = await fetch(
+            `https://api.geckoterminal.com/api/v2/networks/bsc/tokens/${TOKEN_CONTRACT_ADDRESS}/pools?page=1`,
+            { headers: { Accept: 'application/json' } }
+          );
+          if (!response.ok) throw new Error(`Datos de mercado respondieron ${response.status}`);
+          const data = await response.json();
+          const pool = data.data?.find(item => item.attributes?.price_change_percentage?.h24 !== undefined);
+          const change = Number(pool?.attributes?.price_change_percentage?.h24);
+          if (!Number.isFinite(change)) throw new Error('Variación de 24 horas no disponible');
+
+          window.CAMBIO_24H_PORCENTAJE = change;
+          window.recalcularBalanceUsuario();
+        } catch (error) {
+          console.warn('No se pudo obtener la variación de NEX en 24 horas:', error);
+          if (profitElem) {
+            profitElem.innerText = 'No disponible';
+            profitElem.style.color = 'var(--text-muted)';
+          }
+        }
       };
 
       window.cargarHistorialOnChainReal = async function(address) {
@@ -1150,39 +1316,55 @@
         const profitElem = document.getElementById('userProfit');
 
         if (profitElem) {
-            const signo = window.CAMBIO_24H_PORCENTAJE >= 0 ? '+' : '';
-            profitElem.innerText = `${signo}${window.CAMBIO_24H_PORCENTAJE.toFixed(2)}%`;
-            profitElem.style.color = window.CAMBIO_24H_PORCENTAJE >= 0 ? 'var(--green-up)' : 'var(--red-down)';
+            const change = window.CAMBIO_24H_PORCENTAJE;
+            if (!Number.isFinite(change)) {
+              profitElem.innerText = '—';
+              profitElem.style.color = 'var(--text-muted)';
+              return;
+            }
+            const signo = change >= 0 ? '+' : '';
+            profitElem.innerText = `${signo}${change.toFixed(2)}%`;
+            profitElem.style.color = change >= 0 ? 'var(--green-up)' : 'var(--red-down)';
         }
       };
 
       window.asegurarRedBNB = async function() {
-        if (typeof window.ethereum !== 'undefined') {
-          try {
-            await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x38' }] });
-          } catch (switchError) {
-            if (switchError.code === 4902) {
-              try {
-                await window.ethereum.request({
-                  method: 'wallet_addEthereumChain',
-                  params: [{
-                    chainId: '0x38',
-                    chainName: 'BNB Smart Chain Mainnet',
-                    nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
-                    rpcUrls: BSC_RPC_NODES,
-                    blockExplorerUrls: ['https://bscscan.com/']
-                  }]
-                });
-              } catch (addError) {}
-            }
-          }
+        if (typeof window.ethereum === 'undefined') {
+          throw new Error('No se detectó una billetera Web3.');
+        }
+
+        let chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        if (String(chainId).toLowerCase() === '0x38') return;
+
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x38' }]
+          });
+        } catch (switchError) {
+          if (switchError.code !== 4902) throw switchError;
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: '0x38',
+              chainName: 'BNB Smart Chain Mainnet',
+              nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
+              rpcUrls: BSC_RPC_NODES,
+              blockExplorerUrls: ['https://bscscan.com/']
+            }]
+          });
+        }
+
+        chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        if (String(chainId).toLowerCase() !== '0x38') {
+          throw new Error('Cambia la red de la billetera a BNB Smart Chain para continuar.');
         }
       };
 
       window.actualizarSaldosSwap = async function() {
           const balanceElem = document.getElementById('swapUserBalance');
           if (!window.walletDireccionConectada || typeof window.ethereum === 'undefined') {
-              balanceElem.innerText = 'Saldo: 0.00';
+              balanceElem.innerText = 'Saldo: conecta la billetera';
               return;
           }
           
@@ -1194,16 +1376,17 @@
               const provider = new ethers.providers.Web3Provider(window.ethereum);
               if (currency === 'BNB') {
                   const balanceWei = await provider.getBalance(window.walletDireccionConectada);
-                  const balanceBnb = parseFloat(ethers.utils.formatEther(balanceWei));
-                  balanceElem.innerText = `Saldo: ${balanceBnb.toFixed(4)} BNB`;
+                  balanceElem.innerText = `Saldo: ${formatearSaldoReal(balanceWei, 18, 'BNB').display}`;
               } else {
                   const usdtContract = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, provider);
-                  const balanceWei = await usdtContract.balanceOf(window.walletDireccionConectada);
-                  const balanceUsdt = parseFloat(ethers.utils.formatUnits(balanceWei, 18));
-                  balanceElem.innerText = `Saldo: ${balanceUsdt.toFixed(2)} USDT`;
+                  const [balanceWei, decimals] = await Promise.all([
+                    usdtContract.balanceOf(window.walletDireccionConectada),
+                    usdtContract.decimals()
+                  ]);
+                  balanceElem.innerText = `Saldo: ${formatearSaldoReal(balanceWei, Number(decimals), 'USDT').display}`;
               }
           } catch (error) {
-              balanceElem.innerText = 'Saldo: Error';
+              balanceElem.innerText = 'Saldo: no disponible';
               console.error("Error al cargar saldo:", error);
           }
       };
@@ -1212,22 +1395,41 @@
           const amountStr = document.getElementById('swapAmountIn').value.trim();
           const outElem = document.getElementById('swapExpectedOut');
           const amount = parseFloat(amountStr);
+          const quoteRequestId = ++swapQuoteRequestId;
+          if (swapQuoteTimer) clearTimeout(swapQuoteTimer);
           
-          if (isNaN(amount) || amount <= 0 || window.PRECIO_TOKEN_USD <= 0) {
-              outElem.innerText = `Recibirás aprox: 0.00 NEX`;
+          if (!Number.isFinite(amount) || amount <= 0) {
+              outElem.innerText = 'Ingresa una cantidad válida para cotizar.';
               return;
           }
 
           const currency = document.getElementById('swapCurrency').value;
-          let nexAmount = 0;
-          
-          if (currency === 'BNB') {
-              nexAmount = (amount * window.PRECIO_BNB_USD) / window.PRECIO_TOKEN_USD;
-          } else {
-              nexAmount = amount / window.PRECIO_TOKEN_USD;
-          }
-          
-          outElem.innerText = `Recibirás aprox: ${window.formatearMoneda(nexAmount, 2)} NEX`;
+          outElem.innerText = 'Consultando cotización de PancakeSwap...';
+          swapQuoteTimer = setTimeout(async () => {
+            try {
+              const provider = window.obtenerProveedorBSC();
+              const router = new ethers.Contract(PANCAKE_ROUTER_ADDRESS, ROUTER_ABI, provider);
+              const path = currency === 'BNB'
+                ? [WBNB_ADDRESS, TOKEN_CONTRACT_ADDRESS]
+                : [USDT_BSC_ADDRESS, TOKEN_CONTRACT_ADDRESS];
+              const inputDecimals = currency === 'BNB'
+                ? 18
+                : Number(await new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, provider).decimals());
+              const tokenDecimals = Number(await new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, provider).decimals());
+              const amountInWei = ethers.utils.parseUnits(amountStr, inputDecimals);
+              const amounts = await router.getAmountsOut(amountInWei, path);
+              const amountOut = amounts[amounts.length - 1];
+              if (!amountOut || amountOut.isZero()) {
+                throw new Error('PancakeSwap no devolvió una cotización válida.');
+              }
+              if (quoteRequestId !== swapQuoteRequestId) return;
+              outElem.innerText = `Cotización PancakeSwap: ${formatearSaldoReal(amountOut, tokenDecimals, 'NEX').display}`;
+            } catch (error) {
+              if (quoteRequestId !== swapQuoteRequestId) return;
+              outElem.innerText = 'Cotización no disponible. Inténtalo más tarde.';
+              console.warn('No se pudo cotizar la compra de NEX:', error);
+            }
+          }, 300);
       };
 
       window.ejecutarSwapWeb3 = async function() {
@@ -1235,7 +1437,7 @@
         const amountInStr = document.getElementById('swapAmountIn').value.trim();
         const amountIn = parseFloat(amountInStr);
 
-        if (!amountInStr || isNaN(amountIn) || amountIn <= 0) {
+        if (!amountInStr || !Number.isFinite(amountIn) || amountIn <= 0) {
             return alert("Ingresa una cantidad válida.");
         }
 
@@ -1251,19 +1453,24 @@
             const walletUser = await signer.getAddress();
             
             const balanceWei = await provider.getBalance(walletUser);
-            const balanceBnb = parseFloat(ethers.utils.formatEther(balanceWei));
+            const gasReserveWei = ethers.utils.parseEther('0.0005');
 
             if (currency === 'BNB') {
-                if (balanceBnb < (amountIn + 0.0005)) {
+                const amountInWei = ethers.utils.parseEther(amountInStr);
+                if (balanceWei.lt(amountInWei.add(gasReserveWei))) {
                     return alert("Saldo insuficiente. No tienes suficiente BNB en tu billetera para pagar esta cantidad más la comisión de red. Recarga BNB para evitar errores.");
                 }
             } else if (currency === 'USDT') {
-                if (balanceBnb < 0.0005) {
+                if (balanceWei.lt(gasReserveWei)) {
                     return alert("Necesitas al menos un poco de BNB (aprox. 0.0005) para pagar la comisión de gas de la transacción, aunque pagues con USDT.");
                 }
                 const usdtContractTest = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, provider);
-                const usdtBal = await usdtContractTest.balanceOf(walletUser);
-                if (parseFloat(ethers.utils.formatUnits(usdtBal, 18)) < amountIn) {
+                const [usdtBal, usdtDecimals] = await Promise.all([
+                  usdtContractTest.balanceOf(walletUser),
+                  usdtContractTest.decimals()
+                ]);
+                const amountInWei = ethers.utils.parseUnits(amountInStr, Number(usdtDecimals));
+                if (usdtBal.lt(amountInWei)) {
                     return alert("No tienes suficiente saldo de USDT para realizar esta compra.");
                 }
             }
@@ -1274,10 +1481,18 @@
             if (currency === 'BNB') {
                 const amountInWei = ethers.utils.parseEther(amountInStr);
                 const path = [WBNB_ADDRESS, TOKEN_CONTRACT_ADDRESS];
+                const quote = await routerContract.getAmountsOut(amountInWei, path);
+                const expectedOut = quote[quote.length - 1];
+                if (!expectedOut || expectedOut.isZero()) {
+                  throw new Error('PancakeSwap no ofrece una cotización válida para esta compra.');
+                }
+                const amountOutMin = expectedOut.mul(BASIS_POINTS - MAX_SLIPPAGE_BPS).div(BASIS_POINTS);
+                if (amountOutMin.isZero()) throw new Error('La cotización es demasiado pequeña para operar con seguridad.');
+                const nexDecimals = await new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, provider).decimals();
                 
-                alert("Confirma la transacción en tu billetera para comprar con BNB...");
+                alert(`Confirma en tu billetera. La compra tiene protección de deslizamiento máxima del 1% y recibirás al menos ${formatearSaldoReal(amountOutMin, Number(nexDecimals), 'NEX').display}, según la cotización actual.`);
                 const tx = await routerContract.swapExactETHForTokens(
-                    0, 
+                    amountOutMin,
                     path,
                     walletUser,
                     deadline,
@@ -1288,19 +1503,27 @@
                 alert("¡Compra completada exitosamente!");
                 
             } else if (currency === 'USDT') {
-                const amountInWei = ethers.utils.parseUnits(amountInStr, 18);
-                const path = [USDT_BSC_ADDRESS, TOKEN_CONTRACT_ADDRESS];
-                
                 const usdtContract = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, signer);
+                const usdtDecimals = Number(await usdtContract.decimals());
+                const amountInWei = ethers.utils.parseUnits(amountInStr, usdtDecimals);
+                const path = [USDT_BSC_ADDRESS, TOKEN_CONTRACT_ADDRESS];
+                const quote = await routerContract.getAmountsOut(amountInWei, path);
+                const expectedOut = quote[quote.length - 1];
+                if (!expectedOut || expectedOut.isZero()) {
+                  throw new Error('PancakeSwap no ofrece una cotización válida para esta compra.');
+                }
+                const amountOutMin = expectedOut.mul(BASIS_POINTS - MAX_SLIPPAGE_BPS).div(BASIS_POINTS);
+                if (amountOutMin.isZero()) throw new Error('La cotización es demasiado pequeña para operar con seguridad.');
+                const nexDecimals = await new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, provider).decimals();
                 
                 alert("Paso 1: Confirma la aprobación de USDT en tu billetera...");
                 const txApprove = await usdtContract.approve(PANCAKE_ROUTER_ADDRESS, amountInWei);
                 await txApprove.wait();
                 
-                alert("Paso 2: Ahora, confirma el intercambio (Swap) en tu billetera...");
+                alert(`Paso 2: confirma el intercambio. Protección de deslizamiento máxima del 1%; recibirás al menos ${formatearSaldoReal(amountOutMin, nexDecimals, 'NEX').display}.`);
                 const txSwap = await routerContract.swapExactTokensForTokens(
                     amountInWei,
-                    0, 
+                    amountOutMin,
                     path,
                     walletUser,
                     deadline
@@ -1312,7 +1535,7 @@
 
             window.cerrarModal('modalCanjear');
             document.getElementById('swapAmountIn').value = '';
-            window.consultarSaldoOnChain(walletUser);
+            await window.refrescarSaldoWallet(walletUser, true);
 
         } catch (error) {
             console.error("Error en canje:", error);
@@ -1345,7 +1568,8 @@
             const walletUser = await signer.getAddress();
 
             const contract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, signer);
-            const parsedAmount = ethers.utils.parseUnits(cantidadStr, 18);
+            const tokenDecimals = Number(await contract.decimals());
+            const parsedAmount = ethers.utils.parseUnits(cantidadStr, tokenDecimals);
 
             alert("Confirma el envío en tu billetera...");
             const tx = await contract.transfer(destino, parsedAmount);
@@ -1356,7 +1580,7 @@
             window.cerrarModal('sendTokensModal');
             document.getElementById('sendDestinationAddress').value = '';
             document.getElementById('sendTokenAmount').value = '';
-            window.consultarSaldoOnChain(walletUser);
+            await window.refrescarSaldoWallet(walletUser, true);
 
         } catch (error) {
             console.error("Error en envío:", error);
@@ -1364,33 +1588,117 @@
         }
       };
 
-      window.consultarSaldoOnChain = async function(address) {
+      window.consultarSaldoOnChain = async function(address, loadHistory = true) {
         if (!address) return;
+        let walletAddress = null;
         try {
-          window.walletDireccionConectada = ethers.utils.getAddress(address);
-          
-          let provider;
-          if (typeof window.ethereum !== 'undefined') {
-            provider = new ethers.providers.Web3Provider(window.ethereum);
-          } else {
-            provider = new ethers.providers.JsonRpcProvider(BSC_RPC_NODES[0]);
-          }
-
+          walletAddress = ethers.utils.getAddress(address);
+          window.walletDireccionConectada = walletAddress;
+          const provider = window.obtenerProveedorBSC();
           const contract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, provider);
-          const rawBalance = await contract.balanceOf(window.walletDireccionConectada);
-          const formattedBalance = parseFloat(ethers.utils.formatUnits(rawBalance, 18));
+          const [rawBalance, tokenDecimals] = await Promise.all([
+            contract.balanceOf(walletAddress),
+            contract.decimals()
+          ]);
+          if (window.walletDireccionConectada !== walletAddress) return;
+          const exactBalance = ethers.utils.formatUnits(rawBalance, Number(tokenDecimals));
+          const formattedBalance = Number(exactBalance);
           
           window.tokensActualesUsuario = formattedBalance;
-          document.getElementById('userTokens').innerText = window.formatearMoneda(formattedBalance) + ' NEX';
+          const tokenBalanceElem = document.getElementById('userTokens');
+          if (tokenBalanceElem) {
+            const tokenBalance = formatearSaldoReal(rawBalance, Number(tokenDecimals), 'NEX');
+            tokenBalanceElem.innerText = tokenBalance.display;
+            tokenBalanceElem.title = `${tokenBalance.exact} NEX`;
+          }
           document.getElementById('walletWarningBanner').style.display = 'none';
-          document.getElementById('userDisplay').innerText = window.walletDireccionConectada.substring(0, 6) + "..." + window.walletDireccionConectada.substring(38);
+          document.getElementById('userDisplay').innerText = walletAddress.substring(0, 6) + "..." + walletAddress.substring(38);
           
           window.recalcularBalanceUsuario();
-          window.cargarHistorialOnChainReal(window.walletDireccionConectada);
+          if (loadHistory) window.cargarHistorialOnChainReal(walletAddress);
         } catch (error) {
-            console.error("Error al consultar saldo:", error);
+          if (walletAddress && window.walletDireccionConectada === walletAddress) {
+            const tokenBalanceElem = document.getElementById('userTokens');
+            if (tokenBalanceElem) tokenBalanceElem.innerText = 'No disponible';
+          }
+          console.error("Error al consultar saldo:", error);
         }
       };
+
+      window.refrescarSaldoWallet = async function(address = window.walletDireccionConectada, loadHistory = false) {
+        if (!address) {
+          window.walletDireccionConectada = null;
+          mostrarWalletSinConectar();
+          const warning = document.getElementById('walletWarningBanner');
+          if (warning) warning.style.display = 'flex';
+          return;
+        }
+
+        let walletAddress;
+        try {
+          walletAddress = ethers.utils.getAddress(address);
+        } catch (error) {
+          window.walletDireccionConectada = null;
+          mostrarWalletSinConectar();
+          return;
+        }
+
+        window.walletDireccionConectada = walletAddress;
+        await Promise.all([
+          window.consultarSaldoOnChain(walletAddress, loadHistory),
+          window.actualizarSaldosReales(walletAddress)
+        ]);
+      };
+
+      if (typeof window.ethereum !== 'undefined' && typeof window.ethereum.on === 'function') {
+        window.ethereum.on('accountsChanged', async (accounts) => {
+          if (!accounts || accounts.length === 0) {
+            await window.refrescarSaldoWallet(null);
+            const userDisplay = document.getElementById('userDisplay');
+            if (userDisplay) {
+              userDisplay.innerText = window.usuarioActual?.email || window.usuarioActual?.displayName || 'Invitado';
+            }
+            return;
+          }
+          await window.refrescarSaldoWallet(accounts[0]);
+        });
+
+        window.ethereum.on('chainChanged', async () => {
+          try {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts && accounts.length > 0) {
+              await window.refrescarSaldoWallet(accounts[0]);
+            }
+          } catch (error) {
+            console.error('No se pudo actualizar la billetera tras cambiar de red:', error);
+          }
+        });
+      }
+
+      async function refrescarBilleteraSiConectada() {
+        if (typeof window.ethereum !== 'undefined' && typeof window.ethereum.request === 'function') {
+          try {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts && accounts.length > 0) {
+              await window.refrescarSaldoWallet(accounts[0]);
+            } else if (window.walletDireccionConectada) {
+              await window.refrescarSaldoWallet(null);
+            }
+            return;
+          } catch (error) {
+            console.warn('No se pudo revisar la cuenta conectada:', error);
+          }
+        }
+        if (window.walletDireccionConectada) {
+          await window.refrescarSaldoWallet();
+        }
+      }
+
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          refrescarBilleteraSiConectada();
+        }
+      });
 
       onAuthStateChanged(auth, async (user) => {
         if (user) {
@@ -1421,7 +1729,7 @@
             try {
               const accounts = await window.ethereum.request({ method: 'eth_accounts' });
               if (accounts && accounts.length > 0) {
-                window.consultarSaldoOnChain(accounts[0]);
+                await window.refrescarSaldoWallet(accounts[0], true);
               }
             } catch (e) {}
           }
@@ -1435,9 +1743,9 @@
             
             if (typeof window.ethereum !== 'undefined') {
               try {
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
                 if (accounts && accounts.length > 0) {
-                  window.consultarSaldoOnChain(accounts[0]);
+                  await window.refrescarSaldoWallet(accounts[0], true);
                 }
               } catch(e) {}
             }
@@ -1454,28 +1762,18 @@
       });
 
       window.onload = async () => {
-          if (localStorage.getItem("nex_sesion_activa") === "true" || window.location.search.includes("autologin=true") || typeof window.ethereum !== 'undefined') {
-              document.getElementById('welcomeSection').style.display = 'none';
-              document.getElementById('appContent').style.display = 'block';
-              
-              document.getElementById('btnLogoutTop').style.display = 'inline-block';
-              document.getElementById('authBtn').style.display = 'none';
-          } else {
-              document.getElementById('appContent').style.display = 'none';
-              document.getElementById('welcomeSection').style.display = 'block';
-              
-              document.getElementById('btnLogoutTop').style.display = 'none';
-              document.getElementById('authBtn').style.display = 'inline-block';
-          }
-          await window.asegurarRedBNB();
-          await window.actualizarPrecioTokenEnVivo();
+          window.actualizarPrecioTokenEnVivo();
+          window.actualizarCambioPrecio24h();
           setInterval(window.actualizarPrecioTokenEnVivo, 12000);
+          setInterval(window.actualizarCambioPrecio24h, 5 * 60 * 1000);
+          if (walletBalanceRefreshTimer) clearInterval(walletBalanceRefreshTimer);
+          walletBalanceRefreshTimer = setInterval(refrescarBilleteraSiConectada, 30000);
 
           if (typeof window.ethereum !== 'undefined') {
               try {
                   const accounts = await window.ethereum.request({ method: 'eth_accounts' });
                   if (accounts.length > 0) {
-                      window.consultarSaldoOnChain(accounts[0]);
+                      await window.refrescarSaldoWallet(accounts[0], true);
                   }
               } catch(e) {}
           }
@@ -1511,7 +1809,7 @@
               return alert("Por favor, conecta tu billetera primero para poder canjear.");
           }
           document.getElementById('swapAmountIn').value = '';
-          document.getElementById('swapExpectedOut').innerText = 'Recibirás aprox: 0.00 NEX';
+          document.getElementById('swapExpectedOut').innerText = 'Ingresa una cantidad para cotizar.';
           document.getElementById('modalCanjear').classList.add('show');
           
           window.actualizarSaldosSwap();
@@ -1548,10 +1846,10 @@
         
         if (typeof window.ethereum !== 'undefined') {
           try {
-            if (window.asegurarRedBNB) await window.asegurarRedBNB();
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             if (accounts && accounts.length > 0) {
-              window.consultarSaldoOnChain(accounts[0]);
+              await window.asegurarRedBNB();
+              await window.refrescarSaldoWallet(accounts[0], true);
               return;
             }
           } catch (error) {
