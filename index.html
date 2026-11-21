@@ -35,6 +35,7 @@
             min-height: 100vh; 
             padding: 16px; 
             padding-top: 70px; 
+            padding-bottom: 100px;
         }
 
         .top-bar { 
@@ -175,6 +176,126 @@
             z-index: 10000;
             display: none;
             background: #071a33;
+            overflow-y: auto;
+            padding: 30px 16px calc(108px + env(safe-area-inset-bottom));
+        }
+        .games-panel {
+            width: min(100%, 760px);
+            margin: 0 auto;
+        }
+        .games-heading {
+            color: var(--text-main);
+            font-size: clamp(24px, 5vw, 34px);
+            margin-bottom: 8px;
+        }
+        .games-copy {
+            color: #b8c7dc;
+            line-height: 1.55;
+        }
+        .wallet-profile {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .wallet-avatar {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-cyan);
+            background: #0b1220;
+        }
+        .wallet-avatar-placeholder {
+            display: grid;
+            place-items: center;
+            font-size: 32px;
+            color: var(--primary-cyan);
+        }
+        .wallet-profile-copy { min-width: 0; }
+        .wallet-profile-copy h2 { font-size: 20px; overflow-wrap: anywhere; }
+        .wallet-profile-copy p { color: var(--text-muted); font-size: 13px; overflow-wrap: anywhere; margin-top: 4px; }
+        .wallet-balance-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin: 18px 0;
+        }
+        .wallet-balance-card {
+            background: #0b1220;
+            border: 1px solid #253650;
+            border-radius: 14px;
+            padding: 16px;
+            min-width: 0;
+        }
+        .wallet-balance-card span { color: #b8c7dc; font-size: 12px; }
+        .wallet-balance-card strong {
+            display: block;
+            font-size: clamp(16px, 4vw, 22px);
+            margin-top: 8px;
+            overflow-wrap: anywhere;
+        }
+        .wallet-note {
+            border: 1px solid rgba(245, 158, 11, .45);
+            background: rgba(245, 158, 11, .08);
+            color: #f6d28b;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 13px;
+            line-height: 1.5;
+            margin: 16px 0;
+        }
+        .wallet-action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .wallet-action-row button {
+            min-height: 48px;
+            border-radius: 10px;
+            font: inherit;
+            font-weight: 700;
+        }
+        .wallet-action-disabled {
+            color: #9ca3af;
+            border: 1px solid #344154;
+            background: #172033;
+            cursor: not-allowed;
+        }
+        .games-bottom-nav {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10001;
+            display: none;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 4px;
+            padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+            background: rgba(10, 16, 29, .97);
+            border-top: 1px solid #26364c;
+            backdrop-filter: blur(12px);
+        }
+        .games-nav-button {
+            min-height: 54px;
+            padding: 7px 4px;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            color: #c4d0df;
+            background: transparent;
+            font: inherit;
+            font-size: clamp(11px, 2.8vw, 14px);
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .games-nav-button[aria-current="page"] {
+            color: #07111f;
+            background: var(--primary-cyan);
+        }
+        .games-nav-button:focus-visible {
+            outline: 3px solid #fff;
+            outline-offset: 2px;
+        }
+        @media (max-width: 420px) {
+            .wallet-balance-grid { gap: 8px; }
+            .wallet-balance-card { padding: 12px; }
+            .wallet-action-row { grid-template-columns: 1fr; }
         }
 
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
@@ -225,7 +346,7 @@
             width: 100%; 
             height: 100%; 
             background: #000; 
-            z-index: 9999; 
+            z-index: 10002; 
             flex-direction: column; 
             align-items: center; 
             justify-content: center; 
@@ -418,7 +539,55 @@
             <button class="entry-choice entry-choice-secondary" type="button" onclick="entrarJuegosProximamente()">Juegos próximamente</button>
         </div>
     </div>
-    <div id="gamesPlaceholder" aria-hidden="true"></div>
+    <div id="gamesPlaceholder" aria-hidden="true">
+        <section id="gamesHomeView" class="games-panel" aria-labelledby="gamesHomeTitle">
+            <h1 id="gamesHomeTitle" class="games-heading">Juegos próximamente</h1>
+            <p class="games-copy">Esta sección todavía no tiene juegos disponibles.</p>
+        </section>
+        <section id="walletView" class="games-panel" aria-labelledby="walletTitle" style="display: none;">
+            <div class="card">
+                <div class="wallet-profile">
+                    <div id="walletAvatarPlaceholder" class="wallet-avatar wallet-avatar-placeholder" aria-hidden="true">N</div>
+                    <img id="walletAvatarImage" class="wallet-avatar" alt="Foto de perfil" style="display: none;">
+                    <div class="wallet-profile-copy">
+                        <h1 id="walletTitle" class="games-heading">Cartera</h1>
+                        <h2 id="walletProfileName">Usuario</h2>
+                        <p id="walletProfileEmail">Inicia sesión para ver tu perfil</p>
+                    </div>
+                </div>
+                <input id="walletAvatarFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+                <button type="button" class="btn-gen" onclick="document.getElementById('walletAvatarFile').click()">Agregar o cambiar foto</button>
+                <p class="games-copy" style="font-size: 12px; margin-top: 8px;">La foto se guarda solo en este dispositivo.</p>
+
+                <div class="wallet-balance-grid" aria-label="Saldos">
+                    <div class="wallet-balance-card">
+                        <span>Saldo de juego</span>
+                        <strong id="walletGameBalance">No disponible</strong>
+                        <span>Pix no está conectado</span>
+                    </div>
+                    <div class="wallet-balance-card">
+                        <span>Saldo en NEX Token</span>
+                        <strong id="walletNexBalance">Billetera desconectada</strong>
+                        <span id="walletNexBalanceNote">Saldo del token en la red, no dinero para retirar.</span>
+                    </div>
+                </div>
+
+                <div class="wallet-note" role="status">
+                    Los depósitos y retiros Pix están desactivados. No ingreses una llave Pix ni datos de retiro aquí; el proveedor y el servidor seguro aún no están configurados.
+                </div>
+                <div class="wallet-action-row">
+                    <button type="button" class="wallet-action-disabled" disabled aria-describedby="pixDisabledNote">Depositar dinheiro · mínimo R$10</button>
+                    <button type="button" class="wallet-action-disabled" disabled aria-describedby="pixDisabledNote">Sacar dinheiro</button>
+                </div>
+                <p id="pixDisabledNote" class="games-copy" style="font-size: 12px; margin-top: 10px;">No se aceptan ni procesan pagos en este momento.</p>
+            </div>
+        </section>
+    </div>
+    <nav id="gamesBottomNav" class="games-bottom-nav" aria-label="Navegación principal">
+        <button type="button" class="games-nav-button" data-portal-section="game" onclick="abrirSeccionPortal('game')" aria-current="page">Juego</button>
+        <button type="button" class="games-nav-button" data-portal-section="tokens" onclick="mostrarAccesoNormal()">Invertir en NEX Token</button>
+        <button type="button" class="games-nav-button" data-portal-section="wallet" onclick="abrirSeccionPortal('wallet')">Cartera</button>
+    </nav>
 
     <div class="top-bar" style="display: none;">
         <div id="userDisplay" class="user-info-bar">Invitado</div>
@@ -919,6 +1088,8 @@
       function mostrarPuertaEntrada() {
           document.getElementById('entryGate').style.display = 'flex';
           document.getElementById('gamesPlaceholder').style.display = 'none';
+          document.getElementById('gamesPlaceholder').setAttribute('aria-hidden', 'true');
+          document.getElementById('gamesBottomNav').style.display = 'none';
           document.querySelector('.top-bar').style.display = 'none';
           document.getElementById('welcomeSection').style.display = 'none';
           document.getElementById('appContent').style.display = 'none';
@@ -934,6 +1105,10 @@
           window.usuarioActual = user || null;
           document.getElementById('entryGate').style.display = 'none';
           document.getElementById('gamesPlaceholder').style.display = 'none';
+          document.getElementById('gamesPlaceholder').setAttribute('aria-hidden', 'true');
+          const portalNav = document.getElementById('gamesBottomNav');
+          portalNav.style.display = window.nexPortalMode === 'tokens' ? 'grid' : 'none';
+          actualizarNavegacionPortal('tokens');
           document.querySelector('.top-bar').style.display = 'flex';
           document.getElementById('welcomeSection').style.display = 'none';
           document.getElementById('appContent').style.display = 'block';
@@ -976,37 +1151,159 @@
           }
           document.getElementById('entryGate').style.display = 'none';
           document.getElementById('gamesPlaceholder').style.display = 'none';
+          document.getElementById('gamesPlaceholder').setAttribute('aria-hidden', 'true');
+          document.getElementById('gamesBottomNav').style.display = 'none';
           document.querySelector('.top-bar').style.display = 'flex';
           document.getElementById('welcomeSection').style.display = 'block';
           document.getElementById('appContent').style.display = 'none';
       };
 
-      function mostrarPantallaJuegos() {
+      function actualizarNavegacionPortal(section) {
+          document.querySelectorAll('.games-nav-button').forEach((button) => {
+              if (button.dataset.portalSection === section) {
+                  button.setAttribute('aria-current', 'page');
+              } else {
+                  button.removeAttribute('aria-current');
+              }
+          });
+      }
+
+      async function actualizarPerfilCartera(user) {
+          const name = document.getElementById('walletProfileName');
+          const email = document.getElementById('walletProfileEmail');
+          const image = document.getElementById('walletAvatarImage');
+          const placeholder = document.getElementById('walletAvatarPlaceholder');
+          let localPhoto = null;
+          try {
+              localPhoto = user?.uid ? localStorage.getItem(`nex_profile_photo_${user.uid}`) : null;
+          } catch (error) {
+              localPhoto = null;
+          }
+          const photoUrl = localPhoto || user?.photoURL || '';
+
+          if (name) name.textContent = user?.displayName || 'Nombre no disponible en la cuenta';
+          if (email) email.textContent = user?.email || 'Correo no disponible';
+          if (user?.uid) {
+              try {
+                  const profile = await getDoc(doc(db, 'usuarios', user.uid));
+                  if (profile.exists()) {
+                      const details = profile.data();
+                      if (name && details.nombre) name.textContent = details.nombre;
+                      if (email && details.email) email.textContent = details.email;
+                  }
+              } catch (error) {
+                  console.warn('No se pudo cargar el perfil de cartera:', error);
+              }
+          }
+          if (image && placeholder) {
+              if (photoUrl) {
+                  image.src = photoUrl;
+                  image.style.display = 'block';
+                  placeholder.style.display = 'none';
+                  image.onerror = () => {
+                      image.style.display = 'none';
+                      placeholder.style.display = 'grid';
+                  };
+              } else {
+                  image.removeAttribute('src');
+                  image.style.display = 'none';
+                  placeholder.style.display = 'grid';
+              }
+          }
+          actualizarSaldoCartera();
+      }
+
+      function actualizarSaldoCartera() {
+          const balance = document.getElementById('walletNexBalance');
+          const note = document.getElementById('walletNexBalanceNote');
+          if (!balance) return;
+          const tokenBalance = document.getElementById('userTokens')?.textContent?.trim() || '';
+          if (!window.walletDireccionConectada || !tokenBalance || tokenBalance === 'Conecta la billetera') {
+              balance.textContent = 'Billetera desconectada';
+              if (note) note.textContent = 'Conecta una billetera para consultar el saldo real de NEX.';
+              return;
+          }
+          balance.textContent = tokenBalance;
+          if (note) note.textContent = 'Saldo real del token en BNB Smart Chain; no es efectivo para retirar.';
+      }
+
+      function mostrarPantallaJuegos(section = 'game') {
+          window.nexPortalMode = 'games';
+          window.nexPortalSection = section;
           document.getElementById('entryGate').style.display = 'none';
           document.querySelector('.top-bar').style.display = 'none';
           document.getElementById('welcomeSection').style.display = 'none';
           document.getElementById('appContent').style.display = 'none';
           document.getElementById('gamesPlaceholder').style.display = 'block';
+          document.getElementById('gamesPlaceholder').setAttribute('aria-hidden', 'false');
+          document.getElementById('gamesBottomNav').style.display = 'grid';
+          document.getElementById('gamesHomeView').style.display = section === 'game' ? 'block' : 'none';
+          document.getElementById('walletView').style.display = section === 'wallet' ? 'block' : 'none';
+          actualizarNavegacionPortal(section);
+          if (section === 'wallet') actualizarPerfilCartera(window.usuarioActual || auth.currentUser);
       }
 
-      window.entrarJuegosProximamente = async function() {
+      window.abrirSeccionPortal = async function(section) {
+          if (!['game', 'wallet'].includes(section)) return;
+          if (section === 'tokens') return window.mostrarAccesoNormal();
           const currentUser = auth.currentUser || (!nexAuthReadyResolved ? await nexAuthReady : null);
           if (currentUser) {
-              window.nexPortalMode = 'games';
-              mostrarPantallaJuegos();
+              window.usuarioActual = currentUser;
+              mostrarPantallaJuegos(section);
               return;
           }
           window.nexPortalMode = 'games-pending';
           try {
               await signInWithPopup(auth, googleProvider);
-              window.nexPortalMode = 'games';
-              mostrarPantallaJuegos();
+              window.usuarioActual = auth.currentUser;
+              mostrarPantallaJuegos(section);
           } catch(e) {
               window.nexPortalMode = null;
               mostrarPuertaEntrada();
               alert("No se pudo verificar con Google: " + e.message);
           }
       };
+      window.entrarJuegosProximamente = () => window.abrirSeccionPortal('game');
+
+      document.getElementById('walletAvatarFile').addEventListener('change', async (event) => {
+          const file = event.target.files?.[0];
+          const user = auth.currentUser;
+          if (!file || !user?.uid) {
+              event.target.value = '';
+              return;
+          }
+          if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+              alert('Elige una imagen JPG, PNG o WebP de hasta 5 MB.');
+              event.target.value = '';
+              return;
+          }
+          try {
+              const dataUrl = await new Promise((resolve, reject) => {
+                  const reader = new FileReader();
+                  reader.onload = () => resolve(reader.result);
+                  reader.onerror = reject;
+                  reader.readAsDataURL(file);
+              });
+              const source = await new Promise((resolve, reject) => {
+                  const image = new Image();
+                  image.onload = () => resolve(image);
+                  image.onerror = reject;
+                  image.src = dataUrl;
+              });
+              const canvas = document.createElement('canvas');
+              const scale = Math.min(1, 320 / Math.max(source.width, source.height));
+              canvas.width = Math.max(1, Math.round(source.width * scale));
+              canvas.height = Math.max(1, Math.round(source.height * scale));
+              canvas.getContext('2d').drawImage(source, 0, 0, canvas.width, canvas.height);
+              const compressedPhoto = canvas.toDataURL('image/jpeg', 0.78);
+              localStorage.setItem(`nex_profile_photo_${user.uid}`, compressedPhoto);
+              actualizarPerfilCartera(user);
+          } catch (error) {
+              alert('No se pudo guardar la foto en este dispositivo.');
+          } finally {
+              event.target.value = '';
+          }
+      });
       window.ejecutarLoginGoogle = async function() {
           try {
               const res = await signInWithPopup(auth, googleProvider);
@@ -1866,7 +2163,7 @@
           if (window.nexPortalMode === 'games-pending') return;
           if (window.nexPortalMode === 'games') {
             window.usuarioActual = user;
-            mostrarPantallaJuegos();
+            mostrarPantallaJuegos(window.nexPortalSection || 'game');
             return;
           }
           if (window.nexPortalMode === 'tokens') {
@@ -1881,7 +2178,7 @@
         window.usuarioActual = null;
         if (window.nexPortalMode === 'games-pending') return;
         if (window.nexPortalMode === 'games') {
-          mostrarPantallaJuegos();
+          mostrarPantallaJuegos(window.nexPortalSection || 'game');
           return;
         }
         if (window.nexPortalMode === 'tokens') {
