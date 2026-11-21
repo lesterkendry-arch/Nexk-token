@@ -563,7 +563,7 @@
                     <div class="wallet-balance-card">
                         <span>Saldo de juego</span>
                         <strong id="walletGameBalance">No disponible</strong>
-                        <span>Pix no está conectado</span>
+                        <span id="walletGameBalanceNote">Saldo confirmado en BRL</span>
                     </div>
                     <div class="wallet-balance-card">
                         <span>Saldo en NEX Token</span>
@@ -573,13 +573,41 @@
                 </div>
 
                 <div class="wallet-note" role="status">
-                    Los depósitos y retiros Pix están desactivados. No ingreses una llave Pix ni datos de retiro aquí; el proveedor y el servidor seguro aún no están configurados.
+                    Los saldos se actualizan únicamente después de la confirmación del servidor y Asaas. El saldo de NEX Token no es dinero retirable.
                 </div>
                 <div class="wallet-action-row">
-                    <button type="button" class="wallet-action-disabled" disabled aria-describedby="pixDisabledNote">Depositar dinheiro · mínimo R$10</button>
-                    <button type="button" class="wallet-action-disabled" disabled aria-describedby="pixDisabledNote">Sacar dinheiro</button>
+                    <button id="walletDepositButton" type="button" class="wallet-action-disabled" disabled onclick="toggleWalletForm('deposit')" aria-describedby="pixDisabledNote">Depositar dinheiro · mínimo R$10</button>
+                    <button id="walletWithdrawButton" type="button" class="wallet-action-disabled" disabled onclick="toggleWalletForm('withdraw')" aria-describedby="pixDisabledNote">Sacar dinheiro</button>
                 </div>
-                <p id="pixDisabledNote" class="games-copy" style="font-size: 12px; margin-top: 10px;">No se aceptan ni procesan pagos en este momento.</p>
+                <p id="pixDisabledNote" class="games-copy" style="font-size: 12px; margin-top: 10px;">Preparando conexión segura con Asaas.</p>
+                <form id="walletDepositForm" hidden style="margin-top:16px;">
+                    <label for="walletDepositAmount">Monto en reales (mínimo R$10)</label>
+                    <input id="walletDepositAmount" type="number" min="10" step="0.01" required>
+                    <button class="btn-auth" type="submit">Generar Pix</button>
+                    <p id="walletDepositResult" class="games-copy" role="status"></p>
+                    <img id="walletDepositQr" alt="Código QR Pix" style="display:none;max-width:220px;background:white;padding:8px;border-radius:8px;">
+                    <button type="button" class="btn-gen" onclick="toggleWalletForm('')">Cerrar</button>
+                </form>
+                <form id="walletWithdrawForm" hidden style="margin-top:16px;">
+                    <label for="walletWithdrawAmount">Monto para retirar (máximo R$5.000 al día)</label>
+                    <input id="walletWithdrawAmount" type="number" min="0.01" max="5000" step="0.01" required>
+                    <label for="walletLegalName">Nombre completo legal</label>
+                    <input id="walletLegalName" type="text" autocomplete="name" maxlength="120" required>
+                    <label for="walletPixType">Tipo de llave Pix</label>
+                    <select id="walletPixType" required>
+                        <option value="">Selecciona</option>
+                        <option value="CPF">CPF</option>
+                        <option value="CNPJ">CNPJ</option>
+                        <option value="EMAIL">Correo</option>
+                        <option value="PHONE">Teléfono</option>
+                        <option value="EVP">Llave aleatoria</option>
+                    </select>
+                    <label for="walletPixKey">Llave Pix</label>
+                    <input id="walletPixKey" type="text" autocomplete="off" maxlength="120" required>
+                    <button class="btn-auth" type="submit">Solicitar retiro</button>
+                    <p id="walletWithdrawResult" class="games-copy" role="status"></p>
+                    <button type="button" class="btn-gen" onclick="toggleWalletForm('')">Cerrar</button>
+                </form>
             </div>
         </section>
     </div>
@@ -1227,6 +1255,132 @@
           if (note) note.textContent = 'Saldo real del token en BNB Smart Chain; no es efectivo para retirar.';
       }
 
+      const walletMoneyFormatter = new Intl.NumberFormat('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+      });
+
+      async function walletApiRequest(path, body = null) {
+          const user = auth.currentUser;
+          if (!user) throw new Error('Inicia sesión para continuar.');
+          const token = await user.getIdToken();
+          const response = await fetch(path, {
+              method: body ? 'POST' : 'GET',
+              headers: {
+                  'Authorization': `Bearer ${token}`,
+                  ...(body ? {
+                      'Content-Type': 'application/json',
+                      'Idempotency-Key': crypto.randomUUID()
+                  } : {})
+              },
+              ...(body ? { body: JSON.stringify(body) } : {})
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(data.error || 'No se pudo completar la solicitud.');
+          return data;
+      }
+
+      window.toggleWalletForm = function(form) {
+          document.getElementById('walletDepositForm').hidden = form !== 'deposit';
+          document.getElementById('walletWithdrawForm').hidden = form !== 'withdraw';
+      };
+
+      async function actualizarCarteraPix() {
+          const depositButton = document.getElementById('walletDepositButton');
+          const withdrawButton = document.getElementById('walletWithdrawButton');
+          const note = document.getElementById('pixDisabledNote');
+          if (!depositButton || !withdrawButton || !note) return;
+          let enabled = false;
+          try {
+              const response = await fetch('/api/wallet/status', { cache: 'no-store' });
+              const status = await response.json();
+              enabled = response.ok && status.enabled === true;
+          } catch (error) {
+              enabled = false;
+          }
+          const signedIn = Boolean(auth.currentUser);
+          depositButton.disabled = !enabled || !signedIn;
+          withdrawButton.disabled = !enabled || !signedIn;
+          depositButton.classList.toggle('wallet-action-disabled', !enabled || !signedIn);
+          withdrawButton.classList.toggle('wallet-action-disabled', !enabled || !signedIn);
+          note.textContent = !signedIn
+              ? 'Inicia sesión con Google para usar la cartera.'
+              : enabled
+                  ? 'Pix funciona en producción. Los retiros se confirman mediante Asaas.'
+                  : 'Los movimientos Pix están desactivados hasta completar la configuración segura del servidor.';
+
+          if (!signedIn || !enabled) {
+              document.getElementById('walletGameBalance').textContent = 'No disponible';
+              return;
+          }
+          try {
+              const balance = await walletApiRequest('/api/wallet/balance');
+              document.getElementById('walletGameBalance').textContent =
+                  walletMoneyFormatter.format(balance.availableCents / 100);
+              document.getElementById('walletGameBalanceNote').textContent =
+                  `Retiro pendiente: ${walletMoneyFormatter.format(balance.reservedCents / 100)}`;
+          } catch (error) {
+              document.getElementById('walletGameBalance').textContent = 'No disponible';
+              document.getElementById('walletGameBalanceNote').textContent = error.message;
+          }
+      }
+
+      document.getElementById('walletDepositForm').addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const result = document.getElementById('walletDepositResult');
+          const image = document.getElementById('walletDepositQr');
+          result.textContent = 'Creando el cobro Pix…';
+          image.style.display = 'none';
+          try {
+              const data = await walletApiRequest('/api/wallet/deposit', {
+                  amount: Number(document.getElementById('walletDepositAmount').value)
+              });
+              result.textContent = data.pixCopyPaste
+                  ? `Pix creado. Estado: ${data.status}. Copia el código para pagar.`
+                  : `Pix creado. Estado: ${data.status}.`;
+              if (data.pixCopyPaste) {
+                  const copyButton = document.createElement('button');
+                  copyButton.type = 'button';
+                  copyButton.className = 'btn-gen';
+                  copyButton.textContent = 'Copiar código Pix';
+                  copyButton.onclick = async () => {
+                      await navigator.clipboard.writeText(data.pixCopyPaste);
+                      copyButton.textContent = 'Código copiado';
+                  };
+                  result.appendChild(document.createElement('br'));
+                  result.appendChild(copyButton);
+              }
+              if (data.pixQrCode) {
+                  image.src = `data:image/png;base64,${data.pixQrCode}`;
+                  image.style.display = 'block';
+              }
+          } catch (error) {
+              result.textContent = error.message;
+          }
+      });
+
+      document.getElementById('walletWithdrawForm').addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const result = document.getElementById('walletWithdrawResult');
+          result.textContent = 'Enviando solicitud a Asaas…';
+          try {
+              const amountCents = Math.round(
+                  Number(document.getElementById('walletWithdrawAmount').value) * 100
+              );
+              const data = await walletApiRequest('/api/wallet/withdraw', {
+                  amountCents,
+                  legalName: document.getElementById('walletLegalName').value.trim(),
+                  pixKeyType: document.getElementById('walletPixType').value,
+                  pixKey: document.getElementById('walletPixKey').value.trim()
+              });
+              result.textContent = `Solicitud enviada. Estado: ${data.status}. El saldo se libera tras confirmación de Asaas.`;
+              document.getElementById('walletPixKey').value = '';
+              await actualizarCarteraPix();
+          } catch (error) {
+              result.textContent = error.message;
+          }
+      });
+
       function mostrarPantallaJuegos(section = 'game') {
           window.nexPortalMode = 'games';
           window.nexPortalSection = section;
@@ -1240,7 +1394,10 @@
           document.getElementById('gamesHomeView').style.display = section === 'game' ? 'block' : 'none';
           document.getElementById('walletView').style.display = section === 'wallet' ? 'block' : 'none';
           actualizarNavegacionPortal(section);
-          if (section === 'wallet') actualizarPerfilCartera(window.usuarioActual || auth.currentUser);
+          if (section === 'wallet') {
+              actualizarPerfilCartera(window.usuarioActual || auth.currentUser);
+              actualizarCarteraPix();
+          }
       }
 
       window.abrirSeccionPortal = async function(section) {
