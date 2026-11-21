@@ -82,12 +82,15 @@ export default async function handler(req, res) {
     });
     await opRef.set({ providerPaymentId: payment.id, updatedAt: new Date() }, { merge: true });
     const qr = await asaas(`/payments/${encodeURIComponent(payment.id)}/pixQrCode`);
-    await opRef.set({
-      status: "pending",
-      pixCopyPaste: qr.payload || null,
-      pixQrCode: qr.encodedImage || null,
-      updatedAt: new Date(),
-    }, { merge: true });
+    await db.runTransaction(async (transaction) => {
+      const snapshot = await transaction.get(opRef);
+      transaction.set(opRef, {
+        ...(snapshot.data()?.status === "creating" ? { status: "pending" } : {}),
+        pixCopyPaste: qr.payload || null,
+        pixQrCode: qr.encodedImage || null,
+        updatedAt: new Date(),
+      }, { merge: true });
+    });
     return sendJson(res, 201, {
       id: opRef.id,
       status: "pending",

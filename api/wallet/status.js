@@ -14,7 +14,7 @@ export default function handler(req, res) {
     firebaseValid = false;
   }
   return sendJson(res, 200, {
-    enabled: missing.length === 0 && firebaseValid,
+    enabled: missing.length === 0 && firebaseValid && process.env.PIX_ENABLED === "true",
     mode: "production",
   });
 }

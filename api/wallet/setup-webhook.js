@@ -3,6 +3,7 @@ import {
   getDb,
   HttpError,
   requireUser,
+  requirePixEnabled,
   sendJson,
 } from "../_lib.js";
 
@@ -15,6 +16,7 @@ export default async function handler(req, res) {
   }
   try {
     const user = await requireUser(req);
+    requirePixEnabled();
     if (!user.email) throw new HttpError(403, "La cuenta debe tener correo verificado.");
     const db = getDb();
     const settingRef = db.collection("walletSettings").doc("asaasWebhook");

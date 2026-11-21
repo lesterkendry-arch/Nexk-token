@@ -105,14 +105,15 @@ export default async function handler(req, res) {
         externalReference: idempotencyKey,
       },
     });
-    await txRef.set(
-      {
+    await db.runTransaction(async (transaction) => {
+      const snapshot = await transaction.get(txRef);
+      const status = snapshot.data()?.status;
+      transaction.set(txRef, {
         providerTransferId: transfer.id,
-        status: "pending",
+        ...(status === "processing" || status === "unknown" ? { status: "pending" } : {}),
         updatedAt: new Date(),
-      },
-      { merge: true },
-    );
+      }, { merge: true });
+    });
     return sendJson(res, 202, {
       id: idempotencyKey,
       status: "pending",
@@ -120,7 +121,7 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     const status = error instanceof HttpError ? error.status : 502;
-    if (reserved && user && idempotencyKey && amountCents && error instanceof HttpError && error.status < 500) {
+    if (reserved && user && idempotencyKey && amountCents && error.definitiveProviderRejection === true) {
       try {
         const db = getDb();
         const accountRef = db.collection("walletAccounts").doc(user.uid);
@@ -146,10 +147,13 @@ export default async function handler(req, res) {
       }
     } else if (reserved && user && idempotencyKey && amountCents) {
       try {
-        await getDb().collection("walletTransactions").doc(idempotencyKey).set({
-          status: "unknown",
-          updatedAt: new Date(),
-        }, { merge: true });
+        const db = getDb();
+        const ref = db.collection("walletTransactions").doc(idempotencyKey);
+        await db.runTransaction(async (transaction) => {
+          const snapshot = await transaction.get(ref);
+          if (snapshot.data()?.status !== "processing") return;
+          transaction.set(ref, { status: "unknown", updatedAt: new Date() }, { merge: true });
+        });
       } catch {
         // Keep funds reserved if the provider outcome is unknown.
       }

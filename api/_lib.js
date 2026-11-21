@@ -1,11 +1,11 @@
-import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
+import { randomUUID, timingSafeEqual } from "node:crypto";
 import { cert, getApps, initializeApp } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 
 const FIREBASE_PROJECT_ID = "nexk-131a4";
 const ASAAS_API = "https://api.asaas.com/v3";
-const WEBHOOK_TOLERANCE_MS = 5 * 60 * 1000;
+const firebaseJwks = createRemoteJWKSet(new URL("https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"));
 
 export class HttpError extends Error {
   constructor(status, message) {
@@ -28,6 +28,12 @@ export function requiredEnvironment() {
   ].filter((name) => !process.env[name]);
 }
 
+export function requirePixEnabled() {
+  if (process.env.PIX_ENABLED !== "true") {
+    throw new HttpError(503, "Pix aún no está habilitado: falta verificar la protección del registro de saldos.");
+  }
+}
+
 function firebase() {
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
   if (!raw) throw new HttpError(503, "Wallet service is not configured.");
@@ -46,7 +52,7 @@ function firebase() {
       credential: cert(serviceAccount),
       projectId: FIREBASE_PROJECT_ID,
     });
-  return { auth: getAuth(app), db: getFirestore(app) };
+  return { db: getFirestore(app) };
 }
 
 export async function requireUser(req) {
@@ -54,8 +60,15 @@ export async function requireUser(req) {
   const match = authorization.match(/^Bearer\s+(.+)$/i);
   if (!match) throw new HttpError(401, "Inicia sesión para continuar.");
   try {
-    const { auth } = firebase();
-    return await auth.verifyIdToken(match[1]);
+    const { payload } = await jwtVerify(match[1], firebaseJwks, {
+      algorithms: ["RS256"],
+      issuer: `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`,
+      audience: FIREBASE_PROJECT_ID,
+    });
+    if (!payload.sub || payload.sub.length > 128 || !payload.auth_time || payload.auth_time > Date.now() / 1000) {
+      throw new Error("Invalid Firebase identity");
+    }
+    return { ...payload, uid: payload.sub };
   } catch (error) {
     if (error instanceof HttpError) throw error;
     throw new HttpError(401, "La sesión venció. Vuelve a iniciar sesión.");
@@ -67,6 +80,7 @@ export function getDb() {
 }
 
 export async function assertWebhookReady(db) {
+  requirePixEnabled();
   const config = await db.collection("walletSettings").doc("asaasWebhook").get();
   if (!config.exists || config.data().status !== "active") {
     throw new HttpError(503, "La confirmación segura de Asaas aún no está disponible.");
@@ -111,10 +125,12 @@ export async function asaas(path, { method = "GET", body, idempotencyKey } = {})
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new HttpError(
+    const error = new HttpError(
       response.status >= 500 ? 502 : 400,
       "Asaas não confirmou a operação. Consulte o histórico antes de tentar novamente.",
     );
+    error.definitiveProviderRejection = [400, 401, 403, 404, 422].includes(response.status);
+    throw error;
   }
   return payload;
 }
