@@ -128,6 +128,55 @@
         .welcome-card h2 { color: var(--primary-cyan); margin-bottom: 10px; }
         .welcome-card p { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
 
+        .entry-gate {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: var(--bg-dark);
+        }
+        .entry-gate-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: min(100%, 440px);
+        }
+        .entry-choice {
+            width: 100%;
+            min-height: 58px;
+            padding: 14px 18px;
+            border-radius: 10px;
+            font: inherit;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+        }
+        .entry-choice:hover { transform: translateY(-1px); }
+        .entry-choice:focus-visible { outline: 3px solid #f9fafb; outline-offset: 3px; }
+        .entry-choice-primary {
+            border: 1px solid var(--primary-cyan);
+            background: var(--primary-cyan);
+            color: #07111f;
+        }
+        .entry-choice-primary:hover { background: #7dd3fc; }
+        .entry-choice-secondary {
+            border: 1px solid #26364c;
+            background: #111827;
+            color: var(--text-main);
+        }
+        .entry-choice-secondary:hover { border-color: #4b6382; background: #172338; }
+        #gamesPlaceholder {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: none;
+            background: #071a33;
+        }
+
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .stat-box { 
             background: var(--bg-dark); 
@@ -363,7 +412,15 @@
 </head>
 <body>
 
-    <div class="top-bar">
+    <div id="entryGate" class="entry-gate" aria-label="Selecciona una opción">
+        <div class="entry-gate-actions">
+            <button class="entry-choice entry-choice-primary" type="button" onclick="mostrarAccesoNormal()">Invertir en NEX Token</button>
+            <button class="entry-choice entry-choice-secondary" type="button" onclick="entrarJuegosProximamente()">Juegos próximamente</button>
+        </div>
+    </div>
+    <div id="gamesPlaceholder" aria-hidden="true"></div>
+
+    <div class="top-bar" style="display: none;">
         <div id="userDisplay" class="user-info-bar">Invitado</div>
         
         <div class="top-actions">
@@ -374,7 +431,7 @@
         </div>
     </div>
 
-    <div id="welcomeSection" class="card welcome-card">
+    <div id="welcomeSection" class="card welcome-card" style="display: none;">
         <h2>Bienvenido al token NEX</h2>
         <p>Inicia sesión o crea tu cuenta para acceder a tu portafolio y operar dentro del ecosistema.</p>
 
@@ -851,6 +908,44 @@
       }
       verificarEnlaceCorreoAcceso();
 
+      window.nexPortalMode = null;
+
+      window.mostrarAccesoNormal = function() {
+          window.nexPortalMode = null;
+          document.getElementById('entryGate').style.display = 'none';
+          document.getElementById('gamesPlaceholder').style.display = 'none';
+          document.querySelector('.top-bar').style.display = 'flex';
+          document.getElementById('welcomeSection').style.display = 'block';
+      };
+
+      function mostrarPantallaJuegos() {
+          document.getElementById('entryGate').style.display = 'none';
+          document.querySelector('.top-bar').style.display = 'none';
+          document.getElementById('welcomeSection').style.display = 'none';
+          document.getElementById('appContent').style.display = 'none';
+          document.getElementById('gamesPlaceholder').style.display = 'block';
+      }
+
+      window.entrarJuegosProximamente = async function() {
+          if (auth.currentUser) {
+              window.nexPortalMode = 'games';
+              mostrarPantallaJuegos();
+              return;
+          }
+
+          window.nexPortalMode = 'games-pending';
+          try {
+              await signInWithPopup(auth, googleProvider);
+              window.nexPortalMode = 'games';
+              mostrarPantallaJuegos();
+          } catch(e) {
+              window.nexPortalMode = null;
+              document.getElementById('gamesPlaceholder').style.display = 'none';
+              document.getElementById('entryGate').style.display = 'flex';
+              alert("No se pudo verificar con Google: " + e.message);
+          }
+      };
+
       window.ejecutarLoginGoogle = async function() {
           try {
               const res = await signInWithPopup(auth, googleProvider);
@@ -869,6 +964,7 @@
 
       window.ejecutarCerrarSesion = async function() {
           try {
+              window.nexPortalMode = null;
               localStorage.removeItem("nex_sesion_activa");
               await signOut(auth);
               window.location.reload();
@@ -1703,6 +1799,12 @@
       onAuthStateChanged(auth, async (user) => {
         if (user) {
           window.usuarioActual = user;
+
+          if (window.nexPortalMode === 'games-pending') return;
+          if (window.nexPortalMode === 'games') {
+            mostrarPantallaJuegos();
+            return;
+          }
           
           onSnapshot(doc(db, "usuarios", user.uid), (uSnap) => {
               if (uSnap.exists() && uSnap.data().banned === true) {
@@ -1714,6 +1816,8 @@
           });
 
           localStorage.setItem("nex_sesion_activa", "true");
+          document.getElementById('entryGate').style.display = 'none';
+          document.querySelector('.top-bar').style.display = 'flex';
           document.getElementById('welcomeSection').style.display = 'none';
           document.getElementById('appContent').style.display = 'block';
           
@@ -1735,6 +1839,8 @@
           }
         } else {
           if (typeof window.ethereum !== 'undefined' || localStorage.getItem("nex_sesion_activa") === "true" || window.location.search.includes("autologin=true")) {
+            document.getElementById('entryGate').style.display = 'none';
+            document.querySelector('.top-bar').style.display = 'flex';
             document.getElementById('welcomeSection').style.display = 'none';
             document.getElementById('appContent').style.display = 'block';
             
@@ -1753,7 +1859,9 @@
           }
           window.usuarioActual = null;
           document.getElementById('appContent').style.display = 'none';
-          document.getElementById('welcomeSection').style.display = 'block';
+          document.getElementById('welcomeSection').style.display = 'none';
+          document.getElementById('entryGate').style.display = 'flex';
+          document.querySelector('.top-bar').style.display = 'none';
           
           document.getElementById('helpBtn').style.display = 'none';
           document.getElementById('btnLogoutTop').style.display = 'none'; 
