@@ -1,6 +1,7 @@
 import {
   asaas,
   centsToReais,
+  assertWebhookReady,
   getDb,
   HttpError,
   makeIdempotencyKey,
@@ -23,6 +24,7 @@ export default async function handler(req, res) {
     }
     const idempotencyKey = makeIdempotencyKey(req.headers["idempotency-key"]);
     const db = getDb();
+    await assertWebhookReady(db);
     const opRef = db.collection("walletTransactions").doc(idempotencyKey);
     const now = new Date();
     await db.runTransaction(async (transaction) => {

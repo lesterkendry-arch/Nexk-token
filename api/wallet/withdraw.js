@@ -1,5 +1,6 @@
 import {
   asaas,
+  assertWebhookReady,
   centsToReais,
   dateInSaoPaulo,
   getDb,
@@ -43,6 +44,7 @@ export default async function handler(req, res) {
     }
 
     const db = getDb();
+    await assertWebhookReady(db);
     const txRef = db.collection("walletTransactions").doc(idempotencyKey);
     const accountRef = db.collection("walletAccounts").doc(user.uid);
     const today = dateInSaoPaulo();

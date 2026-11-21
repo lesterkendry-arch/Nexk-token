@@ -1290,15 +1290,27 @@
           const withdrawButton = document.getElementById('walletWithdrawButton');
           const note = document.getElementById('pixDisabledNote');
           if (!depositButton || !withdrawButton || !note) return;
-          let enabled = false;
-          try {
-              const response = await fetch('/api/wallet/status', { cache: 'no-store' });
-              const status = await response.json();
-              enabled = response.ok && status.enabled === true;
-          } catch (error) {
-              enabled = false;
-          }
           const signedIn = Boolean(auth.currentUser);
+          let setupError = '';
+          let webhookReady = false;
+          if (signedIn) {
+              try {
+                  const setup = await walletApiRequest('/api/wallet/setup-webhook', {});
+                  webhookReady = setup.ready === true;
+              } catch (error) {
+                  setupError = error.message;
+              }
+          }
+          let enabled = false;
+          if (webhookReady) {
+              try {
+                  const response = await fetch('/api/wallet/status', { cache: 'no-store' });
+                  const status = await response.json();
+                  enabled = response.ok && status.enabled === true;
+              } catch (error) {
+                  enabled = false;
+              }
+          }
           depositButton.disabled = !enabled || !signedIn;
           withdrawButton.disabled = !enabled || !signedIn;
           depositButton.classList.toggle('wallet-action-disabled', !enabled || !signedIn);
@@ -1307,7 +1319,7 @@
               ? 'Inicia sesión con Google para usar la cartera.'
               : enabled
                   ? 'Pix funciona en producción. Los retiros se confirman mediante Asaas.'
-                  : 'Los movimientos Pix están desactivados hasta completar la configuración segura del servidor.';
+                  : setupError || 'Los movimientos Pix están desactivados hasta completar la configuración segura del servidor.';
 
           if (!signedIn || !enabled) {
               document.getElementById('walletGameBalance').textContent = 'No disponible';

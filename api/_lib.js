@@ -66,6 +66,13 @@ export function getDb() {
   return firebase().db;
 }
 
+export async function assertWebhookReady(db) {
+  const config = await db.collection("walletSettings").doc("asaasWebhook").get();
+  if (!config.exists || config.data().status !== "active") {
+    throw new HttpError(503, "La confirmación segura de Asaas aún no está disponible.");
+  }
+}
+
 export function getFieldValue() {
   return FieldValue;
 }
