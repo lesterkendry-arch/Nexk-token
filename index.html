@@ -899,6 +899,8 @@
                       const res = await signInWithEmailLink(auth, email, window.location.href);
                       window.localStorage.removeItem('emailForSignIn');
                       await registrarOActualizarUsuarioDB(res.user, 'correo-enlace');
+                      window.nexPortalMode = 'tokens';
+                      mostrarAppToken(res.user);
                       alert("¡Correo verificado con éxito!");
                   } catch(e) {
                       alert("Error al validar el enlace de confirmación: " + e.message);
@@ -909,13 +911,74 @@
       verificarEnlaceCorreoAcceso();
 
       window.nexPortalMode = null;
+      let nexDashboardInitializedUid = null;
+      let resolveNexAuthReady;
+      let nexAuthReadyResolved = false;
+      const nexAuthReady = new Promise((resolve) => { resolveNexAuthReady = resolve; });
 
-      window.mostrarAccesoNormal = function() {
-          window.nexPortalMode = null;
+      function mostrarPuertaEntrada() {
+          document.getElementById('entryGate').style.display = 'flex';
+          document.getElementById('gamesPlaceholder').style.display = 'none';
+          document.querySelector('.top-bar').style.display = 'none';
+          document.getElementById('welcomeSection').style.display = 'none';
+          document.getElementById('appContent').style.display = 'none';
+      }
+
+      function tieneSesionDeBilletera() {
+          return typeof window.ethereum !== 'undefined' ||
+              localStorage.getItem("nex_sesion_activa") === "true" ||
+              window.location.search.includes("autologin=true");
+      }
+
+      function mostrarAppToken(user) {
+          window.usuarioActual = user || null;
+          document.getElementById('entryGate').style.display = 'none';
+          document.getElementById('gamesPlaceholder').style.display = 'none';
+          document.querySelector('.top-bar').style.display = 'flex';
+          document.getElementById('welcomeSection').style.display = 'none';
+          document.getElementById('appContent').style.display = 'block';
+          document.getElementById('btnLogoutTop').style.display = 'inline-block';
+          document.getElementById('authBtn').style.display = 'none';
+
+          if (user) {
+              localStorage.setItem("nex_sesion_activa", "true");
+              document.getElementById('helpBtn').style.display = 'inline-block';
+              document.getElementById('userDisplay').innerText = user.email || user.displayName || "Usuario NEX";
+
+              if (nexDashboardInitializedUid !== user.uid) {
+                  nexDashboardInitializedUid = user.uid;
+                  onSnapshot(doc(db, "usuarios", user.uid), (uSnap) => {
+                      if (uSnap.exists() && uSnap.data().banned === true) {
+                          document.getElementById('bannedScreen').style.display = 'flex';
+                          return;
+                      }
+                      document.getElementById('bannedScreen').style.display = 'none';
+                  });
+                  escucharChatUsuario(user.uid);
+                  if (typeof window.ethereum !== 'undefined') {
+                      window.ethereum.request({ method: 'eth_accounts' }).then((accounts) => {
+                          if (accounts && accounts.length > 0) window.refrescarSaldoWallet(accounts[0], true);
+                      }).catch(() => {});
+                  }
+              }
+          } else {
+              document.getElementById('helpBtn').style.display = 'none';
+              document.getElementById('userDisplay').innerText = "Invitado";
+          }
+      }
+
+      window.mostrarAccesoNormal = async function() {
+          const currentUser = auth.currentUser || (!nexAuthReadyResolved ? await nexAuthReady : null);
+          window.nexPortalMode = 'tokens';
+          if (currentUser || tieneSesionDeBilletera()) {
+              mostrarAppToken(currentUser);
+              return;
+          }
           document.getElementById('entryGate').style.display = 'none';
           document.getElementById('gamesPlaceholder').style.display = 'none';
           document.querySelector('.top-bar').style.display = 'flex';
           document.getElementById('welcomeSection').style.display = 'block';
+          document.getElementById('appContent').style.display = 'none';
       };
 
       function mostrarPantallaJuegos() {
@@ -927,12 +990,12 @@
       }
 
       window.entrarJuegosProximamente = async function() {
-          if (auth.currentUser) {
+          const currentUser = auth.currentUser || (!nexAuthReadyResolved ? await nexAuthReady : null);
+          if (currentUser) {
               window.nexPortalMode = 'games';
               mostrarPantallaJuegos();
               return;
           }
-
           window.nexPortalMode = 'games-pending';
           try {
               await signInWithPopup(auth, googleProvider);
@@ -940,12 +1003,10 @@
               mostrarPantallaJuegos();
           } catch(e) {
               window.nexPortalMode = null;
-              document.getElementById('gamesPlaceholder').style.display = 'none';
-              document.getElementById('entryGate').style.display = 'flex';
+              mostrarPuertaEntrada();
               alert("No se pudo verificar con Google: " + e.message);
           }
       };
-
       window.ejecutarLoginGoogle = async function() {
           try {
               const res = await signInWithPopup(auth, googleProvider);
@@ -1797,76 +1858,45 @@
       });
 
       onAuthStateChanged(auth, async (user) => {
+        if (!nexAuthReadyResolved) {
+          nexAuthReadyResolved = true;
+          resolveNexAuthReady(user || null);
+        }
         if (user) {
-          window.usuarioActual = user;
-
           if (window.nexPortalMode === 'games-pending') return;
           if (window.nexPortalMode === 'games') {
+            window.usuarioActual = user;
             mostrarPantallaJuegos();
             return;
           }
-          
-          onSnapshot(doc(db, "usuarios", user.uid), (uSnap) => {
-              if (uSnap.exists() && uSnap.data().banned === true) {
-                  document.getElementById('bannedScreen').style.display = 'flex';
-                  return;
-              } else {
-                  document.getElementById('bannedScreen').style.display = 'none';
-              }
-          });
-
-          localStorage.setItem("nex_sesion_activa", "true");
-          document.getElementById('entryGate').style.display = 'none';
-          document.querySelector('.top-bar').style.display = 'flex';
-          document.getElementById('welcomeSection').style.display = 'none';
-          document.getElementById('appContent').style.display = 'block';
-          
-          document.getElementById('helpBtn').style.display = 'inline-block';
-          document.getElementById('btnLogoutTop').style.display = 'inline-block'; 
-          document.getElementById('authBtn').style.display = 'none';
-          
-          document.getElementById('userDisplay').innerText = user.email || user.displayName || "Usuario NEX";
-
-          escucharChatUsuario(user.uid);
-
-          if (typeof window.ethereum !== 'undefined') {
-            try {
-              const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-              if (accounts && accounts.length > 0) {
-                await window.refrescarSaldoWallet(accounts[0], true);
-              }
-            } catch (e) {}
-          }
-        } else {
-          if (typeof window.ethereum !== 'undefined' || localStorage.getItem("nex_sesion_activa") === "true" || window.location.search.includes("autologin=true")) {
-            document.getElementById('entryGate').style.display = 'none';
-            document.querySelector('.top-bar').style.display = 'flex';
-            document.getElementById('welcomeSection').style.display = 'none';
-            document.getElementById('appContent').style.display = 'block';
-            
-            document.getElementById('btnLogoutTop').style.display = 'inline-block';
-            document.getElementById('authBtn').style.display = 'none';
-            
-            if (typeof window.ethereum !== 'undefined') {
-              try {
-                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                if (accounts && accounts.length > 0) {
-                  await window.refrescarSaldoWallet(accounts[0], true);
-                }
-              } catch(e) {}
-            }
+          if (window.nexPortalMode === 'tokens') {
+            mostrarAppToken(user);
             return;
           }
           window.usuarioActual = null;
-          document.getElementById('appContent').style.display = 'none';
-          document.getElementById('welcomeSection').style.display = 'none';
-          document.getElementById('entryGate').style.display = 'flex';
-          document.querySelector('.top-bar').style.display = 'none';
-          
-          document.getElementById('helpBtn').style.display = 'none';
-          document.getElementById('btnLogoutTop').style.display = 'none'; 
-          document.getElementById('authBtn').style.display = 'inline-block';
+          mostrarPuertaEntrada();
+          return;
         }
+
+        window.usuarioActual = null;
+        if (window.nexPortalMode === 'games-pending') return;
+        if (window.nexPortalMode === 'games') {
+          mostrarPantallaJuegos();
+          return;
+        }
+        if (window.nexPortalMode === 'tokens') {
+          if (tieneSesionDeBilletera()) {
+            mostrarAppToken(null);
+            return;
+          }
+          document.getElementById('entryGate').style.display = 'none';
+          document.getElementById('gamesPlaceholder').style.display = 'none';
+          document.querySelector('.top-bar').style.display = 'flex';
+          document.getElementById('welcomeSection').style.display = 'block';
+          document.getElementById('appContent').style.display = 'none';
+          return;
+        }
+        mostrarPuertaEntrada();
       });
 
       window.onload = async () => {
