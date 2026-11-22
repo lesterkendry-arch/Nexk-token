@@ -14,6 +14,7 @@ import {
 } from "./aviator-practice.mjs";
 
 const SLOT_INDICES = [0, 1];
+const WAGERS_ENABLED = false;
 
 export function setupAviatorPractice({ auth, getBalance, setBalance, parseStake, onOpen, onBack }) {
   const stateByUser = new Map();
@@ -24,7 +25,7 @@ export function setupAviatorPractice({ auth, getBalance, setBalance, parseStake,
   const $ = (id) => document.getElementById(id);
 
   function storageKey(uid) {
-    return `nex_aviator_practice_v2_${uid}`;
+    return `nex_aviator_practice_v3_${uid}`;
   }
 
   function isValidState(state) {
@@ -226,7 +227,7 @@ export function setupAviatorPractice({ auth, getBalance, setBalance, parseStake,
     const input = $(`aviatorBetAmount${slotIndex}`);
     const action = $(`aviatorAction${slotIndex}`);
     const status = $(`aviatorSlotStatus${slotIndex}`);
-    const locked = slot.status !== "idle" || state.phase === "crashed";
+    const locked = !WAGERS_ENABLED || slot.status !== "idle" || state.phase === "crashed";
     if (slot.status !== "idle") input.value = formatAmount(slot.stakeMilli);
     input.disabled = locked;
     $(`aviatorAutoTarget${slotIndex}`).disabled = locked;
@@ -249,27 +250,29 @@ export function setupAviatorPractice({ auth, getBalance, setBalance, parseStake,
       action.replaceChildren(
         document.createTextNode("Retirar"),
         Object.assign(document.createElement("span"), {
-          textContent: `${formatAmount(valueMilli)} demo · ${state.currentMultiplier.toFixed(2)}x`,
+          textContent: `${formatAmount(valueMilli)} · ${state.currentMultiplier.toFixed(2)}x`,
         }),
       );
-      action.disabled = false;
-      status.textContent = slot.mode === "auto" ? "Retiro automático activo" : "Participación en vuelo";
+      action.disabled = !WAGERS_ENABLED;
+      status.textContent = WAGERS_ENABLED
+        ? slot.mode === "auto" ? "Retiro automático activo" : "Participación en vuelo"
+        : "Apuestas bloqueadas.";
       return;
     }
     if (slot.status === "cashed") {
       action.replaceChildren(
         document.createTextNode("Retirado"),
-        Object.assign(document.createElement("span"), { textContent: `+${formatAmount(slot.payoutMilli)} demo` }),
+        Object.assign(document.createElement("span"), { textContent: `+${formatAmount(slot.payoutMilli)}` }),
       );
-      status.textContent = "Saldo demo acreditado";
+      status.textContent = "Ronda terminada.";
       return;
     }
     if (slot.status === "lost") {
       action.replaceChildren(
         document.createTextNode("Cortó"),
-        Object.assign(document.createElement("span"), { textContent: "0.00 demo" }),
+        Object.assign(document.createElement("span"), { textContent: "Sin saldo para apostar" }),
       );
-      status.textContent = "La apuesta demo de esta ronda se perdió";
+      status.textContent = "Apuestas bloqueadas.";
       return;
     }
     if (state.phase === "crashed") {
@@ -283,34 +286,26 @@ export function setupAviatorPractice({ auth, getBalance, setBalance, parseStake,
     const parsed = parseStake(input.value, balanceMilli);
     const selectedStake = parseInputMilli(input.value);
     action.replaceChildren(
-      document.createTextNode("Apostar"),
+      document.createTextNode("Bloqueado"),
       Object.assign(document.createElement("span"), {
-        textContent: `${selectedStake ? formatAmount(selectedStake) : "—"} demo`,
+        textContent: "Cartera real solo lectura",
       }),
     );
-    action.disabled = !auth.currentUser || !parsed.valid;
+    action.disabled = true;
     if (!parsed.valid && balanceMilli > 0) status.textContent = parsed.error;
-    else if (balanceMilli === 0) status.textContent = "Saldo demo fijado en cero";
+    else if (balanceMilli === 0) status.textContent = "Apuestas bloqueadas; Cartera real solo lectura.";
   }
 
   function updateScreen(uid, state, now = Date.now()) {
     const balanceMilli = uid ? getBalance(uid) : 0;
-    const formattedBalance = formatAmount(balanceMilli);
-    $("aviatorDemoBalance").textContent = formattedBalance;
-    const catalogBalance = $("gamesHomePracticeBalance");
-    if (catalogBalance) catalogBalance.textContent = formattedBalance;
-    const minesweeperBalance = $("gamePracticeBalance");
-    if (minesweeperBalance) minesweeperBalance.textContent = `${formattedBalance} pesos del juego`;
-    const minesweeperBottomBalance = $("gamePracticeBottomBalance");
-    if (minesweeperBottomBalance) minesweeperBottomBalance.textContent = `${formattedBalance} pesos del juego`;
     updateGraph(state, now);
     $("aviatorFlightMessage").textContent = state.phase === "flying"
       ? `En vuelo · +${AVIATOR_GROWTH_PER_SECOND.toFixed(2)}x por segundo`
       : state.phase === "crashed"
         ? `Corte en ${state.crashAtMultiplier.toFixed(2)}x · siguiente ronda pronto`
       : balanceMilli > 0
-          ? "Elige una apuesta demo para iniciar el vuelo."
-          : "Saldo demo en 0.00; las apuestas están deshabilitadas.";
+          ? "Las apuestas están bloqueadas."
+          : "Cartera real solo lectura; apuestas bloqueadas.";
     renderHistory(state);
     state.slots.forEach((_, slotIndex) => renderSlot(state, balanceMilli, slotIndex));
     renderTab(state);
@@ -394,8 +389,12 @@ export function setupAviatorPractice({ auth, getBalance, setBalance, parseStake,
   function placeBet(slotIndex) {
     const uid = auth.currentUser?.uid;
     const notice = $("aviatorDemoStatus");
+    if (!WAGERS_ENABLED) {
+      notice.textContent = "Apuestas bloqueadas; la Cartera real no se puede usar aquí.";
+      return;
+    }
     if (!uid) {
-      notice.textContent = "Inicia sesión para usar la simulación demo.";
+      notice.textContent = "Inicia sesión para ver el resultado de la simulación.";
       return;
     }
     let state = processFlight(uid, Date.now());
@@ -438,7 +437,7 @@ export function setupAviatorPractice({ auth, getBalance, setBalance, parseStake,
     const previouslyCashedMilli = result.payouts.reduce((sum, payout) => sum + payout.payoutMilli, 0);
     const nextBalance = balanceBefore + previouslyCashedMilli - result.stakeMilli;
     if (!Number.isSafeInteger(nextBalance) || nextBalance < 0 || !setBalance(uid, nextBalance)) {
-      notice.textContent = "No se pudo guardar la apuesta demo.";
+      notice.textContent = "No se pudo guardar la ronda.";
       return;
     }
     if (!saveState(uid, result.state)) {
@@ -453,6 +452,7 @@ export function setupAviatorPractice({ auth, getBalance, setBalance, parseStake,
   }
 
   function cashOut(slotIndex) {
+    if (!WAGERS_ENABLED) return;
     const uid = auth.currentUser?.uid;
     if (!uid) return;
     const originalState = getState(uid);
@@ -474,16 +474,17 @@ export function setupAviatorPractice({ auth, getBalance, setBalance, parseStake,
     }
     if (!saveState(uid, result.state)) {
       stateByUser.set(uid, originalState);
-      $("aviatorDemoStatus").textContent = "No se pudo guardar el retiro demo.";
+      $("aviatorDemoStatus").textContent = "No se pudo guardar el resultado.";
       return;
     }
     addPayouts(uid, result.payouts);
     $("aviatorDemoStatus").textContent =
-      `Retiraste ${formatAmount(result.payoutMilli)} puntos demo.`;
+      `Resultado de la ronda: ${formatAmount(result.payoutMilli)}.`;
     updateScreen(uid, result.state);
   }
 
   function updateSlotSettings(slotIndex) {
+    if (!WAGERS_ENABLED) return;
     syncSlotSettings(slotIndex);
     const uid = auth.currentUser?.uid;
     if (uid) updateScreen(uid, getState(uid));

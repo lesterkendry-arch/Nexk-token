@@ -193,9 +193,8 @@
             line-height: 1.55;
         }
         .games-practice-summary {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
             gap: 12px;
             margin: 14px 0;
             padding: 12px 14px;
@@ -204,12 +203,29 @@
             background: rgba(13, 35, 62, .86);
             color: #c5d4e6;
         }
-        .games-practice-summary span { font-size: 13px; font-weight: 700; }
-        .games-practice-summary strong {
+        .games-practice-summary-item { display: grid; gap: 5px; min-width: 0; }
+        .games-practice-summary span,
+        .games-wallet-real-line span { font-size: 13px; font-weight: 700; }
+        .games-practice-summary strong,
+        .games-wallet-real-line strong {
             color: #8be9c5;
             font-size: 22px;
             font-variant-numeric: tabular-nums;
+            overflow-wrap: anywhere;
         }
+        .games-wallet-real-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 8px 0;
+            padding: 9px 11px;
+            border: 1px solid #294361;
+            border-radius: 9px;
+            background: rgba(7, 22, 41, .5);
+            color: #c5d4e6;
+        }
+        .games-wallet-real-line strong { font-size: 16px; text-align: right; }
         .games-catalog {
             padding-top: 8px;
         }
@@ -1007,13 +1023,6 @@
             color: #bfd3e8;
             font-size: 11px;
         }
-        #gamePracticeBottomBalance {
-            color: #a8f0d5;
-            font-size: 15px;
-            font-weight: 800;
-            font-variant-numeric: tabular-nums;
-            overflow-wrap: anywhere;
-        }
         .minesweeper-bottom-bar #gamePracticePlay {
             flex: 0 0 auto;
             min-width: 132px;
@@ -1436,9 +1445,11 @@
     <div id="gamesPlaceholder" aria-hidden="true">
         <section id="gamesHomeView" class="games-panel games-catalog" aria-labelledby="gamesHomeTitle">
             <h1 id="gamesHomeTitle" class="games-heading">Juegos</h1>
-            <div class="games-practice-summary" aria-label="Saldo demo compartido">
-                <span>Saldo demo compartido</span>
-                <strong id="gamesHomePracticeBalance" aria-live="polite">0.00</strong>
+            <div class="games-practice-summary" aria-label="Saldo real de Cartera">
+                <div class="games-practice-summary-item">
+                    <span>Cartera real</span>
+                    <strong id="gamesHomeRealWalletBalance" aria-live="polite">No disponible</strong>
+                </div>
             </div>
             <div class="games-catalog-grid">
                 <button id="openMinesweeper" class="game-tile" type="button" aria-label="Abrir Buscaminas">
@@ -1464,7 +1475,7 @@
                     </span>
                     <span class="game-tile-copy"><strong>Buscaminas</strong><span>Jugar</span></span>
                 </button>
-                <button id="openAviator" class="game-tile" type="button" aria-label="Abrir Aviator en modo demo">
+                <button id="openAviator" class="game-tile" type="button" aria-label="Abrir Aviator, apuestas bloqueadas">
                     <span class="game-tile-art aviator-tile-art" aria-hidden="true">
                         <svg viewBox="0 0 220 150" role="presentation">
                             <path d="M18 133 C62 128 77 111 103 83 S152 38 204 24" fill="none" stroke="#ff315a" stroke-width="5" stroke-linecap="round"/>
@@ -1472,7 +1483,7 @@
                             <path d="M115 79 l34 -27 11 3 -20 26 18 9 -4 5 -26 -5 -16 13 -5 -3 8 -15 -17 -7 2 -5 15 6z" fill="#f7f7f8"/>
                         </svg>
                     </span>
-                    <span class="game-tile-copy"><strong>Aviator</strong><span>Demo</span></span>
+                    <span class="game-tile-copy"><strong>Aviator</strong><span>Solo lectura</span></span>
                 </button>
             </div>
         </section>
@@ -1483,9 +1494,8 @@
             </header>
             <div class="game-practice-card" aria-label="Buscaminas de práctica">
                 <div class="game-practice-compact-head">
-                    <span class="game-practice-label">Saldo de práctica</span>
-                    <strong id="gamePracticeBalance" class="game-practice-balance" aria-live="polite" aria-label="Saldo de práctica">0.00 pesos del juego</strong>
-                    <span class="practice-wallet-note">Saldo de práctica fijado en cero; no es dinero real.</span>
+                    <p class="games-wallet-real-line"><span>Cartera real</span><strong id="minesweeperRealWalletBalance" aria-live="polite">No disponible</strong></p>
+                    <span class="practice-wallet-note">Este juego sigue en práctica y no usa fondos de Cartera.</span>
                 </div>
                 <p id="gamePracticeStatus" class="game-practice-status" role="status" aria-live="polite"></p>
 
@@ -1493,20 +1503,20 @@
                     <div class="minesweeper-controls">
                         <div class="minesweeper-control">
                             <label for="gamePracticeMode">Modo</label>
-                            <select id="gamePracticeMode" aria-describedby="gamePracticeModeInfo">
+                            <select id="gamePracticeMode" aria-describedby="gamePracticeModeInfo" disabled>
                                 <option value="low">Baja</option>
                                 <option value="medium">Media</option>
                                 <option value="maximum">Máxima</option>
                             </select>
                         </div>
                         <div class="minesweeper-control">
-                            <label for="gamePracticeStake">Puntos por ronda</label>
-                            <input id="gamePracticeStake" type="number" min="0.40" step="0.01" inputmode="decimal" value="1" aria-describedby="gamePracticeStakeNote" autocomplete="off">
+                            <label for="gamePracticeStake">Apuesta bloqueada</label>
+                            <input id="gamePracticeStake" type="number" min="0.40" step="0.01" inputmode="decimal" value="1" aria-describedby="gamePracticeStakeNote" autocomplete="off" disabled>
                         </div>
                     </div>
                     <details class="game-practice-disclosure">
                         <summary>Reglas y probabilidades</summary>
-                        <p id="gamePracticeStakeNote" class="practice-wallet-note">Mínimo 0,40. Cada casilla segura suma 0,20× la apuesta; la apuesta no se devuelve.</p>
+                        <p id="gamePracticeStakeNote" class="practice-wallet-note">Las apuestas están bloqueadas; la Cartera real solo se muestra y no se usa en el juego.</p>
                         <p id="gamePracticeModeInfo" class="minesweeper-mode-info" aria-live="polite"></p>
                     </details>
                     <div class="minesweeper-board-wrap">
@@ -1520,18 +1530,14 @@
                         </div>
                         <div class="minesweeper-readout">
                             <span>Acumulado</span>
-                            <strong id="minesweeperAccumulated" aria-live="polite">0 puntos</strong>
+                            <strong id="minesweeperAccumulated" aria-live="polite">Apuestas bloqueadas</strong>
                         </div>
                     </div>
                     <div class="minesweeper-actions" aria-label="Acciones de ronda">
-                        <button id="minesweeperCollect" class="minesweeper-collect" type="button">Guardar puntos</button>
+                        <button id="minesweeperCollect" class="minesweeper-collect" type="button" disabled>Apuestas bloqueadas</button>
                     </div>
                     <div class="minesweeper-bottom-bar">
-                        <div class="minesweeper-bottom-balance">
-                            <span>Disponible</span>
-                            <strong id="gamePracticeBottomBalance" aria-live="polite">0.00 pesos del juego</strong>
-                        </div>
-                        <button id="gamePracticePlay" type="button">Jugar ronda</button>
+                        <button id="gamePracticePlay" type="button" disabled>Apuestas bloqueadas</button>
                     </div>
                 </section>
             </div>
@@ -1539,14 +1545,14 @@
         <section id="aviatorGameView" class="games-panel" aria-labelledby="aviatorTitle" aria-hidden="true" style="display: none;">
             <header class="game-screen-header">
                 <button id="aviatorBackToGames" class="game-back-button" type="button">Volver</button>
-                <h1 id="aviatorTitle" class="games-heading">Aviator <span class="practice-only-tag">Demo</span></h1>
+                <h1 id="aviatorTitle" class="games-heading">Aviator <span class="practice-only-tag">Solo lectura</span></h1>
             </header>
-            <main class="aviator-game" aria-label="Aviator, simulación de práctica">
+            <main class="aviator-game" aria-label="Aviator, apuestas bloqueadas">
                 <div class="aviator-topbar">
                     <span class="aviator-brand">Aviator</span>
                     <div class="aviator-balance" aria-live="polite">
-                        <span>Saldo demo</span>
-                        <strong id="aviatorDemoBalance">0.00</strong>
+                        <span>Cartera real</span>
+                        <strong id="aviatorRealWalletBalance" aria-live="polite">No disponible</strong>
                     </div>
                 </div>
                 <p id="aviatorDemoStatus" class="aviator-disclaimer" role="status" aria-live="polite"></p>
@@ -1563,58 +1569,58 @@
                     <strong id="aviatorMultiplier" class="aviator-multiplier" aria-live="polite">1.00x</strong>
                     <p id="aviatorFlightMessage" class="aviator-flight-message" role="status" aria-live="polite">Elige tu apuesta para iniciar el vuelo.</p>
                 </section>
-                <div class="aviator-slot-grid" aria-label="Controles de apuesta demo">
+                <div class="aviator-slot-grid" aria-label="Apuestas deshabilitadas">
                     <section class="aviator-bet-panel" data-aviator-slot-panel="0" aria-label="Panel de apuesta uno">
                         <div class="aviator-mode-toggle" role="group" aria-label="Modo de apuesta uno">
-                            <button type="button" data-aviator-mode="manual" data-aviator-slot="0" aria-pressed="true">Apuesta</button>
-                            <button type="button" data-aviator-mode="auto" data-aviator-slot="0" aria-pressed="false">Automático</button>
+                            <button type="button" data-aviator-mode="manual" data-aviator-slot="0" aria-pressed="true" disabled>Apuesta</button>
+                            <button type="button" data-aviator-mode="auto" data-aviator-slot="0" aria-pressed="false" disabled>Automático</button>
                         </div>
                         <div class="aviator-slot-content">
                             <div class="aviator-stake-controls">
                                 <div class="aviator-stepper">
-                                    <button id="aviatorMinus0" type="button" aria-label="Restar un punto a la apuesta uno">−</button>
-                                    <input id="aviatorBetAmount0" type="number" min="0.40" max="500" step="0.01" value="1.00" inputmode="decimal" aria-label="Monto de apuesta uno">
-                                    <button id="aviatorPlus0" type="button" aria-label="Sumar un punto a la apuesta uno">+</button>
+                                    <button id="aviatorMinus0" type="button" aria-label="Restar un punto a la apuesta uno" disabled>−</button>
+                                    <input id="aviatorBetAmount0" type="number" min="0.40" max="500" step="0.01" value="1.00" inputmode="decimal" aria-label="Monto de apuesta uno" disabled>
+                                    <button id="aviatorPlus0" type="button" aria-label="Sumar un punto a la apuesta uno" disabled>+</button>
                                 </div>
                                 <div class="aviator-quick-bets" aria-label="Montos rápidos de apuesta uno">
-                                    <button type="button" data-aviator-quick="10" data-aviator-slot="0">10</button>
-                                    <button type="button" data-aviator-quick="20" data-aviator-slot="0">20</button>
-                                    <button type="button" data-aviator-quick="50" data-aviator-slot="0">50</button>
-                                    <button type="button" data-aviator-quick="100" data-aviator-slot="0">100</button>
-                                    <button type="button" data-aviator-quick="500" data-aviator-slot="0">500</button>
+                                    <button type="button" data-aviator-quick="10" data-aviator-slot="0" disabled>10</button>
+                                    <button type="button" data-aviator-quick="20" data-aviator-slot="0" disabled>20</button>
+                                    <button type="button" data-aviator-quick="50" data-aviator-slot="0" disabled>50</button>
+                                    <button type="button" data-aviator-quick="100" data-aviator-slot="0" disabled>100</button>
+                                    <button type="button" data-aviator-quick="500" data-aviator-slot="0" disabled>500</button>
                                 </div>
                                 <label class="aviator-auto-target" id="aviatorAutoWrap0" hidden>Retirar automáticamente en
                                     <input id="aviatorAutoTarget0" type="number" min="1.10" max="5.00" step="0.01" value="2.00" inputmode="decimal" aria-label="Multiplicador de retiro automático uno">
                                 </label>
                             </div>
-                            <button id="aviatorAction0" class="aviator-action-button" type="button">Apostar<span>1.00 demo</span></button>
+                            <button id="aviatorAction0" class="aviator-action-button" type="button" disabled>Bloqueado<span>Cartera real solo lectura</span></button>
                         </div>
                         <p id="aviatorSlotStatus0" class="aviator-slot-status" aria-live="polite"></p>
                     </section>
                     <section class="aviator-bet-panel" data-aviator-slot-panel="1" aria-label="Panel de apuesta dos">
                         <div class="aviator-mode-toggle" role="group" aria-label="Modo de apuesta dos">
-                            <button type="button" data-aviator-mode="manual" data-aviator-slot="1" aria-pressed="true">Apuesta</button>
-                            <button type="button" data-aviator-mode="auto" data-aviator-slot="1" aria-pressed="false">Automático</button>
+                            <button type="button" data-aviator-mode="manual" data-aviator-slot="1" aria-pressed="true" disabled>Apuesta</button>
+                            <button type="button" data-aviator-mode="auto" data-aviator-slot="1" aria-pressed="false" disabled>Automático</button>
                         </div>
                         <div class="aviator-slot-content">
                             <div class="aviator-stake-controls">
                                 <div class="aviator-stepper">
-                                    <button id="aviatorMinus1" type="button" aria-label="Restar un punto a la apuesta dos">−</button>
-                                    <input id="aviatorBetAmount1" type="number" min="0.40" max="500" step="0.01" value="1.00" inputmode="decimal" aria-label="Monto de apuesta dos">
-                                    <button id="aviatorPlus1" type="button" aria-label="Sumar un punto a la apuesta dos">+</button>
+                                    <button id="aviatorMinus1" type="button" aria-label="Restar un punto a la apuesta dos" disabled>−</button>
+                                    <input id="aviatorBetAmount1" type="number" min="0.40" max="500" step="0.01" value="1.00" inputmode="decimal" aria-label="Monto de apuesta dos" disabled>
+                                    <button id="aviatorPlus1" type="button" aria-label="Sumar un punto a la apuesta dos" disabled>+</button>
                                 </div>
                                 <div class="aviator-quick-bets" aria-label="Montos rápidos de apuesta dos">
-                                    <button type="button" data-aviator-quick="10" data-aviator-slot="1">10</button>
-                                    <button type="button" data-aviator-quick="20" data-aviator-slot="1">20</button>
-                                    <button type="button" data-aviator-quick="50" data-aviator-slot="1">50</button>
-                                    <button type="button" data-aviator-quick="100" data-aviator-slot="1">100</button>
-                                    <button type="button" data-aviator-quick="500" data-aviator-slot="1">500</button>
+                                    <button type="button" data-aviator-quick="10" data-aviator-slot="1" disabled>10</button>
+                                    <button type="button" data-aviator-quick="20" data-aviator-slot="1" disabled>20</button>
+                                    <button type="button" data-aviator-quick="50" data-aviator-slot="1" disabled>50</button>
+                                    <button type="button" data-aviator-quick="100" data-aviator-slot="1" disabled>100</button>
+                                    <button type="button" data-aviator-quick="500" data-aviator-slot="1" disabled>500</button>
                                 </div>
                                 <label class="aviator-auto-target" id="aviatorAutoWrap1" hidden>Retirar automáticamente en
                                     <input id="aviatorAutoTarget1" type="number" min="1.10" max="5.00" step="0.01" value="2.00" inputmode="decimal" aria-label="Multiplicador de retiro automático dos">
                                 </label>
                             </div>
-                            <button id="aviatorAction1" class="aviator-action-button" type="button">Apostar<span>1.00 demo</span></button>
+                            <button id="aviatorAction1" class="aviator-action-button" type="button" disabled>Bloqueado<span>Cartera real solo lectura</span></button>
                         </div>
                         <p id="aviatorSlotStatus1" class="aviator-slot-status" aria-live="polite"></p>
                     </section>
@@ -1627,9 +1633,9 @@
                 <div id="aviatorTabPanel" class="aviator-tab-panel" role="tabpanel" aria-live="polite"></div>
                 <details class="aviator-demo-details">
                     <summary>Reglas de la simulación</summary>
-                    <p class="aviator-disclaimer">El multiplicador crece 0,20x por segundo. Cada ronda sortea un corte entre 1,10x y 5,00x. Si cortas antes de retirar, la apuesta demo se pierde. No hay pagos ni dinero real.</p>
+                    <p class="aviator-disclaimer">El multiplicador es una simulación. La Cartera real solo se muestra; no se usa ni se mueve en el juego.</p>
                 </details>
-                <p class="aviator-disclaimer">Saldo demo fijado en 0.00; recargas deshabilitadas y sin dinero real.</p>
+                <p class="aviator-disclaimer">Las apuestas y recargas están deshabilitadas; esta simulación no usa la Cartera real.</p>
             </main>
         </section>
         <section id="walletView" class="games-panel" aria-labelledby="walletTitle" style="display: none;">
@@ -1649,7 +1655,7 @@
 
                 <div class="wallet-balance-grid" aria-label="Saldos">
                     <div class="wallet-balance-card">
-                        <span>Saldo de juego</span>
+                        <span>Saldo real de Cartera</span>
                         <strong id="walletGameBalance">No disponible</strong>
                         <span id="walletGameBalanceNote">Saldo confirmado en BRL</span>
                     </div>
@@ -2520,6 +2526,15 @@
           document.getElementById('walletWithdrawForm').hidden = form !== 'withdraw';
       };
 
+      function sincronizarSaldoRealEnJuegos() {
+          const balance = document.getElementById('walletGameBalance')?.textContent?.trim() || 'No disponible';
+          ['gamesHomeRealWalletBalance', 'minesweeperRealWalletBalance', 'aviatorRealWalletBalance']
+              .forEach(id => {
+                  const display = document.getElementById(id);
+                  if (display) display.textContent = balance;
+              });
+      }
+
       async function actualizarCarteraPix() {
           const depositButton = document.getElementById('walletDepositButton');
           const withdrawButton = document.getElementById('walletWithdrawButton');
@@ -2572,6 +2587,7 @@
 
           if (!signedIn || !enabled) {
               document.getElementById('walletGameBalance').textContent = 'No disponible';
+              sincronizarSaldoRealEnJuegos();
               return;
           }
           try {
@@ -2579,12 +2595,14 @@
               if (auth.currentUser?.uid !== uid) return;
               document.getElementById('walletGameBalance').textContent =
                   balance.frozen ? 'En revisión' : walletMoneyFormatter.format(balance.availableCents / 100);
+              sincronizarSaldoRealEnJuegos();
               document.getElementById('walletGameBalanceNote').textContent =
                   balance.frozen ? 'El administrador debe revisar un reembolso.' : `Retiro pendiente: ${walletMoneyFormatter.format(balance.reservedCents / 100)}`;
               withdrawButton.disabled = balance.frozen === true;
           } catch (error) {
               if (auth.currentUser?.uid !== uid) return;
               document.getElementById('walletGameBalance').textContent = 'No disponible';
+              sincronizarSaldoRealEnJuegos();
               document.getElementById('walletGameBalanceNote').textContent = error.message;
           }
       }
@@ -2754,6 +2772,7 @@
           }
       });
 
+      const GAME_WAGERS_ENABLED = false;
       const gamePracticeMemory = new Map();
       const gamePracticeRoundMemory = new Map();
 
@@ -2762,7 +2781,7 @@
       }
 
       function gamePracticeRoundStorageKey(uid) {
-          return `nex_minesweeper_round_v3_${uid}`;
+          return `nex_minesweeper_round_v4_${uid}`;
       }
 
       function clearLegacyGamePracticeState(uid) {
@@ -2772,7 +2791,9 @@
               sessionStorage.removeItem(`nex_game_practice_balance_milli_v3_${uid}`);
               sessionStorage.removeItem(`nex_minesweeper_round_v1_${uid}`);
               sessionStorage.removeItem(`nex_minesweeper_round_v2_${uid}`);
+              sessionStorage.removeItem(`nex_minesweeper_round_v3_${uid}`);
               sessionStorage.removeItem(`nex_aviator_practice_v1_${uid}`);
+              sessionStorage.removeItem(`nex_aviator_practice_v2_${uid}`);
           } catch (error) {}
       }
 
@@ -2865,10 +2886,6 @@
           return true;
       }
 
-      function formatGamePracticeBalance(balanceMilli) {
-          return `${(balanceMilli / 1000).toFixed(2)} pesos del juego`;
-      }
-
       function formatGamePracticeChance(chance) {
           return `${new Intl.NumberFormat('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(chance * 100)}%`;
       }
@@ -2913,7 +2930,7 @@
               } else {
                   button.textContent = '';
                   button.setAttribute('aria-label', `Casilla sin descubrir, fila ${row}, columna ${column}`);
-                  button.disabled = finished;
+                   button.disabled = !GAME_WAGERS_ENABLED || finished;
               }
               fragment.appendChild(button);
           }
@@ -2951,29 +2968,26 @@
           const balanceMilli = getGamePracticeBalance(uid);
           const round = getGamePracticeRound(uid);
           const activeRound = round?.status === 'active';
-          document.getElementById('gamePracticeBalance').textContent = formatGamePracticeBalance(balanceMilli);
-          document.getElementById('gamePracticeBottomBalance').textContent = formatGamePracticeBalance(balanceMilli);
-          document.getElementById('gamesHomePracticeBalance').textContent = (balanceMilli / 1000).toFixed(2);
           const modeSelector = document.getElementById('gamePracticeMode');
           if (round?.modeId && MINESWEEPER_MODES[round.modeId]) modeSelector.value = round.modeId;
-          modeSelector.disabled = activeRound;
+          modeSelector.disabled = !GAME_WAGERS_ENABLED || activeRound;
 
           const stakeInput = document.getElementById('gamePracticeStake');
           stakeInput.max = formatPracticeAmount(Math.floor(balanceMilli / 10) * 10);
-          stakeInput.disabled = activeRound;
+          stakeInput.disabled = !GAME_WAGERS_ENABLED || activeRound;
           if (activeRound) stakeInput.value = formatPracticeAmount(round.stakeMilli);
           const playButton = document.getElementById('gamePracticePlay');
-          playButton.disabled = !uid || activeRound || balanceMilli < MIN_PRACTICE_STAKE_MILLI;
-          playButton.textContent = activeRound ? 'Ronda en curso' : 'Iniciar ronda';
+          playButton.disabled = !GAME_WAGERS_ENABLED || !uid || activeRound || balanceMilli < MIN_PRACTICE_STAKE_MILLI;
+          playButton.textContent = activeRound ? 'Ronda bloqueada' : 'Apuestas bloqueadas';
 
           document.getElementById('minesweeperStatus').textContent =
               round?.message || (activeRound
                   ? 'En juego'
-                  : 'Lista');
+                  : GAME_WAGERS_ENABLED ? 'Lista' : 'Apuestas bloqueadas');
           document.getElementById('minesweeperAccumulated').textContent =
-              `${formatPracticeAmount(round?.accumulatedMilli || 0)} puntos de práctica`;
+              GAME_WAGERS_ENABLED ? `${formatPracticeAmount(round?.accumulatedMilli || 0)} puntos` : 'Apuestas bloqueadas';
           document.getElementById('minesweeperCollect').disabled =
-              !activeRound || (round?.accumulatedMilli || 0) <= 0;
+              !GAME_WAGERS_ENABLED || !activeRound || (round?.accumulatedMilli || 0) <= 0;
           updateGamePracticeModeInfo(round);
           renderMinesweeperBoard(round);
           document.getElementById('gamePracticeStatus').textContent = '';
@@ -3005,6 +3019,10 @@
       document.getElementById('backToGames').addEventListener('click', volverAlCatalogoJuegos);
 
       function startGamePracticeRound() {
+          if (!GAME_WAGERS_ENABLED) {
+              document.getElementById('minesweeperStatus').textContent = 'Apuestas bloqueadas; la Cartera real es solo lectura.';
+              return;
+          }
           const uid = auth.currentUser?.uid;
           const status = document.getElementById('minesweeperStatus');
           if (!uid) {
@@ -3058,6 +3076,7 @@
       }
 
       function revealGamePracticeCell(cellIndex) {
+          if (!GAME_WAGERS_ENABLED) return;
           const uid = auth.currentUser?.uid;
           const round = getGamePracticeRound(uid);
           if (!uid || round?.status !== 'active' || !Number.isInteger(cellIndex)) return;
@@ -3078,6 +3097,7 @@
       }
 
       function collectGamePracticeRound() {
+          if (!GAME_WAGERS_ENABLED) return;
           const uid = auth.currentUser?.uid;
           const round = getGamePracticeRound(uid);
           if (!uid || round?.status !== 'active' || round.accumulatedMilli <= 0) return;
@@ -3148,6 +3168,7 @@
           if (section === 'game') {
               if (showingAviator) aviatorPractice.render(window.usuarioActual || auth.currentUser);
               else renderGamePracticeBalance(window.usuarioActual || auth.currentUser);
+              actualizarCarteraPix();
           }
           if (section === 'wallet') {
               actualizarPerfilCartera(window.usuarioActual || auth.currentUser);
@@ -4067,6 +4088,7 @@
           walletOperationKeys.withdraw = null;
           document.getElementById('walletGameBalance').textContent = 'No disponible';
           document.getElementById('walletGameBalanceNote').textContent = 'Consulta del saldo pendiente';
+          sincronizarSaldoRealEnJuegos();
           document.getElementById('walletTransactionHistory').textContent = '';
           document.getElementById('walletDepositResult').textContent = '';
           document.getElementById('walletWithdrawResult').textContent = '';
@@ -4133,9 +4155,9 @@
           if (walletBalanceRefreshTimer) clearInterval(walletBalanceRefreshTimer);
           walletBalanceRefreshTimer = setInterval(refrescarBilleteraSiConectada, 30000);
           setInterval(() => {
-              if (!document.hidden && window.nexPortalMode === 'games' && window.nexPortalSection === 'wallet' && auth.currentUser) {
+               if (!document.hidden && window.nexPortalMode === 'games' && ['wallet', 'game'].includes(window.nexPortalSection) && auth.currentUser) {
                   actualizarCarteraPix();
-                  actualizarHistorialPix();
+                   if (window.nexPortalSection === 'wallet') actualizarHistorialPix();
               }
           }, 30000);
 

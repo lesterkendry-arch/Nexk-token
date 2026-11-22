@@ -19,24 +19,40 @@ const page = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const aviatorUi = await readFile(new URL("../aviator-ui.mjs", import.meta.url), "utf8");
 const aviatorMarkup = page.match(/<section id="aviatorGameView"[\s\S]*?<section id="walletView"/)?.[0] || "";
 
-test("Aviator is a second playable practice tile beside Minesweeper", () => {
+test("Aviator appears beside Minesweeper as a blocked read-only tile", () => {
   assert.match(page, /<div class="games-catalog-grid">[\s\S]*id="openMinesweeper"[\s\S]*id="openAviator"[\s\S]*<\/div>/);
   assert.match(aviatorMarkup, /id="aviatorGameView"/);
   assert.match(page, /juego para ganar dinero<\/button>/);
 });
 
-test("Aviator starts at zero with no way to add practice points", () => {
-  assert.match(aviatorMarkup, /id="aviatorDemoBalance">0\.00<\/strong>/);
-  assert.match(page, /id="gamesHomePracticeBalance"[^>]*>0\.00<\/strong>/);
-  assert.match(page, /id="gamePracticeBalance"[^>]*>0\.00 pesos del juego<\/strong>/);
-  assert.match(aviatorUi, /catalogBalance\.textContent = formattedBalance/);
-  assert.match(aviatorMarkup, /simulación de práctica/);
-  assert.match(aviatorMarkup, /recargas deshabilitadas y sin dinero real/);
-  assert.doesNotMatch(aviatorMarkup, /R\$/);
+test("Aviator shows the read-only real wallet, without a visible demo balance", () => {
+  assert.match(aviatorMarkup, /id="aviatorRealWalletBalance"[^>]*>No disponible<\/strong>/);
+  assert.doesNotMatch(aviatorMarkup, /id="aviatorDemoBalance"/);
+  assert.match(aviatorMarkup, /apuestas bloqueadas/);
+  assert.match(aviatorMarkup, /no usa la Cartera real/);
   assert.doesNotMatch(aviatorMarkup, /aviatorDemoAmount|aviatorAddDemo|Añadir puntos de práctica/);
+  assert.match(aviatorMarkup, /id="aviatorAction0"[^>]*disabled>Bloqueado/);
+  assert.match(aviatorMarkup, /id="aviatorAction1"[^>]*disabled>Bloqueado/);
+  assert.match(aviatorMarkup, /id="aviatorBetAmount0"[^>]*disabled/);
+  assert.match(aviatorMarkup, /data-aviator-quick="10"[^>]*disabled/);
+  assert.doesNotMatch(aviatorMarkup, /Saldo demo|Puntos demo/i);
   assert.doesNotMatch(aviatorUi, /DEMO_PRESETS|function addDemoPoints|aviatorDemoAmount|aviatorAddDemo/);
-  assert.match(aviatorUi, /nex_aviator_practice_v2_\$\{uid\}/);
-  assert.match(aviatorUi, /Saldo demo en 0\.00; las apuestas están deshabilitadas/);
+  assert.match(aviatorUi, /nex_aviator_practice_v3_\$\{uid\}/);
+  assert.match(aviatorUi, /Cartera real solo lectura; apuestas bloqueadas/);
+});
+
+test("the real wallet balance is mirrored in the catalog and both games separately", () => {
+  for (const id of ["gamesHomeRealWalletBalance", "minesweeperRealWalletBalance", "aviatorRealWalletBalance"]) {
+    assert.match(page, new RegExp(`id="${id}"`));
+  }
+  assert.match(page, /Saldo real de Cartera/);
+  assert.match(page, /function sincronizarSaldoRealEnJuegos\(\)[\s\S]*?walletGameBalance[\s\S]*?display\.textContent = balance/);
+  assert.match(page, /if \(section === 'game'\)[\s\S]*?actualizarCarteraPix\(\)/);
+  assert.match(page, /\['wallet', 'game'\]\.includes\(window\.nexPortalSection\)[\s\S]*?actualizarCarteraPix\(\)/);
+  assert.doesNotMatch(page, /id="gamesHomePracticeBalance"|id="gamePracticeBalance"|id="gamePracticeBottomBalance"|id="aviatorDemoBalance"/);
+  assert.match(page, /const GAME_WAGERS_ENABLED = false/);
+  assert.match(aviatorUi, /const WAGERS_ENABLED = false/);
+  assert.doesNotMatch(page, /Saldo demo|Puntos demo/i);
 });
 
 test("the reference controls, two panels, moving chart, history, and tabs exist", () => {
