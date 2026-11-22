@@ -243,6 +243,10 @@
             font-weight: 750;
             cursor: pointer;
         }
+        .game-practice-card button:disabled {
+            cursor: not-allowed;
+            opacity: .55;
+        }
         .game-practice-card select:focus-visible,
         .game-practice-card button:focus-visible {
             outline: 3px solid #fff;
@@ -254,6 +258,307 @@
             color: #b8c7dc;
             font-size: 13px;
             line-height: 1.5;
+        }
+        /* Minesweeper is a separate, points-only practice surface. */
+        .game-practice-card {
+            width: min(100%, 760px);
+            gap: 16px;
+            padding: clamp(16px, 4vw, 24px);
+            border-color: #31547b;
+            background: linear-gradient(155deg, #102d50 0%, #0b1d35 68%, #09182b 100%);
+        }
+        .practice-balance-head {
+            display: grid;
+            gap: 5px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(139, 181, 226, .2);
+        }
+        .practice-balance-head .game-practice-label {
+            font-size: 12px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+        .practice-wallet-note {
+            max-width: 58ch;
+            margin: 0;
+            color: #b8c7dc;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+        .practice-preset {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: end;
+            gap: 10px;
+        }
+        .practice-preset label,
+        .minesweeper-control label {
+            display: block;
+            margin-bottom: 7px;
+            color: #e4edf8;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .practice-preset select,
+        .minesweeper-control select,
+        .minesweeper-control input {
+            width: 100%;
+            min-width: 0;
+            min-height: 46px;
+            padding: 10px 12px;
+            border: 1px solid #405d7f;
+            border-radius: 9px;
+            background: #08182b;
+            color: #f2f7ff;
+            font: inherit;
+            font-size: 15px;
+            color-scheme: dark;
+        }
+        .practice-preset button,
+        .minesweeper-actions button {
+            min-height: 46px;
+            padding: 10px 14px;
+            border: 1px solid #55c8f3;
+            border-radius: 9px;
+            background: #55c8f3;
+            color: #071729;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .practice-preset button { white-space: nowrap; }
+        .game-practice-card :is(select, input, button):focus-visible {
+            outline: 3px solid #eaf8ff;
+            outline-offset: 3px;
+        }
+        .minesweeper-shell {
+            display: grid;
+            gap: 16px;
+            margin-top: 2px;
+            padding: clamp(14px, 3.5vw, 20px);
+            border: 1px solid #2a4a6f;
+            border-radius: 14px;
+            background: rgba(5, 17, 33, .66);
+        }
+        .minesweeper-title-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .minesweeper-title-row h3 {
+            margin: 0;
+            color: #f2f7ff;
+            font-size: clamp(20px, 5vw, 25px);
+            line-height: 1.15;
+        }
+        .minesweeper-kicker {
+            display: block;
+            margin-bottom: 5px;
+            color: #7dd3fc;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+        .practice-only-tag {
+            flex: 0 0 auto;
+            padding: 6px 9px;
+            border: 1px solid rgba(139, 233, 197, .42);
+            border-radius: 999px;
+            background: rgba(16, 185, 129, .1);
+            color: #a8f0d5;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .03em;
+            text-transform: uppercase;
+        }
+        .minesweeper-rule {
+            margin: 0;
+            color: #c5d4e6;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+        .minesweeper-rule strong { color: #f2f7ff; }
+        .minesweeper-controls {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(115px, .65fr);
+            gap: 12px;
+        }
+        .minesweeper-control { min-width: 0; }
+        .minesweeper-mode-info {
+            grid-column: 1 / -1;
+            margin: -2px 0 0;
+            padding: 11px 12px;
+            border-left: 3px solid #55c8f3;
+            border-radius: 0 8px 8px 0;
+            background: rgba(85, 200, 243, .08);
+            color: #c7d8eb;
+            font-size: 12px;
+            line-height: 1.55;
+        }
+        .minesweeper-mode-info strong { color: #eaf8ff; }
+        .minesweeper-board-wrap {
+            display: grid;
+            justify-items: center;
+            gap: 10px;
+            padding: 14px 10px;
+            border: 1px solid rgba(66, 104, 148, .55);
+            border-radius: 12px;
+            background: radial-gradient(ellipse at center, rgba(22, 58, 98, .42), rgba(6, 18, 34, .16) 72%);
+        }
+        .minesweeper-board-label {
+            width: 100%;
+            color: #b8c7dc;
+            font-size: 11px;
+            font-weight: 750;
+            letter-spacing: .09em;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        #minesweeperBoard {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: clamp(5px, 1.6vw, 9px);
+            width: min(100%, 320px);
+            aspect-ratio: 1;
+            padding: clamp(7px, 2vw, 11px);
+            border: 1px solid #294a6d;
+            border-radius: 12px;
+            background: #07172a;
+            touch-action: manipulation;
+        }
+        .minesweeper-cell {
+            display: grid;
+            width: 100%;
+            min-width: 0;
+            min-height: 0;
+            place-items: center;
+            padding: 0;
+            border: 1px solid #42688f;
+            border-bottom-width: 3px;
+            border-radius: 8px;
+            background: linear-gradient(145deg, #1a3c62, #102a49);
+            color: #c5eaff;
+            font-size: clamp(14px, 4vw, 19px);
+            font-weight: 800;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .minesweeper-cell.is-revealed {
+            border-color: #435b73;
+            border-bottom-width: 1px;
+            background: #142235;
+            box-shadow: none;
+            cursor: default;
+        }
+        .minesweeper-cell.is-safe {
+            color: #90e9c5;
+        }
+        .minesweeper-cell.is-mine {
+            border-color: #ab5360;
+            background: #592834;
+            color: #fff1f2;
+        }
+        .minesweeper-cell.is-hit {
+            border-color: #ff8190;
+            background: #9c2638;
+            box-shadow: 0 0 0 2px rgba(255, 129, 144, .35);
+        }
+        .minesweeper-cell:focus-visible {
+            outline: 3px solid #fff;
+            outline-offset: 2px;
+            z-index: 1;
+        }
+        #minesweeperBoard[hidden] {
+            display: none;
+        }
+        .minesweeper-readouts {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 10px;
+        }
+        .minesweeper-readout {
+            min-width: 0;
+            padding: 11px 12px;
+            border: 1px solid #294361;
+            border-radius: 9px;
+            background: rgba(7, 22, 41, .78);
+        }
+        .minesweeper-readout span {
+            display: block;
+            margin-bottom: 4px;
+            color: #9fb5ce;
+            font-size: 11px;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+        .minesweeper-readout strong {
+            display: block;
+            color: #f0f7ff;
+            font-size: 14px;
+            line-height: 1.35;
+            overflow-wrap: anywhere;
+            font-variant-numeric: tabular-nums;
+        }
+        #minesweeperAccumulated { color: #8be9c5; }
+        .minesweeper-actions { display: grid; }
+        .minesweeper-actions .minesweeper-collect {
+            border-color: #4c7196;
+            background: #152d49;
+            color: #eaf4ff;
+        }
+        .minesweeper-bottom-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 0 -2px -2px;
+            padding: 13px 14px;
+            border: 1px solid #2d5279;
+            border-radius: 11px;
+            background: linear-gradient(100deg, #102b4a, #143b63);
+        }
+        .minesweeper-bottom-balance {
+            display: grid;
+            min-width: 0;
+            gap: 3px;
+        }
+        .minesweeper-bottom-balance span {
+            color: #bfd3e8;
+            font-size: 11px;
+        }
+        #gamePracticeBottomBalance {
+            color: #a8f0d5;
+            font-size: 15px;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            overflow-wrap: anywhere;
+        }
+        .minesweeper-bottom-bar #gamePracticePlay {
+            flex: 0 0 auto;
+            min-width: 132px;
+            min-height: 48px;
+            padding: 10px 14px;
+            border-color: #78d7fb;
+            background: #78d7fb;
+            color: #071729;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        @media (max-width: 420px) {
+            .practice-preset { grid-template-columns: minmax(0, 1fr); }
+            .practice-preset button { width: 100%; }
+            .minesweeper-shell { gap: 13px; }
+            .minesweeper-title-row { flex-wrap: wrap; }
+            .minesweeper-readouts { gap: 7px; }
+            .minesweeper-readout { padding: 9px; }
+            .minesweeper-bottom-bar { align-items: stretch; flex-direction: column; }
+            .minesweeper-bottom-bar #gamePracticePlay { width: 100%; }
         }
         .wallet-form {
             display: grid;
@@ -658,18 +963,79 @@
             <h1 id="gamesHomeTitle" class="games-heading">Juegos de práctica</h1>
             <p class="games-copy">Modo de práctica y demostración. Este marcador no usa tu saldo de la cartera.</p>
             <div class="game-practice-card" aria-labelledby="gamePracticeTitle">
-                <h2 id="gamePracticeTitle">Marcador de práctica</h2>
-                <span class="game-practice-label">Saldo de demostración</span>
-                <strong id="gamePracticeBalance" class="game-practice-balance" aria-live="polite">0 pesos del juego</strong>
-                <p class="games-copy" style="margin:0;">No es dinero real, no se puede convertir ni retirar. Se conserva al cambiar de sección en este dispositivo.</p>
-                <label for="gamePracticeAmount">Elegir saldo de demostración</label>
-                <select id="gamePracticeAmount">
-                    <option value="0">0 pesos del juego</option>
-                    <option value="20">20 pesos del juego</option>
-                    <option value="50">50 pesos del juego</option>
-                </select>
-                <button id="gamePracticeApply" type="button">Actualizar marcador</button>
+                <div class="practice-balance-head">
+                    <h2 id="gamePracticeTitle">Marcador de práctica</h2>
+                    <span class="game-practice-label">Saldo de práctica · puntos demo</span>
+                    <strong id="gamePracticeBalance" class="game-practice-balance" aria-live="polite" aria-label="Saldo de práctica">0 pesos del juego</strong>
+                    <p class="practice-wallet-note">Estos puntos solo sirven para practicar Buscaminas. No son dinero, no tienen valor monetario, no se pueden convertir ni retirar y están separados del saldo de tu cartera.</p>
+                </div>
+                <div class="practice-preset">
+                    <div>
+                        <label for="gamePracticeAmount">Añadir saldo gratuito de práctica</label>
+                        <select id="gamePracticeAmount" aria-describedby="gamePracticePresetNote">
+                            <option value="0">0 puntos demo</option>
+                            <option value="20">20 puntos demo</option>
+                            <option value="50">50 puntos demo</option>
+                        </select>
+                    </div>
+                    <button id="gamePracticeApply" type="button">Aplicar saldo</button>
+                </div>
+                <p id="gamePracticePresetNote" class="practice-wallet-note">Elige un marcador gratuito de 0, 20 o 50 puntos. No afecta a tu cartera.</p>
                 <p id="gamePracticeStatus" class="game-practice-status" role="status" aria-live="polite"></p>
+
+                <section class="minesweeper-shell" aria-labelledby="minesweeperTitle">
+                    <header class="minesweeper-title-row">
+                        <div>
+                            <span class="minesweeper-kicker">Sala de práctica</span>
+                            <h3 id="minesweeperTitle">Buscaminas</h3>
+                        </div>
+                        <span class="practice-only-tag">Solo puntos demo</span>
+                    </header>
+                    <p class="minesweeper-rule"><strong>Regla de ronda:</strong> cada casilla segura suma 0,20× la apuesta inicial. Si aparece una mina, pierdes la apuesta y todo lo acumulado que no hayas cobrado.</p>
+
+                    <div class="minesweeper-controls">
+                        <div class="minesweeper-control">
+                            <label for="gamePracticeMode">Modo de tablero</label>
+                            <select id="gamePracticeMode" aria-describedby="gamePracticeModeInfo">
+                                <option value="low">Baja · 4 × 4 · 3 minas</option>
+                                <option value="medium">Media · 5 × 5 · 8 minas</option>
+                                <option value="maximum">Máxima · 7 × 7 · 21 minas</option>
+                            </select>
+                        </div>
+                        <div class="minesweeper-control">
+                            <label for="gamePracticeStake">Monto de la ronda</label>
+                            <input id="gamePracticeStake" type="number" min="0.40" step="0.01" inputmode="decimal" value="1" aria-describedby="gamePracticeStakeNote" autocomplete="off">
+                        </div>
+                        <p id="gamePracticeModeInfo" class="minesweeper-mode-info" aria-live="polite"></p>
+                        <p id="gamePracticeStakeNote" class="practice-wallet-note">Apuesta mínima: 0,40 pesos del juego; monto máximo según tu saldo y en pasos de 0,01. Por cada casilla segura se acumula 0,20× la apuesta inicial. La apuesta no se devuelve al terminar la ronda.</p>
+                    </div>
+
+                    <div class="minesweeper-board-wrap">
+                        <span class="minesweeper-board-label">Tablero · casillas ocultas</span>
+                        <div id="minesweeperBoard" role="group" aria-label="Tablero de Buscaminas de práctica" hidden></div>
+                    </div>
+
+                    <div class="minesweeper-readouts">
+                        <div class="minesweeper-readout">
+                            <span>Estado de la ronda</span>
+                            <strong id="minesweeperStatus" role="status" aria-live="polite">Sin ronda activa</strong>
+                        </div>
+                        <div class="minesweeper-readout">
+                            <span>Acumulado sin cobrar</span>
+                            <strong id="minesweeperAccumulated" aria-live="polite">0 puntos de práctica</strong>
+                        </div>
+                    </div>
+                    <div class="minesweeper-actions" aria-label="Acciones de ronda">
+                        <button id="minesweeperCollect" class="minesweeper-collect" type="button">Guardar puntos y terminar</button>
+                    </div>
+                    <div class="minesweeper-bottom-bar">
+                        <div class="minesweeper-bottom-balance">
+                            <span>Saldo disponible · solo práctica</span>
+                            <strong id="gamePracticeBottomBalance" aria-live="polite">0 pesos del juego</strong>
+                        </div>
+                        <button id="gamePracticePlay" type="button">Iniciar ronda</button>
+                    </div>
+                </section>
             </div>
         </section>
         <section id="walletView" class="games-panel" aria-labelledby="walletTitle" style="display: none;">
@@ -1082,6 +1448,19 @@
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
       import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, signOut, onAuthStateChanged, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
       import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, addDoc, query, orderBy, serverTimestamp, setLogLevel, limit } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+      import {
+          calculateSafeReward,
+          countAdjacentMines,
+          DEFAULT_PRACTICE_STAKE_MILLI,
+          formatPracticeAmount,
+          getNextSafeChance,
+          MINESWEEPER_MODES,
+          MIN_PRACTICE_STAKE_MILLI,
+          parsePracticeStake,
+          revealPracticeCell,
+          settlePracticeRound,
+          startPracticeRound
+      } from "./minesweeper-practice.mjs";
 
       setLogLevel('silent');
 
@@ -1780,51 +2159,373 @@
           }
       });
 
-      const gamePracticeBalances = new Set([0, 20, 50]);
+      const gamePracticePresets = new Set([0, 20, 50]);
       const gamePracticeMemory = new Map();
+      const gamePracticeRoundMemory = new Map();
 
       function gamePracticeStorageKey(uid) {
           return `nex_game_practice_balance_${uid}`;
       }
 
+      function gamePracticeBalanceStorageKey(uid) {
+          return `nex_game_practice_balance_milli_v2_${uid}`;
+      }
+
+      function gamePracticeRoundStorageKey(uid) {
+          return `nex_minesweeper_round_v1_${uid}`;
+      }
+
       function getGamePracticeBalance(uid) {
-          if (!uid) return 20;
+          if (!uid) return 0;
           if (gamePracticeMemory.has(uid)) return gamePracticeMemory.get(uid);
-          let balance = 0;
+          let balanceMilli = 0;
           try {
-              const saved = Number(sessionStorage.getItem(gamePracticeStorageKey(uid)));
-              if (gamePracticeBalances.has(saved)) balance = saved;
+              const current = sessionStorage.getItem(gamePracticeBalanceStorageKey(uid));
+              if (current !== null) {
+                  const parsed = Number(current);
+                  if (Number.isSafeInteger(parsed) && parsed >= 0) balanceMilli = parsed;
+              } else {
+                  const legacy = Number(sessionStorage.getItem(gamePracticeStorageKey(uid)));
+                  if (gamePracticePresets.has(legacy)) {
+                      balanceMilli = legacy * 1000;
+                      sessionStorage.setItem(gamePracticeBalanceStorageKey(uid), String(balanceMilli));
+                  }
+              }
           } catch (error) {}
-          gamePracticeMemory.set(uid, balance);
-          return balance;
+          gamePracticeMemory.set(uid, balanceMilli);
+          return balanceMilli;
+      }
+
+      function setGamePracticeBalance(uid, balanceMilli) {
+          if (!uid || !Number.isSafeInteger(balanceMilli) || balanceMilli < 0) return false;
+          gamePracticeMemory.set(uid, balanceMilli);
+          try {
+              sessionStorage.setItem(gamePracticeBalanceStorageKey(uid), String(balanceMilli));
+          } catch (error) {}
+          return true;
+      }
+
+      function isValidGamePracticeRound(round) {
+          if (!round || typeof round !== 'object') return false;
+          const mode = MINESWEEPER_MODES[round.modeId];
+          const statusValues = new Set(['active', 'lost', 'collected', 'won']);
+          if (!mode || !statusValues.has(round.status)) return false;
+          if (!Number.isSafeInteger(round.stakeMilli) || round.stakeMilli < MIN_PRACTICE_STAKE_MILLI) return false;
+          if (!Array.isArray(round.mineIndices) || round.mineIndices.length !== mode.mines) return false;
+          if (!Array.isArray(round.revealedIndices)) return false;
+          const total = mode.rows * mode.columns;
+          const mines = new Set(round.mineIndices);
+          const revealed = new Set(round.revealedIndices);
+          if (mines.size !== mode.mines || revealed.size !== round.revealedIndices.length) return false;
+          if ([...mines, ...revealed].some(index => !Number.isInteger(index) || index < 0 || index >= total)) return false;
+          if (!Number.isSafeInteger(round.accumulatedMilli) || round.accumulatedMilli < 0) return false;
+          if (!Number.isSafeInteger(round.settledMilli || 0) || (round.settledMilli || 0) < 0) return false;
+          const safeRevealed = [...revealed].filter(index => !mines.has(index)).length;
+          let expectedAccumulated;
+          try {
+              expectedAccumulated = safeRevealed * calculateSafeReward(round.stakeMilli);
+          } catch (error) {
+              return false;
+          }
+          if (round.status === 'active') {
+              return ![...revealed].some(index => mines.has(index)) &&
+                  round.accumulatedMilli === expectedAccumulated;
+          }
+          if (round.status === 'lost') {
+              return [...revealed].some(index => mines.has(index)) &&
+                  round.accumulatedMilli === 0 &&
+                  round.lostAccumulatedMilli === expectedAccumulated;
+          }
+          return round.accumulatedMilli === 0 &&
+              round.settledMilli === expectedAccumulated &&
+              (round.status !== 'won' || safeRevealed === total - mode.mines);
+      }
+
+      function getGamePracticeRound(uid) {
+          if (!uid) return null;
+          if (gamePracticeRoundMemory.has(uid)) return gamePracticeRoundMemory.get(uid);
+          let round = null;
+          try {
+              const stored = sessionStorage.getItem(gamePracticeRoundStorageKey(uid));
+              if (stored) {
+                  const parsed = JSON.parse(stored);
+                  if (isValidGamePracticeRound(parsed)) round = parsed;
+                  else sessionStorage.removeItem(gamePracticeRoundStorageKey(uid));
+              }
+          } catch (error) {}
+          gamePracticeRoundMemory.set(uid, round);
+          return round;
+      }
+
+      function saveGamePracticeRound(uid, round) {
+          if (!uid || !isValidGamePracticeRound(round)) return false;
+          gamePracticeRoundMemory.set(uid, round);
+          try {
+              sessionStorage.setItem(gamePracticeRoundStorageKey(uid), JSON.stringify(round));
+          } catch (error) {}
+          return true;
+      }
+
+      function formatGamePracticeBalance(balanceMilli) {
+          return `${formatPracticeAmount(balanceMilli)} pesos del juego`;
+      }
+
+      function formatGamePracticeChance(chance) {
+          return `${new Intl.NumberFormat('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(chance * 100)}%`;
+      }
+
+      function renderMinesweeperBoard(round) {
+          const board = document.getElementById('minesweeperBoard');
+          const boardLabel = document.querySelector('.minesweeper-board-label');
+          board.replaceChildren();
+          if (!round) {
+              board.hidden = true;
+              return;
+          }
+          const mode = MINESWEEPER_MODES[round.modeId];
+          const mines = new Set(round.mineIndices);
+          const revealed = new Set(round.revealedIndices);
+          const finished = round.status !== 'active';
+          const revealMines = round.status === 'lost' || round.status === 'won';
+          board.hidden = false;
+          board.style.gridTemplateColumns = `repeat(${mode.columns}, minmax(0, 1fr))`;
+          board.setAttribute('aria-label', `Tablero de Buscaminas de práctica, ${mode.rows} filas por ${mode.columns} columnas`);
+          if (boardLabel) boardLabel.textContent = `Tablero ${mode.rows} × ${mode.columns} · ${mode.mines} casillas de riesgo`;
+
+          const fragment = document.createDocumentFragment();
+          for (let index = 0; index < mode.rows * mode.columns; index += 1) {
+              const row = Math.floor(index / mode.columns) + 1;
+              const column = (index % mode.columns) + 1;
+              const button = document.createElement('button');
+              button.type = 'button';
+              button.className = 'minesweeper-cell';
+              button.dataset.cellIndex = String(index);
+              const wasRevealed = revealed.has(index);
+              const showMine = mines.has(index) && revealMines;
+              if (wasRevealed && !mines.has(index)) {
+                  const adjacent = countAdjacentMines(round.modeId, index, mines);
+                  button.classList.add('is-revealed', 'is-safe');
+                  button.textContent = adjacent ? String(adjacent) : '·';
+                  button.setAttribute('aria-label', `Casilla segura, fila ${row}, columna ${column}; ${adjacent} minas cercanas`);
+                  button.disabled = true;
+              } else if (showMine) {
+                  button.classList.add('is-revealed', 'is-mine');
+                  if (round.hitIndex === index) button.classList.add('is-hit');
+                  button.textContent = '×';
+                  button.setAttribute('aria-label', `Mina, fila ${row}, columna ${column}`);
+                  button.disabled = true;
+              } else {
+                  button.textContent = '';
+                  button.setAttribute('aria-label', `Casilla oculta, fila ${row}, columna ${column}`);
+                  button.disabled = finished;
+              }
+              fragment.appendChild(button);
+          }
+          board.appendChild(fragment);
+      }
+
+      function updateGamePracticeModeInfo(round = null) {
+          const selector = document.getElementById('gamePracticeMode');
+          const modeId = round?.modeId || selector.value || 'low';
+          const mode = MINESWEEPER_MODES[modeId];
+          if (!mode) return;
+          const total = mode.rows * mode.columns;
+          const safeCells = total - mode.mines;
+          const safeRevealed = round?.status === 'active'
+              ? round.revealedIndices.filter(index => !round.mineIndices.includes(index)).length
+              : 0;
+          const nextChance = getNextSafeChance(modeId, safeRevealed);
+          const initialChance = mode.initialSafeChance;
+          const stakeInput = document.getElementById('gamePracticeStake');
+          const parsedStake = parsePracticeStake(stakeInput.value, Number.MAX_SAFE_INTEGER);
+          const stakeMilli = round?.stakeMilli ||
+              (parsedStake.valid ? parsedStake.stakeMilli : DEFAULT_PRACTICE_STAKE_MILLI);
+          const maxAccumulated = safeCells * calculateSafeReward(stakeMilli);
+          const info = document.getElementById('gamePracticeModeInfo');
+          info.textContent =
+              `${mode.label}: cuadrícula ${mode.rows} × ${mode.columns}, ${mode.mines} riesgos y ${safeCells} seguras. ` +
+              `Casilla segura al inicio: ${formatGamePracticeChance(initialChance)}; ` +
+              `próxima casilla segura: ${formatGamePracticeChance(nextChance)}. ` +
+              `Acumulado máximo si descubres todas las seguras: ${formatPracticeAmount(maxAccumulated)} puntos de práctica ` +
+              `(sin devolver la apuesta). Cada ronda se sortea de nuevo; no hay rachas forzadas.`;
       }
 
       function renderGamePracticeBalance(user = auth.currentUser) {
-          const balance = getGamePracticeBalance(user?.uid);
-          document.getElementById('gamePracticeBalance').textContent = `${balance} pesos del juego`;
-          document.getElementById('gamePracticeAmount').value = String(balance);
+          const uid = user?.uid || null;
+          const balanceMilli = getGamePracticeBalance(uid);
+          const round = getGamePracticeRound(uid);
+          const activeRound = round?.status === 'active';
+          document.getElementById('gamePracticeBalance').textContent = formatGamePracticeBalance(balanceMilli);
+          document.getElementById('gamePracticeBottomBalance').textContent = formatGamePracticeBalance(balanceMilli);
+          const modeSelector = document.getElementById('gamePracticeMode');
+          if (round?.modeId && MINESWEEPER_MODES[round.modeId]) modeSelector.value = round.modeId;
+          const preset = balanceMilli % 1000 === 0 ? balanceMilli / 1000 : null;
+          if (gamePracticePresets.has(preset)) {
+              document.getElementById('gamePracticeAmount').value = String(preset);
+          }
+          document.getElementById('gamePracticeApply').disabled = !uid || activeRound;
+          modeSelector.disabled = activeRound;
+
+          const stakeInput = document.getElementById('gamePracticeStake');
+          stakeInput.max = formatPracticeAmount(Math.floor(balanceMilli / 10) * 10);
+          stakeInput.disabled = activeRound;
+          if (activeRound) stakeInput.value = formatPracticeAmount(round.stakeMilli);
+          const playButton = document.getElementById('gamePracticePlay');
+          playButton.disabled = !uid || activeRound || balanceMilli < MIN_PRACTICE_STAKE_MILLI;
+          playButton.textContent = activeRound ? 'Ronda en curso' : 'Iniciar ronda';
+
+          document.getElementById('minesweeperStatus').textContent =
+              round?.message || (activeRound
+                  ? 'Ronda activa: descubre casillas o guarda el acumulado.'
+                  : 'Sin ronda activa. Ajusta el saldo demo gratuito para jugar.');
+          document.getElementById('minesweeperAccumulated').textContent =
+              `${formatPracticeAmount(round?.accumulatedMilli || 0)} puntos de práctica`;
+          document.getElementById('minesweeperCollect').disabled =
+              !activeRound || (round?.accumulatedMilli || 0) <= 0;
+          updateGamePracticeModeInfo(round);
+          renderMinesweeperBoard(round);
           document.getElementById('gamePracticeStatus').textContent = '';
       }
 
       document.getElementById('gamePracticeApply').addEventListener('click', () => {
           const uid = auth.currentUser?.uid;
-          const balance = Number(document.getElementById('gamePracticeAmount').value);
+          const preset = Number(document.getElementById('gamePracticeAmount').value);
           const status = document.getElementById('gamePracticeStatus');
           if (!uid) {
               status.textContent = 'Inicia sesión para guardar tu marcador de práctica.';
               return;
           }
-          if (!gamePracticeBalances.has(balance)) {
-              status.textContent = 'Selecciona 0, 20 o 50 pesos del juego.';
+          if (getGamePracticeRound(uid)?.status === 'active') {
+              status.textContent = 'Termina la ronda activa antes de ajustar el saldo demo.';
               return;
           }
-          gamePracticeMemory.set(uid, balance);
-          try {
-              sessionStorage.setItem(gamePracticeStorageKey(uid), String(balance));
-          } catch (error) {}
+          if (!gamePracticePresets.has(preset)) {
+              status.textContent = 'Elige 0, 20 o 50 puntos de práctica.';
+              return;
+          }
+          setGamePracticeBalance(uid, preset * 1000);
           renderGamePracticeBalance(auth.currentUser);
-          status.textContent = 'Marcador de práctica actualizado.';
+          status.textContent = 'Saldo gratuito de práctica actualizado.';
       });
+
+      document.getElementById('gamePracticeMode').addEventListener('change', () => {
+          const uid = auth.currentUser?.uid;
+          const round = getGamePracticeRound(uid);
+          if (round?.status === 'active') {
+              document.getElementById('gamePracticeMode').value = round.modeId;
+              return;
+          }
+          renderGamePracticeBalance(auth.currentUser);
+      });
+
+      document.getElementById('gamePracticeStake').addEventListener('input', () => {
+          updateGamePracticeModeInfo(getGamePracticeRound(auth.currentUser?.uid));
+      });
+
+      document.getElementById('minesweeperBoard').addEventListener('click', (event) => {
+          const cell = event.target.closest('[data-cell-index]');
+          if (!cell) return;
+          revealGamePracticeCell(Number(cell.dataset.cellIndex));
+      });
+
+      document.getElementById('gamePracticePlay').addEventListener('click', startGamePracticeRound);
+      document.getElementById('minesweeperCollect').addEventListener('click', collectGamePracticeRound);
+
+      function startGamePracticeRound() {
+          const uid = auth.currentUser?.uid;
+          const status = document.getElementById('minesweeperStatus');
+          if (!uid) {
+              status.textContent = 'Inicia sesión para jugar con puntos de práctica.';
+              return;
+          }
+          if (getGamePracticeRound(uid)?.status === 'active') {
+              status.textContent = 'Ya tienes una ronda activa.';
+              return;
+          }
+          const balanceMilli = getGamePracticeBalance(uid);
+          const stakeField = document.getElementById('gamePracticeStake');
+          const modeId = document.getElementById('gamePracticeMode').value;
+          if (!MINESWEEPER_MODES[modeId]) {
+              status.textContent = 'Selecciona un modo de práctica válido.';
+              return;
+          }
+          let started;
+          try {
+              started = startPracticeRound(modeId, stakeField.value, balanceMilli);
+          } catch (error) {
+              status.textContent = error.message || 'No se pudo crear un tablero aleatorio.';
+              return;
+          }
+          if (!started.valid) {
+              status.textContent = started.error;
+              return;
+          }
+          const stakeMilli = started.round.stakeMilli;
+          const safeCells = MINESWEEPER_MODES[modeId].rows * MINESWEEPER_MODES[modeId].columns -
+              MINESWEEPER_MODES[modeId].mines;
+          const round = {
+              ...started.round,
+              message: `Ronda iniciada. Se descontaron ${formatPracticeAmount(stakeMilli)} puntos de práctica.`,
+          };
+
+          if (!setGamePracticeBalance(uid, started.balanceMilli) || !saveGamePracticeRound(uid, round)) {
+              status.textContent = 'No se pudo guardar la ronda de práctica.';
+              return;
+          }
+          stakeField.value = formatPracticeAmount(stakeMilli);
+          document.getElementById('minesweeperBoard').setAttribute(
+              'aria-label',
+              `Tablero de Buscaminas de práctica, ${MINESWEEPER_MODES[modeId].rows} filas por ${MINESWEEPER_MODES[modeId].columns} columnas`,
+          );
+          if (safeCells <= 0) {
+              status.textContent = 'El modo elegido no tiene casillas seguras.';
+              return;
+          }
+          renderGamePracticeBalance(auth.currentUser);
+      }
+
+      function revealGamePracticeCell(cellIndex) {
+          const uid = auth.currentUser?.uid;
+          const round = getGamePracticeRound(uid);
+          if (!uid || round?.status !== 'active' || !Number.isInteger(cellIndex)) return;
+          const mode = MINESWEEPER_MODES[round.modeId];
+          const result = revealPracticeCell(round, cellIndex);
+          if (result.outcome === 'inactive' || result.outcome === 'duplicate') return;
+          const nextRound = result.round;
+          if (result.outcome === 'risk') {
+              nextRound.message =
+                  `Casilla de riesgo. Perdiste ${formatPracticeAmount(nextRound.lostAccumulatedMilli)} puntos acumulados; ` +
+                  `los ${formatPracticeAmount(nextRound.stakeMilli)} de la apuesta ya descontada no se devuelven.`;
+          } else if (result.outcome === 'cleared') {
+              setGamePracticeBalance(uid, getGamePracticeBalance(uid) + result.balanceAdjustmentMilli);
+              nextRound.message =
+                  `Tablero despejado. Se añadieron ${formatPracticeAmount(result.balanceAdjustmentMilli)} puntos de práctica; ` +
+                  `la apuesta inicial no se devuelve.`;
+          } else {
+              const safeRevealed = nextRound.revealedIndices.filter(index => !nextRound.mineIndices.includes(index)).length;
+              const nextChance = getNextSafeChance(nextRound.modeId, safeRevealed);
+              nextRound.message =
+                  `Casilla segura: +${formatPracticeAmount(result.awardMilli)} puntos. ` +
+                  `Acumulado sin cobrar: ${formatPracticeAmount(nextRound.accumulatedMilli)}. ` +
+                  `La próxima casilla tiene ${formatGamePracticeChance(nextChance)} de probabilidad de ser segura.`;
+          }
+          saveGamePracticeRound(uid, nextRound);
+          renderGamePracticeBalance(auth.currentUser);
+      }
+
+      function collectGamePracticeRound() {
+          const uid = auth.currentUser?.uid;
+          const round = getGamePracticeRound(uid);
+          if (!uid || round?.status !== 'active' || round.accumulatedMilli <= 0) return;
+          const result = settlePracticeRound(round, 'collect', getGamePracticeBalance(uid));
+          if (result.outcome !== 'collected') return;
+          result.round.message =
+              `Guardaste ${formatPracticeAmount(result.round.settledMilli)} puntos de práctica. ` +
+              `La apuesta inicial de ${formatPracticeAmount(round.stakeMilli)} no se devuelve.`;
+          setGamePracticeBalance(uid, result.balanceMilli);
+          saveGamePracticeRound(uid, result.round);
+          renderGamePracticeBalance(auth.currentUser);
+      }
 
       function mostrarPantallaJuegos(section = 'game') {
           window.nexPortalMode = 'games';
