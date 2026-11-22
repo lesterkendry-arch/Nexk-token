@@ -1355,11 +1355,13 @@
           connectButton.hidden = uid !== NEX_ADMIN_UID;
           let enabled = false;
           let webhookReady = false;
+          let asaasIssue = null;
           try {
               const response = await fetch('/api/wallet/status', { cache: 'no-store' });
               const status = await response.json();
               enabled = response.ok && status.enabled === true;
               webhookReady = response.ok && status.webhookReady === true;
+              asaasIssue = response.ok ? status.asaasIssue : null;
           } catch (error) {
               enabled = false;
           }
@@ -1376,6 +1378,21 @@
                   : webhookReady
                       ? 'La conexión de Asaas está lista. Los movimientos Pix aún no están habilitados.'
                       : 'Pix permanece desactivado. La cuenta administradora debe completar la conexión segura con Asaas.';
+          if (signedIn && asaasIssue) {
+              const reasons = {
+                  wrong_environment: 'Asaas rechazó la conexión: la clave guardada no corresponde a producción.',
+                  key_format: 'Asaas rechazó la conexión: la clave guardada tiene un formato incorrecto.',
+                  invalid_key: 'Asaas rechazó la clave de acceso: puede ser incorrecta, estar vencida o revocada.',
+                  permission_denied: 'Asaas bloqueó la conexión: revisa los permisos y las restricciones de IP.',
+                  unavailable: 'Asaas no responde o está temporalmente indisponible.',
+                  missing_key: 'Falta guardar la clave de producción de Asaas.',
+                  request_rejected: 'Asaas rechazó la comprobación de conexión.'
+              };
+              note.textContent = reasons[asaasIssue] || 'No se pudo verificar la conexión de Asaas.';
+              if (uid === NEX_ADMIN_UID && ['wrong_environment', 'key_format', 'invalid_key', 'missing_key'].includes(asaasIssue)) {
+                  note.textContent += ' Revisa ASAAS_API_KEY en las variables de Production de Vercel y vuelve a publicar. No cambies FIREBASE_SERVICE_ACCOUNT_JSON ni envíes claves por el chat.';
+              }
+          }
 
           if (!signedIn || !enabled) {
               document.getElementById('walletGameBalance').textContent = 'No disponible';

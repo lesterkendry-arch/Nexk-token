@@ -123,6 +123,7 @@ export async function asaas(path, { method = "GET", body, idempotencyKey } = {})
     method,
     headers: {
       "Content-Type": "application/json",
+      "User-Agent": "NEX-Token-Wallet/1.0",
       access_token: apiKey,
       ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
     },
@@ -130,15 +131,57 @@ export async function asaas(path, { method = "GET", body, idempotencyKey } = {})
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
+    const codes = Array.isArray(payload.errors)
+      ? payload.errors.map((item) => item?.code).filter((code) => typeof code === "string")
+      : [];
+    let issue = "request_rejected";
+    if (codes.includes("invalid_environment")) issue = "wrong_environment";
+    else if (codes.includes("invalid_access_token_format")) issue = "key_format";
+    else if (response.status === 401 || codes.includes("invalid_access_token") || codes.includes("access_token_not_found")) issue = "invalid_key";
+    else if (response.status === 403) issue = "permission_denied";
+    else if (response.status >= 500 || response.status === 429) issue = "unavailable";
+    const safeMessages = {
+      wrong_environment: "La clave de Asaas no corresponde a producción. Revisa ASAAS_API_KEY en Vercel; no cambies la clave de Firebase.",
+      key_format: "El formato de ASAAS_API_KEY no es válido. Comprueba que se guardó completa, sin comillas ni espacios adicionales, en Vercel.",
+      invalid_key: "Asaas rechazó la clave de acceso. Revisa la clave de producción ASAAS_API_KEY en Vercel; puede ser incorrecta, estar vencida o revocada.",
+      permission_denied: "Asaas no permite esta solicitud. Revisa los permisos y las restricciones de IP de la clave de producción.",
+      unavailable: "Asaas no está disponible temporalmente. Consulta el historial antes de repetir una operación.",
+      request_rejected: "Asaas rechazó los datos de la solicitud. No se confirmó la operación.",
+    };
     const error = new HttpError(
       response.status >= 500 ? 502 : 400,
-      "Asaas não confirmou a operação. Consulte o histórico antes de tentar novamente.",
+      safeMessages[issue],
     );
+    error.providerIssue = issue;
     error.providerHttpStatus = response.status;
     error.definitiveProviderRejection = [400, 401, 403, 404, 422].includes(response.status);
     throw error;
   }
   return payload;
+}
+
+let asaasHealthCache = null;
+export async function getAsaasHealth() {
+  if (!process.env.ASAAS_API_KEY) return { ready: false, issue: "missing_key" };
+  const fingerprint = asaasKeyFingerprint();
+  const now = Date.now();
+  if (!asaasHealthCache || asaasHealthCache.fingerprint !== fingerprint || asaasHealthCache.expiresAt <= now) {
+    // Cache successes and failures and share concurrent probes. Never retain
+    // provider response data, credentials, account details or webhook URLs.
+    asaasHealthCache = {
+      fingerprint,
+      expiresAt: now + 60000,
+      promise: (async () => {
+        try {
+          await asaas("/webhooks?limit=1");
+          return { ready: true, issue: null };
+        } catch (error) {
+          return { ready: false, issue: error.providerIssue || "unavailable" };
+        }
+      })(),
+    };
+  }
+  return asaasHealthCache.promise;
 }
 
 export async function verifyAsaasWebhook(req) {
