@@ -1138,7 +1138,7 @@
                         <div>
                             <label for="gamePracticeAmount">Elegir puntos</label>
                             <select id="gamePracticeAmount" aria-describedby="gamePracticePresetNote">
-                                <option value="0">0 puntos</option>
+                                <option value="" selected disabled>Elige una cantidad</option>
                                 <option value="20">20 puntos</option>
                                 <option value="50">50 puntos</option>
                             </select>
@@ -2317,7 +2317,7 @@
           }
       });
 
-      const gamePracticePresets = new Set([0, 20, 50]);
+      const gamePracticePresets = new Set([20, 50]);
       const gamePracticeMemory = new Map();
       const gamePracticeRoundMemory = new Map();
 
@@ -2555,7 +2555,7 @@
               return;
           }
           if (!gamePracticePresets.has(preset)) {
-              status.textContent = 'Elige 0, 20 o 50 puntos de práctica.';
+              status.textContent = 'Elige 20 o 50 puntos demo.';
               return;
           }
           setGamePracticeBalance(uid, preset * 1000);

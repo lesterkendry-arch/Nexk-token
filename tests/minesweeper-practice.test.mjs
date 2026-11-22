@@ -37,6 +37,14 @@ test("the original game label stays exact and the catalog opens the visible game
   assert.doesNotMatch(page, /Tablero · casillas ocultas/);
 });
 
+test("practice starts at zero without offering a zero-point selector option", () => {
+  assert.match(page, /id="gamePracticeBalance"[^>]*>0 pesos del juego<\/strong>/);
+  assert.match(page, /id="gamePracticeAmount"[\s\S]*?value="20"[\s\S]*?value="50"/);
+  assert.doesNotMatch(page, /<option value="0">/);
+  assert.match(page, /new Set\(\[20, 50\]\)/);
+  assert.match(page, /Elige 20 o 50 puntos demo\./);
+});
+
 test("each disclosed mode has a unique grid, mine count, and safe-cell chance", () => {
   assert.deepEqual(
     Object.values(MINESWEEPER_MODES).map(({ rows, columns, mines }) => ({
