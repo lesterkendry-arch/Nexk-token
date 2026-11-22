@@ -12,6 +12,7 @@ import {
 } from "../_lib.js";
 
 const DAILY_LIMIT_CENTS = 500000;
+const MIN_WITHDRAWAL_CENTS = 2001;
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -27,6 +28,9 @@ export default async function handler(req, res) {
     amountCents = parseMoneyCents(Number(req.body?.amountCents) / 100);
     if (!Number.isInteger(Number(req.body?.amountCents)) || amountCents <= 0) {
       throw new HttpError(400, "El monto no es válido.");
+    }
+    if (amountCents < MIN_WITHDRAWAL_CENTS) {
+      throw new HttpError(400, "El retiro debe ser mayor de R$20,00 (mínimo R$20,01).");
     }
     idempotencyKey = makeIdempotencyKey(req.headers["idempotency-key"]);
     const legalName = String(req.body?.legalName || "").trim();
