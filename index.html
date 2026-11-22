@@ -192,6 +192,142 @@
             color: #b8c7dc;
             line-height: 1.55;
         }
+        .games-catalog {
+            padding-top: 8px;
+        }
+        .game-tile {
+            display: grid;
+            width: min(100%, 250px);
+            aspect-ratio: 1;
+            gap: 12px;
+            padding: 16px;
+            border: 1px solid #31547b;
+            border-radius: 18px;
+            background: linear-gradient(155deg, #102d50, #09182b);
+            color: #f2f7ff;
+            text-align: left;
+            box-shadow: 0 16px 42px rgba(0, 0, 0, .24);
+            cursor: pointer;
+            transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+        }
+        .game-tile:hover {
+            transform: translateY(-3px);
+            border-color: #78d7fb;
+            box-shadow: 0 20px 48px rgba(0, 0, 0, .32);
+        }
+        .game-tile:focus-visible,
+        .game-back-button:focus-visible {
+            outline: 3px solid #fff;
+            outline-offset: 3px;
+        }
+        .game-tile-art {
+            display: grid;
+            min-height: 0;
+            place-items: center;
+            border: 1px solid rgba(117, 176, 226, .34);
+            border-radius: 13px;
+            background: radial-gradient(circle at 50% 35%, #194978, #0a1a2d 72%);
+        }
+        .game-tile-board {
+            display: grid;
+            width: min(100%, 162px);
+            aspect-ratio: 1;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            padding: 7px;
+            border: 1px solid #3b658d;
+            border-radius: 11px;
+            background: #07172a;
+            transform: rotate(-5deg);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, .32);
+        }
+        .game-tile-cell {
+            display: grid;
+            place-items: center;
+            border: 1px solid #527da4;
+            border-bottom-width: 3px;
+            border-radius: 6px;
+            background: linear-gradient(145deg, #1b4772, #123154);
+            color: #bce9ff;
+            font-size: 15px;
+            font-weight: 850;
+        }
+        .game-tile-cell.is-open {
+            border-color: #46627d;
+            border-bottom-width: 1px;
+            background: #162a40;
+            color: #a8f0d5;
+        }
+        .game-tile-cell.is-danger {
+            border-color: #b95462;
+            background: #6c2938;
+            color: #fff;
+        }
+        .game-tile-copy {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .game-tile-copy strong { font-size: 17px; }
+        .game-tile-copy span {
+            color: #94dfff;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+        .game-screen-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        .game-back-button {
+            flex: 0 0 auto;
+            min-height: 42px;
+            padding: 8px 12px;
+            border: 1px solid #345574;
+            border-radius: 9px;
+            background: #10253c;
+            color: #eaf4ff;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .game-screen-header h1 { margin: 0; }
+        .game-practice-compact-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 4px 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(139, 181, 226, .2);
+        }
+        .game-practice-compact-head .game-practice-label { font-size: 12px; }
+        .game-practice-compact-head .game-practice-balance { font-size: clamp(21px, 6vw, 28px); }
+        .game-practice-disclosure {
+            border: 1px solid #294361;
+            border-radius: 10px;
+            background: rgba(7, 22, 41, .58);
+            color: #c5d4e6;
+        }
+        .game-practice-disclosure summary {
+            padding: 10px 12px;
+            color: #d9e8f7;
+            font-size: 13px;
+            font-weight: 750;
+            cursor: pointer;
+        }
+        .game-practice-disclosure > :not(summary) { margin: 0 12px 12px; }
+        .game-practice-disclosure .practice-preset { margin-top: 0; }
+        .game-practice-disclosure .minesweeper-rule { padding-top: 10px; }
+        .game-practice-disclosure .minesweeper-mode-info { margin: 0 12px 12px; }
+        @media (max-width: 420px) {
+            .game-tile { width: min(100%, 290px); }
+            .game-screen-header { gap: 10px; }
+            .game-back-button { padding-inline: 9px; }
+        }
         .game-practice-card {
             display: grid;
             gap: 14px;
@@ -954,86 +1090,108 @@
     <div id="entryGate" class="entry-gate" aria-label="Selecciona una opción">
         <div class="entry-gate-actions">
             <button class="entry-choice entry-choice-primary" type="button" onclick="mostrarAccesoNormal()">Invertir en NEX Token</button>
-            <button class="entry-choice entry-choice-secondary" type="button" onclick="entrarJuegosProximamente()">Juegos de práctica</button>
+            <button class="entry-choice entry-choice-secondary" type="button" onclick="entrarJuegosProximamente()">juego para ganar dinero</button>
             <p id="entryGateError" class="games-copy" role="alert" hidden></p>
         </div>
     </div>
     <div id="gamesPlaceholder" aria-hidden="true">
-        <section id="gamesHomeView" class="games-panel" aria-labelledby="gamesHomeTitle">
-            <h1 id="gamesHomeTitle" class="games-heading">Juegos de práctica</h1>
-            <p class="games-copy">Modo de práctica y demostración. Este marcador no usa tu saldo de la cartera.</p>
-            <div class="game-practice-card" aria-labelledby="gamePracticeTitle">
-                <div class="practice-balance-head">
-                    <h2 id="gamePracticeTitle">Marcador de práctica</h2>
-                    <span class="game-practice-label">Saldo de práctica · puntos demo</span>
+        <section id="gamesHomeView" class="games-panel games-catalog" aria-labelledby="gamesHomeTitle">
+            <h1 id="gamesHomeTitle" class="games-heading">Juegos</h1>
+            <button id="openMinesweeper" class="game-tile" type="button" aria-label="Abrir Buscaminas">
+                <span class="game-tile-art" aria-hidden="true">
+                    <span class="game-tile-board">
+                        <span class="game-tile-cell is-open">1</span>
+                        <span class="game-tile-cell is-open">2</span>
+                        <span class="game-tile-cell"></span>
+                        <span class="game-tile-cell"></span>
+                        <span class="game-tile-cell is-open">1</span>
+                        <span class="game-tile-cell is-danger">×</span>
+                        <span class="game-tile-cell"></span>
+                        <span class="game-tile-cell"></span>
+                        <span class="game-tile-cell"></span>
+                        <span class="game-tile-cell"></span>
+                        <span class="game-tile-cell is-open">2</span>
+                        <span class="game-tile-cell is-open">1</span>
+                        <span class="game-tile-cell"></span>
+                        <span class="game-tile-cell"></span>
+                        <span class="game-tile-cell is-open">1</span>
+                        <span class="game-tile-cell"></span>
+                    </span>
+                </span>
+                <span class="game-tile-copy"><strong>Buscaminas</strong><span>Jugar</span></span>
+            </button>
+        </section>
+        <section id="minesweeperGameView" class="games-panel" aria-labelledby="minesweeperTitle" aria-hidden="true" style="display: none;">
+            <header class="game-screen-header">
+                <button id="backToGames" class="game-back-button" type="button">Volver</button>
+                <h1 id="minesweeperTitle" class="games-heading">Buscaminas</h1>
+            </header>
+            <div class="game-practice-card" aria-label="Buscaminas de práctica">
+                <div class="game-practice-compact-head">
+                    <span class="game-practice-label">Saldo de práctica</span>
                     <strong id="gamePracticeBalance" class="game-practice-balance" aria-live="polite" aria-label="Saldo de práctica">0 pesos del juego</strong>
-                    <p class="practice-wallet-note">Estos puntos solo sirven para practicar Buscaminas. No son dinero, no tienen valor monetario, no se pueden convertir ni retirar y están separados del saldo de tu cartera.</p>
+                    <span class="practice-wallet-note">Solo puntos demo; no es dinero real.</span>
                 </div>
-                <div class="practice-preset">
-                    <div>
-                        <label for="gamePracticeAmount">Añadir saldo gratuito de práctica</label>
-                        <select id="gamePracticeAmount" aria-describedby="gamePracticePresetNote">
-                            <option value="0">0 puntos demo</option>
-                            <option value="20">20 puntos demo</option>
-                            <option value="50">50 puntos demo</option>
-                        </select>
+                <details class="game-practice-disclosure">
+                    <summary>Saldo demo</summary>
+                    <div class="practice-preset">
+                        <div>
+                            <label for="gamePracticeAmount">Elegir puntos</label>
+                            <select id="gamePracticeAmount" aria-describedby="gamePracticePresetNote">
+                                <option value="0">0 puntos</option>
+                                <option value="20">20 puntos</option>
+                                <option value="50">50 puntos</option>
+                            </select>
+                        </div>
+                        <button id="gamePracticeApply" type="button">Aplicar</button>
                     </div>
-                    <button id="gamePracticeApply" type="button">Aplicar saldo</button>
-                </div>
-                <p id="gamePracticePresetNote" class="practice-wallet-note">Elige un marcador gratuito de 0, 20 o 50 puntos. No afecta a tu cartera.</p>
+                    <p id="gamePracticePresetNote" class="practice-wallet-note">Puntos gratuitos de práctica; no afectan la cartera.</p>
+                </details>
                 <p id="gamePracticeStatus" class="game-practice-status" role="status" aria-live="polite"></p>
 
                 <section class="minesweeper-shell" aria-labelledby="minesweeperTitle">
-                    <header class="minesweeper-title-row">
-                        <div>
-                            <span class="minesweeper-kicker">Sala de práctica</span>
-                            <h3 id="minesweeperTitle">Buscaminas</h3>
-                        </div>
-                        <span class="practice-only-tag">Solo puntos demo</span>
-                    </header>
-                    <p class="minesweeper-rule"><strong>Regla de ronda:</strong> cada casilla segura suma 0,20× la apuesta inicial. Si aparece una mina, pierdes la apuesta y todo lo acumulado que no hayas cobrado.</p>
-
                     <div class="minesweeper-controls">
                         <div class="minesweeper-control">
-                            <label for="gamePracticeMode">Modo de tablero</label>
+                            <label for="gamePracticeMode">Modo</label>
                             <select id="gamePracticeMode" aria-describedby="gamePracticeModeInfo">
-                                <option value="low">Baja · 4 × 4 · 3 minas</option>
-                                <option value="medium">Media · 5 × 5 · 8 minas</option>
-                                <option value="maximum">Máxima · 7 × 7 · 21 minas</option>
+                                <option value="low">Baja</option>
+                                <option value="medium">Media</option>
+                                <option value="maximum">Máxima</option>
                             </select>
                         </div>
                         <div class="minesweeper-control">
-                            <label for="gamePracticeStake">Monto de la ronda</label>
+                            <label for="gamePracticeStake">Puntos por ronda</label>
                             <input id="gamePracticeStake" type="number" min="0.40" step="0.01" inputmode="decimal" value="1" aria-describedby="gamePracticeStakeNote" autocomplete="off">
                         </div>
+                    </div>
+                    <details class="game-practice-disclosure">
+                        <summary>Reglas y probabilidades</summary>
+                        <p id="gamePracticeStakeNote" class="practice-wallet-note">Mínimo 0,40. Cada casilla segura suma 0,20× la apuesta; la apuesta no se devuelve.</p>
                         <p id="gamePracticeModeInfo" class="minesweeper-mode-info" aria-live="polite"></p>
-                        <p id="gamePracticeStakeNote" class="practice-wallet-note">Apuesta mínima: 0,40 pesos del juego; monto máximo según tu saldo y en pasos de 0,01. Por cada casilla segura se acumula 0,20× la apuesta inicial. La apuesta no se devuelve al terminar la ronda.</p>
-                    </div>
-
+                    </details>
                     <div class="minesweeper-board-wrap">
-                        <span class="minesweeper-board-label">Tablero · casillas ocultas</span>
-                        <div id="minesweeperBoard" role="group" aria-label="Tablero de Buscaminas de práctica" hidden></div>
+                        <span class="minesweeper-board-label">Buscaminas · toca Jugar para comenzar</span>
+                        <div id="minesweeperBoard" role="group" aria-label="Tablero de Buscaminas de práctica"></div>
                     </div>
-
                     <div class="minesweeper-readouts">
                         <div class="minesweeper-readout">
-                            <span>Estado de la ronda</span>
-                            <strong id="minesweeperStatus" role="status" aria-live="polite">Sin ronda activa</strong>
+                            <span>Ronda</span>
+                            <strong id="minesweeperStatus" role="status" aria-live="polite">Lista</strong>
                         </div>
                         <div class="minesweeper-readout">
-                            <span>Acumulado sin cobrar</span>
-                            <strong id="minesweeperAccumulated" aria-live="polite">0 puntos de práctica</strong>
+                            <span>Acumulado</span>
+                            <strong id="minesweeperAccumulated" aria-live="polite">0 puntos</strong>
                         </div>
                     </div>
                     <div class="minesweeper-actions" aria-label="Acciones de ronda">
-                        <button id="minesweeperCollect" class="minesweeper-collect" type="button">Guardar puntos y terminar</button>
+                        <button id="minesweeperCollect" class="minesweeper-collect" type="button">Guardar puntos</button>
                     </div>
                     <div class="minesweeper-bottom-bar">
                         <div class="minesweeper-bottom-balance">
-                            <span>Saldo disponible · solo práctica</span>
+                            <span>Disponible</span>
                             <strong id="gamePracticeBottomBalance" aria-live="polite">0 pesos del juego</strong>
                         </div>
-                        <button id="gamePracticePlay" type="button">Iniciar ronda</button>
+                        <button id="gamePracticePlay" type="button">Jugar ronda</button>
                     </div>
                 </section>
             </div>
@@ -1117,7 +1275,7 @@
         </section>
     </div>
     <nav id="gamesBottomNav" class="games-bottom-nav" aria-label="Navegación principal">
-        <button type="button" class="games-nav-button" data-portal-section="game" onclick="abrirSeccionPortal('game')" aria-current="page">Juegos de práctica</button>
+        <button type="button" class="games-nav-button" data-portal-section="game" onclick="abrirSeccionPortal('game')" aria-current="page">juego para ganar dinero</button>
         <button type="button" class="games-nav-button" data-portal-section="tokens" onclick="mostrarAccesoNormal()">Invertir en NEX Token</button>
         <button type="button" class="games-nav-button" data-portal-section="wallet" onclick="abrirSeccionPortal('wallet')">Cartera</button>
     </nav>
@@ -2278,19 +2436,16 @@
           const board = document.getElementById('minesweeperBoard');
           const boardLabel = document.querySelector('.minesweeper-board-label');
           board.replaceChildren();
-          if (!round) {
-              board.hidden = true;
-              return;
-          }
-          const mode = MINESWEEPER_MODES[round.modeId];
-          const mines = new Set(round.mineIndices);
-          const revealed = new Set(round.revealedIndices);
-          const finished = round.status !== 'active';
-          const revealMines = round.status === 'lost' || round.status === 'won';
+          const modeId = round?.modeId || document.getElementById('gamePracticeMode').value || 'low';
+          const mode = MINESWEEPER_MODES[modeId];
+          const mines = new Set(round?.mineIndices || []);
+          const revealed = new Set(round?.revealedIndices || []);
+          const finished = !round || round.status !== 'active';
+          const revealMines = round?.status === 'lost' || round?.status === 'won';
           board.hidden = false;
           board.style.gridTemplateColumns = `repeat(${mode.columns}, minmax(0, 1fr))`;
           board.setAttribute('aria-label', `Tablero de Buscaminas de práctica, ${mode.rows} filas por ${mode.columns} columnas`);
-          if (boardLabel) boardLabel.textContent = `Tablero ${mode.rows} × ${mode.columns} · ${mode.mines} casillas de riesgo`;
+          if (boardLabel) boardLabel.textContent = `${mode.label} · ${mode.rows} × ${mode.columns}`;
 
           const fragment = document.createDocumentFragment();
           for (let index = 0; index < mode.rows * mode.columns; index += 1) {
@@ -2303,7 +2458,7 @@
               const wasRevealed = revealed.has(index);
               const showMine = mines.has(index) && revealMines;
               if (wasRevealed && !mines.has(index)) {
-                  const adjacent = countAdjacentMines(round.modeId, index, mines);
+                  const adjacent = countAdjacentMines(modeId, index, mines);
                   button.classList.add('is-revealed', 'is-safe');
                   button.textContent = adjacent ? String(adjacent) : '·';
                   button.setAttribute('aria-label', `Casilla segura, fila ${row}, columna ${column}; ${adjacent} minas cercanas`);
@@ -2316,7 +2471,7 @@
                   button.disabled = true;
               } else {
                   button.textContent = '';
-                  button.setAttribute('aria-label', `Casilla oculta, fila ${row}, columna ${column}`);
+                  button.setAttribute('aria-label', `Casilla sin descubrir, fila ${row}, columna ${column}`);
                   button.disabled = finished;
               }
               fragment.appendChild(button);
@@ -2376,8 +2531,8 @@
 
           document.getElementById('minesweeperStatus').textContent =
               round?.message || (activeRound
-                  ? 'Ronda activa: descubre casillas o guarda el acumulado.'
-                  : 'Sin ronda activa. Ajusta el saldo demo gratuito para jugar.');
+                  ? 'En juego'
+                  : 'Lista');
           document.getElementById('minesweeperAccumulated').textContent =
               `${formatPracticeAmount(round?.accumulatedMilli || 0)} puntos de práctica`;
           document.getElementById('minesweeperCollect').disabled =
@@ -2430,6 +2585,8 @@
 
       document.getElementById('gamePracticePlay').addEventListener('click', startGamePracticeRound);
       document.getElementById('minesweeperCollect').addEventListener('click', collectGamePracticeRound);
+      document.getElementById('openMinesweeper').addEventListener('click', abrirBuscaminas);
+      document.getElementById('backToGames').addEventListener('click', volverAlCatalogoJuegos);
 
       function startGamePracticeRound() {
           const uid = auth.currentUser?.uid;
@@ -2465,7 +2622,7 @@
               MINESWEEPER_MODES[modeId].mines;
           const round = {
               ...started.round,
-              message: `Ronda iniciada. Se descontaron ${formatPracticeAmount(stakeMilli)} puntos de práctica.`,
+              message: 'Ronda iniciada',
           };
 
           if (!setGamePracticeBalance(uid, started.balanceMilli) || !saveGamePracticeRound(uid, round)) {
@@ -2493,21 +2650,12 @@
           if (result.outcome === 'inactive' || result.outcome === 'duplicate') return;
           const nextRound = result.round;
           if (result.outcome === 'risk') {
-              nextRound.message =
-                  `Casilla de riesgo. Perdiste ${formatPracticeAmount(nextRound.lostAccumulatedMilli)} puntos acumulados; ` +
-                  `los ${formatPracticeAmount(nextRound.stakeMilli)} de la apuesta ya descontada no se devuelven.`;
+              nextRound.message = 'Mina · fin de la ronda';
           } else if (result.outcome === 'cleared') {
               setGamePracticeBalance(uid, getGamePracticeBalance(uid) + result.balanceAdjustmentMilli);
-              nextRound.message =
-                  `Tablero despejado. Se añadieron ${formatPracticeAmount(result.balanceAdjustmentMilli)} puntos de práctica; ` +
-                  `la apuesta inicial no se devuelve.`;
+              nextRound.message = `Tablero despejado · +${formatPracticeAmount(result.balanceAdjustmentMilli)} puntos`;
           } else {
-              const safeRevealed = nextRound.revealedIndices.filter(index => !nextRound.mineIndices.includes(index)).length;
-              const nextChance = getNextSafeChance(nextRound.modeId, safeRevealed);
-              nextRound.message =
-                  `Casilla segura: +${formatPracticeAmount(result.awardMilli)} puntos. ` +
-                  `Acumulado sin cobrar: ${formatPracticeAmount(nextRound.accumulatedMilli)}. ` +
-                  `La próxima casilla tiene ${formatGamePracticeChance(nextChance)} de probabilidad de ser segura.`;
+              nextRound.message = `Segura · +${formatPracticeAmount(result.awardMilli)} puntos`;
           }
           saveGamePracticeRound(uid, nextRound);
           renderGamePracticeBalance(auth.currentUser);
@@ -2519,12 +2667,29 @@
           if (!uid || round?.status !== 'active' || round.accumulatedMilli <= 0) return;
           const result = settlePracticeRound(round, 'collect', getGamePracticeBalance(uid));
           if (result.outcome !== 'collected') return;
-          result.round.message =
-              `Guardaste ${formatPracticeAmount(result.round.settledMilli)} puntos de práctica. ` +
-              `La apuesta inicial de ${formatPracticeAmount(round.stakeMilli)} no se devuelve.`;
+          result.round.message = `Puntos guardados · +${formatPracticeAmount(result.round.settledMilli)}`;
           setGamePracticeBalance(uid, result.balanceMilli);
           saveGamePracticeRound(uid, result.round);
           renderGamePracticeBalance(auth.currentUser);
+      }
+
+      function abrirBuscaminas() {
+          window.nexPortalGameView = 'minesweeper';
+          document.getElementById('gamesHomeView').style.display = 'none';
+          document.getElementById('walletView').style.display = 'none';
+          document.getElementById('minesweeperGameView').style.display = 'block';
+          document.getElementById('minesweeperGameView').setAttribute('aria-hidden', 'false');
+          renderGamePracticeBalance(window.usuarioActual || auth.currentUser);
+          document.getElementById('gamesPlaceholder').scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function volverAlCatalogoJuegos() {
+          window.nexPortalGameView = 'catalog';
+          window.nexPortalSection = 'game';
+          document.getElementById('minesweeperGameView').style.display = 'none';
+          document.getElementById('minesweeperGameView').setAttribute('aria-hidden', 'true');
+          document.getElementById('gamesHomeView').style.display = 'block';
+          document.getElementById('gamesPlaceholder').scrollTo({ top: 0, behavior: 'smooth' });
       }
 
       function mostrarPantallaJuegos(section = 'game') {
@@ -2537,7 +2702,10 @@
           document.getElementById('gamesPlaceholder').style.display = 'block';
           document.getElementById('gamesPlaceholder').setAttribute('aria-hidden', 'false');
           document.getElementById('gamesBottomNav').style.display = 'grid';
-          document.getElementById('gamesHomeView').style.display = section === 'game' ? 'block' : 'none';
+          const showingMinesweeper = section === 'game' && window.nexPortalGameView === 'minesweeper';
+          document.getElementById('gamesHomeView').style.display = section === 'game' && !showingMinesweeper ? 'block' : 'none';
+          document.getElementById('minesweeperGameView').style.display = showingMinesweeper ? 'block' : 'none';
+          document.getElementById('minesweeperGameView').setAttribute('aria-hidden', showingMinesweeper ? 'false' : 'true');
           document.getElementById('walletView').style.display = section === 'wallet' ? 'block' : 'none';
           actualizarNavegacionPortal(section);
           if (section === 'game') renderGamePracticeBalance(window.usuarioActual || auth.currentUser);
@@ -2552,6 +2720,7 @@
       window.abrirSeccionPortal = async function(section) {
           if (!['game', 'wallet'].includes(section)) return;
           if (section === 'tokens') return window.mostrarAccesoNormal();
+          window.nexPortalGameView = 'catalog';
           document.getElementById('entryGateError').hidden = true;
           const currentUser = auth.currentUser || (!nexAuthReadyResolved ? await nexAuthReady : null);
           if (currentUser) {

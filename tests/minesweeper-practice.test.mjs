@@ -22,8 +22,19 @@ test("the practice page exposes all three modes, bet bounds, and both balance re
   assert.match(page, /id="gamePracticeBalance"/);
   assert.match(page, /id="gamePracticeBottomBalance"/);
   assert.match(page, /id="gamePracticePlay"/);
-  assert.match(page, /id="minesweeperBoard"[^>]*hidden/);
-  assert.match(page, /No son dinero, no tienen valor monetario, no se pueden convertir ni retirar/);
+  assert.match(page, /id="minesweeperBoard"[^>]*role="group"/);
+  assert.match(page, /Solo puntos demo; no es dinero real\./);
+});
+
+test("the original game label stays exact and the catalog opens the visible game board", () => {
+  assert.match(page, /class="entry-choice entry-choice-secondary"[^>]*>juego para ganar dinero<\/button>/);
+  assert.match(page, /data-portal-section="game"[^>]*>juego para ganar dinero<\/button>/);
+  const catalog = page.match(/<section id="gamesHomeView"[\s\S]*?<\/section>/)?.[0] || "";
+  assert.match(catalog, /id="openMinesweeper"/);
+  assert.match(catalog, /Buscaminas/);
+  assert.doesNotMatch(catalog, /gamePracticeBalance|gamePracticeModeInfo|<p\b/);
+  assert.match(page, /id="minesweeperGameView"[^>]*aria-hidden="true"/);
+  assert.doesNotMatch(page, /Tablero · casillas ocultas/);
 });
 
 test("each disclosed mode has a unique grid, mine count, and safe-cell chance", () => {
