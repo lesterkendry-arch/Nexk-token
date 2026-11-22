@@ -1,9 +1,3 @@
-        .list-card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .toggle-switch { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: white; border-bottom: 1px solid #eee; }
-        .toggle-switch input[type="checkbox"] { width: 40px; height: 20px; accent-color: var(--color-primario); }
-        /* === MENÚ INFERIOR === */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; padding-bottom: env(safe-area-inset-bottom, 10px); box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--color-gris); font-size: 0.7rem; cursor: pointer; width: 20%; }
         .nav-item.active { color: var(--color-primario); }
         .nav-item i { font-size: 1.3rem; transition: transform 0.2s; }
     </style>
@@ -498,3 +492,9 @@ git commit -m "prueba"
 git push origin-shop
 git add .
 git status
+git add 
+git add .
+git comit "prueba"
+git comit -m "prueba:
+.
+disjj
