@@ -2521,7 +2521,17 @@
           }
       });
 
-      window.toggleWalletForm = function(form) {
+      window.toggleWalletForm = async function(form) {
+          if (!['deposit', 'withdraw'].includes(form)) return;
+          if (!auth.currentUser) {
+              await window.abrirSeccionPortal('wallet');
+              if (!auth.currentUser) return;
+              await actualizarCarteraPix();
+          }
+          const actionButton = document.getElementById(
+              form === 'deposit' ? 'walletDepositButton' : 'walletWithdrawButton'
+          );
+          if (!actionButton || actionButton.disabled) return;
           document.getElementById('walletDepositForm').hidden = form !== 'deposit';
           document.getElementById('walletWithdrawForm').hidden = form !== 'withdraw';
       };
@@ -2558,10 +2568,10 @@
           }
           if (auth.currentUser?.uid !== uid) return;
           connectButton.hidden = uid !== NEX_ADMIN_UID || webhookReady;
-          depositButton.disabled = !enabled || !signedIn;
-          withdrawButton.disabled = !enabled || !signedIn;
-          depositButton.classList.toggle('wallet-action-disabled', !enabled || !signedIn);
-          withdrawButton.classList.toggle('wallet-action-disabled', !enabled || !signedIn);
+          depositButton.disabled = !enabled;
+          withdrawButton.disabled = !enabled;
+          depositButton.classList.toggle('wallet-action-disabled', !enabled);
+          withdrawButton.classList.toggle('wallet-action-disabled', !enabled);
           note.textContent = !signedIn
               ? 'Inicia sesión con Google para usar la cartera.'
               : enabled
