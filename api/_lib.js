@@ -25,6 +25,7 @@ export function requiredEnvironment() {
     "ASAAS_API_KEY",
     "ASAAS_WEBHOOK_TOKEN",
     "FIREBASE_SERVICE_ACCOUNT_JSON",
+    "PIX_PROFILE_ENCRYPTION_KEY",
   ].filter((name) => !process.env[name]);
 }
 
