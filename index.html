@@ -1269,6 +1269,7 @@
           if (user?.uid) {
               try {
                   const profile = await getDoc(doc(db, 'usuarios', user.uid));
+                  if (auth.currentUser?.uid !== user.uid) return;
                   if (profile.exists()) {
                       const details = profile.data();
                       if (name && details.nombre) name.textContent = details.nombre;
@@ -1278,6 +1279,7 @@
                   console.warn('No se pudo cargar el perfil de cartera:', error);
               }
           }
+          if (auth.currentUser?.uid !== user?.uid) return;
           if (image && placeholder) {
               if (photoUrl) {
                   image.src = photoUrl;
@@ -1334,6 +1336,7 @@
           if (!response.ok) {
               const error = new Error(data.error || 'No se pudo completar la solicitud.');
               error.httpStatus = response.status;
+              error.canResetReference = data.canResetReference === true;
               throw error;
           }
           return data;
@@ -1452,7 +1455,7 @@
               if (auth.currentUser?.uid !== uid) return;
               output.replaceChildren();
               if (!history.items?.length) output.textContent = 'Aún no tienes movimientos.';
-              const labels = { pending: 'Pendiente', creating: 'Creando', processing: 'Procesando', completed: 'Completado', failed: 'Rechazado', unknown: 'Sin confirmar', review: 'En revisión' };
+              const labels = { pending: 'Pendiente', creating: 'Creando', processing: 'Procesando', completed: 'Completado', failed: 'Rechazado', unknown: 'Sin confirmar', review: 'En revisión', retryable: 'Puedes reintentar el formulario' };
               for (const item of history.items || []) {
                   const line = document.createElement('p');
                   line.textContent = `${item.kind === 'deposit' ? 'Depósito' : 'Retiro'} · ${walletMoneyFormatter.format(item.amountCents / 100)} · ${labels[item.status] || item.status} · Ref. ${item.id}`;
@@ -1464,6 +1467,28 @@
                       copy.textContent = 'Copiar Pix pendiente';
                       copy.onclick = () => navigator.clipboard.writeText(item.pixCopyPaste);
                       output.appendChild(copy);
+                  } else if (item.canRecoverPix) {
+                      const recover = document.createElement('button');
+                      recover.type = 'button';
+                      recover.className = 'btn-gen';
+                      recover.textContent = 'Recuperar código Pix';
+                      recover.onclick = async () => {
+                          if (auth.currentUser?.uid !== uid) return;
+                          recover.disabled = true;
+                          try {
+                              await walletApiRequest('/api/wallet/deposit', { recover: true }, item.id);
+                              if (auth.currentUser?.uid !== uid) return;
+                              let saved = walletOperationKeys.deposit;
+                              try { saved ||= sessionStorage.getItem(`nex_wallet_request_${uid}_deposit`); } catch {}
+                              if (saved === item.id) clearWalletOperationKey('deposit');
+                              await actualizarHistorialPix();
+                          } catch (error) {
+                              if (auth.currentUser?.uid === uid) recover.textContent = error.message;
+                          } finally {
+                              recover.disabled = false;
+                          }
+                      };
+                      output.appendChild(recover);
                   }
               }
           } catch (error) {
@@ -1473,6 +1498,7 @@
 
       document.getElementById('walletDepositForm').addEventListener('submit', async (event) => {
           event.preventDefault();
+          const requestUid = auth.currentUser?.uid;
           const submit = event.currentTarget.querySelector('[type="submit"]');
           if (submit.disabled) return;
           submit.disabled = true;
@@ -1487,6 +1513,7 @@
                   legalName: document.getElementById('walletDepositName').value.trim(),
                   cpfCnpj: document.getElementById('walletDepositDocument').value
               }, walletOperationKeys.deposit);
+              if (auth.currentUser?.uid !== requestUid) return;
               clearWalletOperationKey('deposit');
               document.getElementById('walletDepositDocument').value = '';
               result.textContent = data.pixCopyPaste
@@ -1510,8 +1537,10 @@
               }
               await actualizarHistorialPix();
           } catch (error) {
+              if (auth.currentUser?.uid !== requestUid) return;
               result.textContent = error.message;
-              if (error.httpStatus === 400) clearWalletOperationKey('deposit');
+              if (error.httpStatus === 400 && error.canResetReference) clearWalletOperationKey('deposit');
+              await actualizarHistorialPix();
           } finally {
               submit.disabled = false;
           }
@@ -1519,6 +1548,7 @@
 
       document.getElementById('walletWithdrawForm').addEventListener('submit', async (event) => {
           event.preventDefault();
+          const requestUid = auth.currentUser?.uid;
           const submit = event.currentTarget.querySelector('[type="submit"]');
           if (submit.disabled) return;
           submit.disabled = true;
@@ -1535,12 +1565,14 @@
                   pixKeyType: document.getElementById('walletPixType').value,
                   pixKey: document.getElementById('walletPixKey').value.trim()
               }, walletOperationKeys.withdraw);
+              if (auth.currentUser?.uid !== requestUid) return;
               if (data.status !== 'unknown' && data.status !== 'processing') clearWalletOperationKey('withdraw');
               result.textContent = `Solicitud enviada. Estado: ${data.status}. El saldo se libera tras confirmación de Asaas.`;
               document.getElementById('walletPixKey').value = '';
               await actualizarCarteraPix();
               await actualizarHistorialPix();
           } catch (error) {
+              if (auth.currentUser?.uid !== requestUid) return;
               result.textContent = error.message;
               if (error.httpStatus === 400) clearWalletOperationKey('withdraw');
           } finally {

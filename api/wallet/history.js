@@ -15,6 +15,9 @@ export default async function handler(req, res) {
         id: doc.id, kind: data.kind, status: data.status, amountCents: data.amountCents,
         createdAt: data.createdAt?.toDate?.().toISOString() || null,
         pixCopyPaste: data.kind === "deposit" && data.status === "pending" ? data.pixCopyPaste || null : null,
+        canRecoverPix: data.kind === "deposit" && !["completed", "review"].includes(data.status) &&
+          !data.pixCopyPaste && Boolean(data.providerPaymentId || data.paymentAttempted ||
+            (!data.recoveryVersion && data.providerCustomerId)),
       };
     }).sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || "")).slice(0, 30);
     return sendJson(res, 200, { items });
