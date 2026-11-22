@@ -241,7 +241,29 @@ test("another user cannot recover an existing deposit", async () => {
 test("amount mismatch cannot repurpose an existing operation", async () => {
   const h = await harness();
   await h.submit();
-  assert.equal((await h.submit({ amount: 20 })).status, 409);
+  const mismatch = await h.submit({ amount: 20 });
+  assert.equal(mismatch.status, 409);
+  assert.equal(mismatch.body.canResetReference, true);
+  assert.equal(h.calls.createPayment, 1);
+});
+
+test("a completed old reference does not trap a new requested amount", async () => {
+  const h = await harness();
+  await h.submit();
+  const current = h.operation();
+  h.docs.set(`walletTransactions/${requestId}`, { ...current, status: "completed" });
+  const mismatch = await h.submit({ amount: 20 });
+  assert.equal(mismatch.status, 409);
+  assert.equal(mismatch.body.canResetReference, true);
+  assert.equal(h.calls.createPayment, 1);
+});
+
+test("a changed amount cannot discard a genuinely unknown payment reference", async () => {
+  const h = await harness({ unknownWithoutPayment: true });
+  await h.submit();
+  const mismatch = await h.submit({ amount: 20 });
+  assert.equal(mismatch.status, 409);
+  assert.equal(mismatch.body.canResetReference, false);
   assert.equal(h.calls.createPayment, 1);
 });
 

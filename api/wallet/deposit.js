@@ -99,8 +99,18 @@ export default async function handler(req, res) {
     operation = await db.runTransaction(async (transaction) => {
       const snap = await transaction.get(opRef);
       const old = snap.exists ? snap.data() : null;
-      if (old && (old.uid !== user.uid || old.kind !== "deposit" || old.amountCents !== amountCents)) {
+      if (old && (old.uid !== user.uid || old.kind !== "deposit")) {
         throw new HttpError(409, "La referencia ya fue utilizada para otra solicitud.");
+      }
+      if (old && old.amountCents !== amountCents) {
+        const knownOutcome = old.status === "completed" ||
+          (old.status === "pending" && Boolean(old.pixCopyPaste)) ||
+          (old.recoveryVersion === 2 && !old.paymentAttempted && !old.providerPaymentId);
+        const error = new HttpError(409, knownOutcome
+          ? "La referencia anterior corresponde a otro importe. Puedes consultar ese depósito en el historial; vuelve a enviar el formulario para solicitar el nuevo importe."
+          : "El depósito anterior todavía necesita confirmación. Recupera su estado desde el historial antes de solicitar otro importe.");
+        error.canResetReference = knownOutcome && !(old.leaseId && leaseTime(old.leaseUntil) > Date.now());
+        throw error;
       }
       if (old?.status === "completed" || (old?.status === "pending" && old.pixCopyPaste)) return { ...old, cached: true };
       if (old?.status === "review") throw new HttpError(409, "El cobro requiere revisión del administrador.");
@@ -167,7 +177,7 @@ export default async function handler(req, res) {
     await record({ leaseId: null, leaseUntil: null });
     return sendJson(res, 200, result(id, operation));
   } catch (error) {
-    let canResetReference = false;
+    let canResetReference = error.canResetReference === true;
     // Release only our lease; never regress a status confirmed by a webhook.
     if (db && opRef && operation && !operation.cached && leaseId) {
       try {

@@ -1539,7 +1539,7 @@
           } catch (error) {
               if (auth.currentUser?.uid !== requestUid) return;
               result.textContent = error.message;
-              if (error.httpStatus === 400 && error.canResetReference) clearWalletOperationKey('deposit');
+              if ([400, 409].includes(error.httpStatus) && error.canResetReference) clearWalletOperationKey('deposit');
               await actualizarHistorialPix();
           } finally {
               submit.disabled = false;
