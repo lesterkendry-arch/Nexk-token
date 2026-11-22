@@ -660,10 +660,11 @@
             <div class="game-practice-card" aria-labelledby="gamePracticeTitle">
                 <h2 id="gamePracticeTitle">Marcador de práctica</h2>
                 <span class="game-practice-label">Saldo de demostración</span>
-                <strong id="gamePracticeBalance" class="game-practice-balance" aria-live="polite">20 pesos del juego</strong>
+                <strong id="gamePracticeBalance" class="game-practice-balance" aria-live="polite">0 pesos del juego</strong>
                 <p class="games-copy" style="margin:0;">No es dinero real, no se puede convertir ni retirar. Se conserva al cambiar de sección en este dispositivo.</p>
                 <label for="gamePracticeAmount">Elegir saldo de demostración</label>
                 <select id="gamePracticeAmount">
+                    <option value="0">0 pesos del juego</option>
                     <option value="20">20 pesos del juego</option>
                     <option value="50">50 pesos del juego</option>
                 </select>
@@ -1779,7 +1780,7 @@
           }
       });
 
-      const gamePracticeBalances = new Set([20, 50]);
+      const gamePracticeBalances = new Set([0, 20, 50]);
       const gamePracticeMemory = new Map();
 
       function gamePracticeStorageKey(uid) {
@@ -1789,7 +1790,7 @@
       function getGamePracticeBalance(uid) {
           if (!uid) return 20;
           if (gamePracticeMemory.has(uid)) return gamePracticeMemory.get(uid);
-          let balance = 20;
+          let balance = 0;
           try {
               const saved = Number(sessionStorage.getItem(gamePracticeStorageKey(uid)));
               if (gamePracticeBalances.has(saved)) balance = saved;
@@ -1814,7 +1815,7 @@
               return;
           }
           if (!gamePracticeBalances.has(balance)) {
-              status.textContent = 'Selecciona 20 o 50 pesos del juego.';
+              status.textContent = 'Selecciona 0, 20 o 50 pesos del juego.';
               return;
           }
           gamePracticeMemory.set(uid, balance);
