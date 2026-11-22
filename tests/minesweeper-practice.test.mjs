@@ -43,6 +43,10 @@ test("practice starts at zero without offering a zero-point selector option", ()
   assert.doesNotMatch(page, /<option value="0">/);
   assert.match(page, /new Set\(\[20, 50\]\)/);
   assert.match(page, /Elige 20 o 50 puntos demo\./);
+  assert.ok(page.includes("nex_game_practice_balance_milli_v3_${uid}"));
+  assert.ok(page.includes("sessionStorage.removeItem(`nex_game_practice_balance_milli_v2_${uid}`)"));
+  assert.ok(page.includes("nex_minesweeper_round_v2_${uid}"));
+  assert.ok(page.includes("sessionStorage.removeItem(`nex_minesweeper_round_v1_${uid}`)"));
 });
 
 test("each disclosed mode has a unique grid, mine count, and safe-cell chance", () => {

@@ -2321,20 +2321,25 @@
       const gamePracticeMemory = new Map();
       const gamePracticeRoundMemory = new Map();
 
-      function gamePracticeStorageKey(uid) {
-          return `nex_game_practice_balance_${uid}`;
-      }
-
       function gamePracticeBalanceStorageKey(uid) {
-          return `nex_game_practice_balance_milli_v2_${uid}`;
+          return `nex_game_practice_balance_milli_v3_${uid}`;
       }
 
       function gamePracticeRoundStorageKey(uid) {
-          return `nex_minesweeper_round_v1_${uid}`;
+          return `nex_minesweeper_round_v2_${uid}`;
+      }
+
+      function clearLegacyGamePracticeState(uid) {
+          try {
+              sessionStorage.removeItem(`nex_game_practice_balance_${uid}`);
+              sessionStorage.removeItem(`nex_game_practice_balance_milli_v2_${uid}`);
+              sessionStorage.removeItem(`nex_minesweeper_round_v1_${uid}`);
+          } catch (error) {}
       }
 
       function getGamePracticeBalance(uid) {
           if (!uid) return 0;
+          clearLegacyGamePracticeState(uid);
           if (gamePracticeMemory.has(uid)) return gamePracticeMemory.get(uid);
           let balanceMilli = 0;
           try {
@@ -2342,12 +2347,6 @@
               if (current !== null) {
                   const parsed = Number(current);
                   if (Number.isSafeInteger(parsed) && parsed >= 0) balanceMilli = parsed;
-              } else {
-                  const legacy = Number(sessionStorage.getItem(gamePracticeStorageKey(uid)));
-                  if (gamePracticePresets.has(legacy)) {
-                      balanceMilli = legacy * 1000;
-                      sessionStorage.setItem(gamePracticeBalanceStorageKey(uid), String(balanceMilli));
-                  }
               }
           } catch (error) {}
           gamePracticeMemory.set(uid, balanceMilli);
