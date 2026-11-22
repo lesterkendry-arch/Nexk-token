@@ -13,7 +13,6 @@ import {
   resetAviatorRound,
 } from "./aviator-practice.mjs";
 
-const DEMO_PRESETS = new Set([20, 50]);
 const SLOT_INDICES = [0, 1];
 
 export function setupAviatorPractice({ auth, getBalance, setBalance, parseStake, onOpen, onBack }) {
@@ -25,7 +24,7 @@ export function setupAviatorPractice({ auth, getBalance, setBalance, parseStake,
   const $ = (id) => document.getElementById(id);
 
   function storageKey(uid) {
-    return `nex_aviator_practice_v1_${uid}`;
+    return `nex_aviator_practice_v2_${uid}`;
   }
 
   function isValidState(state) {
@@ -291,20 +290,27 @@ export function setupAviatorPractice({ auth, getBalance, setBalance, parseStake,
     );
     action.disabled = !auth.currentUser || !parsed.valid;
     if (!parsed.valid && balanceMilli > 0) status.textContent = parsed.error;
-    else if (balanceMilli === 0) status.textContent = "Añade puntos demo para jugar";
+    else if (balanceMilli === 0) status.textContent = "Saldo demo fijado en cero";
   }
 
   function updateScreen(uid, state, now = Date.now()) {
     const balanceMilli = uid ? getBalance(uid) : 0;
-    $("aviatorDemoBalance").textContent = formatAmount(balanceMilli);
+    const formattedBalance = formatAmount(balanceMilli);
+    $("aviatorDemoBalance").textContent = formattedBalance;
+    const catalogBalance = $("gamesHomePracticeBalance");
+    if (catalogBalance) catalogBalance.textContent = formattedBalance;
+    const minesweeperBalance = $("gamePracticeBalance");
+    if (minesweeperBalance) minesweeperBalance.textContent = `${formattedBalance} pesos del juego`;
+    const minesweeperBottomBalance = $("gamePracticeBottomBalance");
+    if (minesweeperBottomBalance) minesweeperBottomBalance.textContent = `${formattedBalance} pesos del juego`;
     updateGraph(state, now);
     $("aviatorFlightMessage").textContent = state.phase === "flying"
       ? `En vuelo · +${AVIATOR_GROWTH_PER_SECOND.toFixed(2)}x por segundo`
       : state.phase === "crashed"
         ? `Corte en ${state.crashAtMultiplier.toFixed(2)}x · siguiente ronda pronto`
-        : balanceMilli > 0
+      : balanceMilli > 0
           ? "Elige una apuesta demo para iniciar el vuelo."
-          : "Añade puntos demo gratuitos para jugar.";
+          : "Saldo demo en 0.00; las apuestas están deshabilitadas.";
     renderHistory(state);
     state.slots.forEach((_, slotIndex) => renderSlot(state, balanceMilli, slotIndex));
     renderTab(state);
@@ -367,6 +373,7 @@ export function setupAviatorPractice({ auth, getBalance, setBalance, parseStake,
       stopAnimation();
       return;
     }
+    getBalance(uid);
     let state = getState(uid);
     if (state.phase === "flying") state = processFlight(uid, Date.now());
     state.slots.forEach((slot, slotIndex) => {
@@ -382,29 +389,6 @@ export function setupAviatorPractice({ auth, getBalance, setBalance, parseStake,
     if (state.phase === "flying") animate(uid);
     else stopAnimation();
     if (state.phase === "crashed") scheduleNextRound(uid, state.roundId);
-  }
-
-  function addDemoPoints() {
-    const uid = auth.currentUser?.uid;
-    const selected = Number($("aviatorDemoAmount").value);
-    const notice = $("aviatorDemoStatus");
-    if (!uid) {
-      notice.textContent = "Inicia sesión para guardar tu saldo demo.";
-      return;
-    }
-    if (!DEMO_PRESETS.has(selected)) {
-      notice.textContent = "Elige 20 o 50 puntos demo.";
-      return;
-    }
-    const balance = getBalance(uid);
-    const nextBalance = balance + selected * 1000;
-    if (!Number.isSafeInteger(nextBalance) || !setBalance(uid, nextBalance)) {
-      notice.textContent = "No se pudo actualizar el saldo de práctica.";
-      return;
-    }
-    $("aviatorDemoAmount").value = "";
-    notice.textContent = `${selected} puntos demo añadidos. No son dinero real.`;
-    updateScreen(uid, getState(uid));
   }
 
   function placeBet(slotIndex) {
@@ -507,7 +491,6 @@ export function setupAviatorPractice({ auth, getBalance, setBalance, parseStake,
 
   $("openAviator").addEventListener("click", onOpen);
   $("aviatorBackToGames").addEventListener("click", onBack);
-  $("aviatorAddDemo").addEventListener("click", addDemoPoints);
   document.querySelectorAll("[data-aviator-mode]").forEach((button) => {
     button.addEventListener("click", () => {
       const slotIndex = Number(button.dataset.aviatorSlot);
@@ -545,9 +528,6 @@ export function setupAviatorPractice({ auth, getBalance, setBalance, parseStake,
       if (getState(uid).slots[slotIndex].status === "active") cashOut(slotIndex);
       else placeBet(slotIndex);
     });
-  });
-  $("aviatorDemoAmount").addEventListener("change", () => {
-    $("aviatorDemoStatus").textContent = "";
   });
   document.querySelectorAll("[data-aviator-tab]").forEach((button) => {
     button.addEventListener("click", () => {

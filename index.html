@@ -192,6 +192,24 @@
             color: #b8c7dc;
             line-height: 1.55;
         }
+        .games-practice-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 14px 0;
+            padding: 12px 14px;
+            border: 1px solid #31547b;
+            border-radius: 12px;
+            background: rgba(13, 35, 62, .86);
+            color: #c5d4e6;
+        }
+        .games-practice-summary span { font-size: 13px; font-weight: 700; }
+        .games-practice-summary strong {
+            color: #8be9c5;
+            font-size: 22px;
+            font-variant-numeric: tabular-nums;
+        }
         .games-catalog {
             padding-top: 8px;
         }
@@ -327,7 +345,6 @@
             cursor: pointer;
         }
         .game-practice-disclosure > :not(summary) { margin: 0 12px 12px; }
-        .game-practice-disclosure .practice-preset { margin-top: 0; }
         .game-practice-disclosure .minesweeper-rule { padding-top: 10px; }
         .game-practice-disclosure .minesweeper-mode-info { margin: 0 12px 12px; }
         @media (max-width: 420px) {
@@ -455,30 +472,6 @@
             font-size: 12px;
             cursor: pointer;
         }
-        .aviator-demo-controls {
-            display: flex;
-            align-items: end;
-            gap: 8px;
-            padding-top: 9px;
-        }
-        .aviator-demo-controls label {
-            display: grid;
-            gap: 5px;
-            color: #bdc2cb;
-            font-size: 11px;
-        }
-        .aviator-demo-controls select,
-        .aviator-demo-controls button {
-            min-height: 36px;
-            padding: 7px 10px;
-            border: 1px solid #383e49;
-            border-radius: 8px;
-            background: #1a1d23;
-            color: #f3f4f6;
-            font: inherit;
-            font-size: 12px;
-        }
-        .aviator-demo-controls button { border-color: #75d85d; color: #9bf786; font-weight: 800; cursor: pointer; }
         .aviator-history-strip {
             display: flex;
             gap: 7px;
@@ -779,13 +772,6 @@
             font-size: 13px;
             line-height: 1.55;
         }
-        .practice-preset {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
-            align-items: end;
-            gap: 10px;
-        }
-        .practice-preset label,
         .minesweeper-control label {
             display: block;
             margin-bottom: 7px;
@@ -793,7 +779,6 @@
             font-size: 13px;
             font-weight: 700;
         }
-        .practice-preset select,
         .minesweeper-control select,
         .minesweeper-control input {
             width: 100%;
@@ -808,7 +793,6 @@
             font-size: 15px;
             color-scheme: dark;
         }
-        .practice-preset button,
         .minesweeper-actions button {
             min-height: 46px;
             padding: 10px 14px;
@@ -821,7 +805,6 @@
             font-weight: 800;
             cursor: pointer;
         }
-        .practice-preset button { white-space: nowrap; }
         .game-practice-card :is(select, input, button):focus-visible {
             outline: 3px solid #eaf8ff;
             outline-offset: 3px;
@@ -1045,8 +1028,6 @@
             cursor: pointer;
         }
         @media (max-width: 420px) {
-            .practice-preset { grid-template-columns: minmax(0, 1fr); }
-            .practice-preset button { width: 100%; }
             .minesweeper-shell { gap: 13px; }
             .minesweeper-title-row { flex-wrap: wrap; }
             .minesweeper-readouts { gap: 7px; }
@@ -1455,6 +1436,10 @@
     <div id="gamesPlaceholder" aria-hidden="true">
         <section id="gamesHomeView" class="games-panel games-catalog" aria-labelledby="gamesHomeTitle">
             <h1 id="gamesHomeTitle" class="games-heading">Juegos</h1>
+            <div class="games-practice-summary" aria-label="Saldo demo compartido">
+                <span>Saldo demo compartido</span>
+                <strong id="gamesHomePracticeBalance" aria-live="polite">0.00</strong>
+            </div>
             <div class="games-catalog-grid">
                 <button id="openMinesweeper" class="game-tile" type="button" aria-label="Abrir Buscaminas">
                     <span class="game-tile-art" aria-hidden="true">
@@ -1499,24 +1484,9 @@
             <div class="game-practice-card" aria-label="Buscaminas de práctica">
                 <div class="game-practice-compact-head">
                     <span class="game-practice-label">Saldo de práctica</span>
-                    <strong id="gamePracticeBalance" class="game-practice-balance" aria-live="polite" aria-label="Saldo de práctica">0 pesos del juego</strong>
-                    <span class="practice-wallet-note">Solo puntos demo; no es dinero real.</span>
+                    <strong id="gamePracticeBalance" class="game-practice-balance" aria-live="polite" aria-label="Saldo de práctica">0.00 pesos del juego</strong>
+                    <span class="practice-wallet-note">Saldo de práctica fijado en cero; no es dinero real.</span>
                 </div>
-                <details class="game-practice-disclosure">
-                    <summary>Saldo demo</summary>
-                    <div class="practice-preset">
-                        <div>
-                            <label for="gamePracticeAmount">Elegir puntos</label>
-                            <select id="gamePracticeAmount" aria-describedby="gamePracticePresetNote">
-                                <option value="" selected disabled>Elige una cantidad</option>
-                                <option value="20">20 puntos</option>
-                                <option value="50">50 puntos</option>
-                            </select>
-                        </div>
-                        <button id="gamePracticeApply" type="button">Aplicar</button>
-                    </div>
-                    <p id="gamePracticePresetNote" class="practice-wallet-note">Puntos gratuitos de práctica; no afectan la cartera.</p>
-                </details>
                 <p id="gamePracticeStatus" class="game-practice-status" role="status" aria-live="polite"></p>
 
                 <section class="minesweeper-shell" aria-labelledby="minesweeperTitle">
@@ -1559,7 +1529,7 @@
                     <div class="minesweeper-bottom-bar">
                         <div class="minesweeper-bottom-balance">
                             <span>Disponible</span>
-                            <strong id="gamePracticeBottomBalance" aria-live="polite">0 pesos del juego</strong>
+                            <strong id="gamePracticeBottomBalance" aria-live="polite">0.00 pesos del juego</strong>
                         </div>
                         <button id="gamePracticePlay" type="button">Jugar ronda</button>
                     </div>
@@ -1579,19 +1549,6 @@
                         <strong id="aviatorDemoBalance">0.00</strong>
                     </div>
                 </div>
-                <details class="aviator-demo-details">
-                    <summary>Añadir puntos de práctica</summary>
-                    <div class="aviator-demo-controls">
-                        <label for="aviatorDemoAmount">Cantidad gratuita
-                            <select id="aviatorDemoAmount">
-                                <option value="" selected disabled>Elige</option>
-                                <option value="20">20 puntos</option>
-                                <option value="50">50 puntos</option>
-                            </select>
-                        </label>
-                        <button id="aviatorAddDemo" type="button">Añadir demo</button>
-                    </div>
-                </details>
                 <p id="aviatorDemoStatus" class="aviator-disclaimer" role="status" aria-live="polite"></p>
                 <div id="aviatorRoundHistory" class="aviator-history-strip" aria-label="Historial de rondas recientes"></div>
                 <section class="aviator-flight-screen" aria-label="Avión y multiplicador de la ronda">
@@ -1672,7 +1629,7 @@
                     <summary>Reglas de la simulación</summary>
                     <p class="aviator-disclaimer">El multiplicador crece 0,20x por segundo. Cada ronda sortea un corte entre 1,10x y 5,00x. Si cortas antes de retirar, la apuesta demo se pierde. No hay pagos ni dinero real.</p>
                 </details>
-                <p class="aviator-disclaimer">Simulación de práctica con puntos demo; sin pagos ni dinero real.</p>
+                <p class="aviator-disclaimer">Saldo demo fijado en 0.00; recargas deshabilitadas y sin dinero real.</p>
             </main>
         </section>
         <section id="walletView" class="games-panel" aria-labelledby="walletTitle" style="display: none;">
@@ -2098,7 +2055,7 @@
           settlePracticeRound,
           startPracticeRound
       } from "./minesweeper-practice.mjs";
-      import { setupAviatorPractice } from "./aviator-ui.mjs";
+      import { setupAviatorPractice } from "./aviator-ui.mjs?v=zero-balance";
 
       setLogLevel('silent');
 
@@ -2797,47 +2754,43 @@
           }
       });
 
-      const gamePracticePresets = new Set([20, 50]);
       const gamePracticeMemory = new Map();
       const gamePracticeRoundMemory = new Map();
 
       function gamePracticeBalanceStorageKey(uid) {
-          return `nex_game_practice_balance_milli_v3_${uid}`;
+          return `nex_game_practice_balance_milli_v4_${uid}`;
       }
 
       function gamePracticeRoundStorageKey(uid) {
-          return `nex_minesweeper_round_v2_${uid}`;
+          return `nex_minesweeper_round_v3_${uid}`;
       }
 
       function clearLegacyGamePracticeState(uid) {
           try {
               sessionStorage.removeItem(`nex_game_practice_balance_${uid}`);
               sessionStorage.removeItem(`nex_game_practice_balance_milli_v2_${uid}`);
+              sessionStorage.removeItem(`nex_game_practice_balance_milli_v3_${uid}`);
               sessionStorage.removeItem(`nex_minesweeper_round_v1_${uid}`);
+              sessionStorage.removeItem(`nex_minesweeper_round_v2_${uid}`);
+              sessionStorage.removeItem(`nex_aviator_practice_v1_${uid}`);
           } catch (error) {}
       }
 
       function getGamePracticeBalance(uid) {
           if (!uid) return 0;
           clearLegacyGamePracticeState(uid);
-          if (gamePracticeMemory.has(uid)) return gamePracticeMemory.get(uid);
-          let balanceMilli = 0;
+          gamePracticeMemory.set(uid, 0);
           try {
-              const current = sessionStorage.getItem(gamePracticeBalanceStorageKey(uid));
-              if (current !== null) {
-                  const parsed = Number(current);
-                  if (Number.isSafeInteger(parsed) && parsed >= 0) balanceMilli = parsed;
-              }
+              sessionStorage.setItem(gamePracticeBalanceStorageKey(uid), '0');
           } catch (error) {}
-          gamePracticeMemory.set(uid, balanceMilli);
-          return balanceMilli;
+          return 0;
       }
 
       function setGamePracticeBalance(uid, balanceMilli) {
-          if (!uid || !Number.isSafeInteger(balanceMilli) || balanceMilli < 0) return false;
-          gamePracticeMemory.set(uid, balanceMilli);
+          if (!uid || balanceMilli !== 0) return false;
+          gamePracticeMemory.set(uid, 0);
           try {
-              sessionStorage.setItem(gamePracticeBalanceStorageKey(uid), String(balanceMilli));
+              sessionStorage.setItem(gamePracticeBalanceStorageKey(uid), '0');
           } catch (error) {}
           return true;
       }
@@ -2913,7 +2866,7 @@
       }
 
       function formatGamePracticeBalance(balanceMilli) {
-          return `${formatPracticeAmount(balanceMilli)} pesos del juego`;
+          return `${(balanceMilli / 1000).toFixed(2)} pesos del juego`;
       }
 
       function formatGamePracticeChance(chance) {
@@ -3000,13 +2953,9 @@
           const activeRound = round?.status === 'active';
           document.getElementById('gamePracticeBalance').textContent = formatGamePracticeBalance(balanceMilli);
           document.getElementById('gamePracticeBottomBalance').textContent = formatGamePracticeBalance(balanceMilli);
+          document.getElementById('gamesHomePracticeBalance').textContent = (balanceMilli / 1000).toFixed(2);
           const modeSelector = document.getElementById('gamePracticeMode');
           if (round?.modeId && MINESWEEPER_MODES[round.modeId]) modeSelector.value = round.modeId;
-          const preset = balanceMilli % 1000 === 0 ? balanceMilli / 1000 : null;
-          if (gamePracticePresets.has(preset)) {
-              document.getElementById('gamePracticeAmount').value = String(preset);
-          }
-          document.getElementById('gamePracticeApply').disabled = !uid || activeRound;
           modeSelector.disabled = activeRound;
 
           const stakeInput = document.getElementById('gamePracticeStake');
@@ -3029,27 +2978,6 @@
           renderMinesweeperBoard(round);
           document.getElementById('gamePracticeStatus').textContent = '';
       }
-
-      document.getElementById('gamePracticeApply').addEventListener('click', () => {
-          const uid = auth.currentUser?.uid;
-          const preset = Number(document.getElementById('gamePracticeAmount').value);
-          const status = document.getElementById('gamePracticeStatus');
-          if (!uid) {
-              status.textContent = 'Inicia sesión para guardar tu marcador de práctica.';
-              return;
-          }
-          if (getGamePracticeRound(uid)?.status === 'active') {
-              status.textContent = 'Termina la ronda activa antes de ajustar el saldo demo.';
-              return;
-          }
-          if (!gamePracticePresets.has(preset)) {
-              status.textContent = 'Elige 20 o 50 puntos demo.';
-              return;
-          }
-          setGamePracticeBalance(uid, preset * 1000);
-          renderGamePracticeBalance(auth.currentUser);
-          status.textContent = 'Saldo gratuito de práctica actualizado.';
-      });
 
       document.getElementById('gamePracticeMode').addEventListener('change', () => {
           const uid = auth.currentUser?.uid;

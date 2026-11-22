@@ -16,6 +16,7 @@ import {
 } from "../aviator-practice.mjs";
 
 const page = await readFile(new URL("../index.html", import.meta.url), "utf8");
+const aviatorUi = await readFile(new URL("../aviator-ui.mjs", import.meta.url), "utf8");
 const aviatorMarkup = page.match(/<section id="aviatorGameView"[\s\S]*?<section id="walletView"/)?.[0] || "";
 
 test("Aviator is a second playable practice tile beside Minesweeper", () => {
@@ -24,14 +25,18 @@ test("Aviator is a second playable practice tile beside Minesweeper", () => {
   assert.match(page, /juego para ganar dinero<\/button>/);
 });
 
-test("Aviator starts with a zero demo balance and no real-money controls", () => {
+test("Aviator starts at zero with no way to add practice points", () => {
   assert.match(aviatorMarkup, /id="aviatorDemoBalance">0\.00<\/strong>/);
-  assert.match(aviatorMarkup, /Simulación de práctica/);
-  assert.match(aviatorMarkup, /No hay pagos ni dinero real/);
+  assert.match(page, /id="gamesHomePracticeBalance"[^>]*>0\.00<\/strong>/);
+  assert.match(page, /id="gamePracticeBalance"[^>]*>0\.00 pesos del juego<\/strong>/);
+  assert.match(aviatorUi, /catalogBalance\.textContent = formattedBalance/);
+  assert.match(aviatorMarkup, /simulación de práctica/);
+  assert.match(aviatorMarkup, /recargas deshabilitadas y sin dinero real/);
   assert.doesNotMatch(aviatorMarkup, /R\$/);
-  assert.match(aviatorMarkup, /option value="20">20 puntos/);
-  assert.match(aviatorMarkup, /option value="50">50 puntos/);
-  assert.doesNotMatch(aviatorMarkup, /option value="0"/);
+  assert.doesNotMatch(aviatorMarkup, /aviatorDemoAmount|aviatorAddDemo|Añadir puntos de práctica/);
+  assert.doesNotMatch(aviatorUi, /DEMO_PRESETS|function addDemoPoints|aviatorDemoAmount|aviatorAddDemo/);
+  assert.match(aviatorUi, /nex_aviator_practice_v2_\$\{uid\}/);
+  assert.match(aviatorUi, /Saldo demo en 0\.00; las apuestas están deshabilitadas/);
 });
 
 test("the reference controls, two panels, moving chart, history, and tabs exist", () => {

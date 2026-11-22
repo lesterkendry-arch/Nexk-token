@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { runInNewContext } from "node:vm";
 import {
   calculateSafeReward,
   countAdjacentMines,
@@ -21,9 +22,10 @@ test("the practice page exposes all three modes, bet bounds, and both balance re
   assert.match(page, /id="gamePracticeStake" type="number" min="0\.40" step="0\.01"[^>]*value="1"/);
   assert.match(page, /id="gamePracticeBalance"/);
   assert.match(page, /id="gamePracticeBottomBalance"/);
+  assert.match(page, /id="gamesHomePracticeBalance"[^>]*>0\.00<\/strong>/);
   assert.match(page, /id="gamePracticePlay"/);
   assert.match(page, /id="minesweeperBoard"[^>]*role="group"/);
-  assert.match(page, /Solo puntos demo; no es dinero real\./);
+  assert.match(page, /Saldo de práctica fijado en cero; no es dinero real\./);
 });
 
 test("the original game label stays exact and the catalog opens the visible game board", () => {
@@ -37,16 +39,56 @@ test("the original game label stays exact and the catalog opens the visible game
   assert.doesNotMatch(page, /Tablero · casillas ocultas/);
 });
 
-test("practice starts at zero without offering a zero-point selector option", () => {
-  assert.match(page, /id="gamePracticeBalance"[^>]*>0 pesos del juego<\/strong>/);
-  assert.match(page, /id="gamePracticeAmount"[\s\S]*?value="20"[\s\S]*?value="50"/);
+test("practice stays at zero with all point top-ups removed", () => {
+  assert.match(page, /id="gamePracticeBalance"[^>]*>0\.00 pesos del juego<\/strong>/);
+  assert.doesNotMatch(page, /id="gamePracticeAmount"|id="gamePracticeApply"|<summary>Saldo demo<\/summary>/);
   assert.doesNotMatch(page, /<option value="0">/);
-  assert.match(page, /new Set\(\[20, 50\]\)/);
-  assert.match(page, /Elige 20 o 50 puntos demo\./);
-  assert.ok(page.includes("nex_game_practice_balance_milli_v3_${uid}"));
+  assert.ok(page.includes("nex_game_practice_balance_milli_v4_${uid}"));
+  assert.ok(page.includes("sessionStorage.removeItem(`nex_game_practice_balance_milli_v3_${uid}`)"));
   assert.ok(page.includes("sessionStorage.removeItem(`nex_game_practice_balance_milli_v2_${uid}`)"));
-  assert.ok(page.includes("nex_minesweeper_round_v2_${uid}"));
+  assert.ok(page.includes("nex_minesweeper_round_v3_${uid}"));
+  assert.ok(page.includes("sessionStorage.removeItem(`nex_minesweeper_round_v2_${uid}`)"));
   assert.ok(page.includes("sessionStorage.removeItem(`nex_minesweeper_round_v1_${uid}`)"));
+  assert.ok(page.includes("sessionStorage.removeItem(`nex_aviator_practice_v1_${uid}`)"));
+  assert.match(page, /function formatGamePracticeBalance\(balanceMilli\)[\s\S]*?toFixed\(2\)/);
+  assert.match(page, /function getGamePracticeBalance\(uid\)[\s\S]*?return 0;\s*}/);
+  assert.match(page, /function setGamePracticeBalance\(uid, balanceMilli\)[\s\S]*?if \(!uid \|\| balanceMilli !== 0\) return false/);
+});
+
+test("saved game balances and rounds reset, and nonzero balances cannot be set", () => {
+  const start = page.indexOf("const gamePracticeMemory = new Map();");
+  const end = page.indexOf("const aviatorPractice = setupAviatorPractice", start);
+  assert.ok(start >= 0 && end > start);
+  const code = `${page.slice(start, end)}
+    globalThis.practiceBalanceFns = {
+      gamePracticeBalanceStorageKey,
+      gamePracticeRoundStorageKey,
+      getGamePracticeBalance,
+      setGamePracticeBalance,
+    };`;
+  const store = new Map([
+    ["nex_game_practice_balance_milli_v3_user-1", "20000"],
+    ["nex_minesweeper_round_v2_user-1", "{}"],
+    ["nex_aviator_practice_v1_user-1", "{}"],
+  ]);
+  const sandbox = {
+    sessionStorage: {
+      getItem: (key) => store.has(key) ? store.get(key) : null,
+      setItem: (key, value) => store.set(key, String(value)),
+      removeItem: (key) => store.delete(key),
+    },
+  };
+  runInNewContext(code, sandbox);
+  const { gamePracticeBalanceStorageKey, getGamePracticeBalance, setGamePracticeBalance } =
+    sandbox.practiceBalanceFns;
+
+  assert.equal(getGamePracticeBalance("user-1"), 0);
+  assert.equal(store.get(gamePracticeBalanceStorageKey("user-1")), "0");
+  assert.equal(store.has("nex_game_practice_balance_milli_v3_user-1"), false);
+  assert.equal(store.has("nex_minesweeper_round_v2_user-1"), false);
+  assert.equal(store.has("nex_aviator_practice_v1_user-1"), false);
+  assert.equal(setGamePracticeBalance("user-1", 5000), false);
+  assert.equal(getGamePracticeBalance("user-1"), 0);
 });
 
 test("each disclosed mode has a unique grid, mine count, and safe-cell chance", () => {
