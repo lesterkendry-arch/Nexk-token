@@ -15,7 +15,11 @@ export default async function handler(req, res) {
         id: doc.id, kind: data.kind, status: data.status, amountCents: data.amountCents,
         createdAt: data.createdAt?.toDate?.().toISOString() || null,
         pixCopyPaste: data.kind === "deposit" && data.status === "pending" ? data.pixCopyPaste || null : null,
-        canRecoverPix: data.kind === "deposit" && !["completed", "review"].includes(data.status) &&
+        canCancel: data.status === "pending" && (
+          (data.kind === "deposit" && Boolean(data.providerPaymentId)) ||
+          (data.kind === "withdrawal" && Boolean(data.providerTransferId))
+        ),
+        canRecoverPix: data.kind === "deposit" && !["cancelled", "completed", "failed", "review"].includes(data.status) &&
           !data.pixCopyPaste && Boolean(data.providerPaymentId || data.paymentAttempted ||
             (!data.recoveryVersion && data.providerCustomerId)),
       };

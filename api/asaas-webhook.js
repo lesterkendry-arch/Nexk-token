@@ -73,7 +73,7 @@ export default async function handler(req, res) {
         }
         transaction.set(accountRef, { availableCents: available + amountCents, updatedAt: now }, { merge: true });
         transaction.set(txRef, { ...metadata, status: "completed" }, { merge: true });
-      } else if (!isPayment && !["completed", "failed"].includes(data.status)) {
+      } else if (!isPayment && !["completed", "failed", "cancelled"].includes(data.status)) {
         if (reserved < amountCents) throw new HttpError(503, "La reserva requiere revisión.");
         if (remote.status === "DONE") {
           transaction.set(accountRef, { reservedCents: reserved - amountCents, updatedAt: now }, { merge: true });
@@ -87,7 +87,10 @@ export default async function handler(req, res) {
               : {}),
             updatedAt: now,
           }, { merge: true });
-          transaction.set(txRef, { ...metadata, status: "failed" }, { merge: true });
+          transaction.set(txRef, {
+            ...metadata,
+            status: remote.status === "CANCELLED" ? "cancelled" : "failed",
+          }, { merge: true });
         } else {
           throw new HttpError(503, "La transferencia aún no tiene resultado definitivo.");
         }

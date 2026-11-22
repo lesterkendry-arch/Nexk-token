@@ -273,3 +273,22 @@ test("minimum deposit is enforced before customer or payment requests", async ()
   assert.equal(h.calls.customerLookup, 0);
   assert.equal(h.calls.createPayment, 0);
 });
+
+test("a cancelled Pix reference cannot be recovered into a new charge", async () => {
+  const h = await harness();
+  assert.equal((await h.submit()).status, 200);
+  const current = h.operation();
+  h.docs.set(`walletTransactions/${requestId}`, {
+    ...current,
+    status: "cancelled",
+    pixCopyPaste: null,
+    pixQrCode: null,
+    leaseId: null,
+    leaseUntil: null,
+  });
+
+  const response = await h.submit({ recover: true });
+  assert.equal(response.status, 409);
+  assert.equal(h.operation().status, "cancelled");
+  assert.equal(h.calls.createPayment, 1);
+});

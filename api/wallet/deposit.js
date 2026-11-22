@@ -4,7 +4,7 @@ import {
   makeIdempotencyKey, parseMoneyCents, requireUser, sendJson,
 } from "../_lib.js";
 
-const FINAL_STATES = new Set(["completed", "review"]);
+const FINAL_STATES = new Set(["cancelled", "completed", "review"]);
 const leaseTime = (value) => value?.toMillis?.() ?? value?.toDate?.().getTime() ?? (value instanceof Date ? value.getTime() : 0);
 
 function result(id, data) {
@@ -112,6 +112,9 @@ export default async function handler(req, res) {
         error.canResetReference = knownOutcome && !(old.leaseId && leaseTime(old.leaseUntil) > Date.now());
         throw error;
       }
+      if (old?.status === "cancelled") {
+        throw new HttpError(409, "Este Pix ya fue cancelado. Genera una nueva solicitud desde el formulario.");
+      }
       if (old?.status === "completed" || (old?.status === "pending" && old.pixCopyPaste)) return { ...old, cached: true };
       if (old?.status === "review") throw new HttpError(409, "El cobro requiere revisión del administrador.");
       if (old?.leaseId && leaseTime(old.leaseUntil) > Date.now()) {
@@ -136,8 +139,8 @@ export default async function handler(req, res) {
         const snap = await transaction.get(opRef);
         const current = snap.data();
         if (current?.leaseId !== leaseId) throw new HttpError(409, "La operación está siendo recuperada. Consulta el historial.");
+        if (FINAL_STATES.has(current.status)) return current;
         const next = { ...fields, updatedAt: new Date() };
-        if (FINAL_STATES.has(current.status)) delete next.status;
         transaction.set(opRef, next, { merge: true });
         return { ...current, ...next };
       });

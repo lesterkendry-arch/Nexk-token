@@ -1052,6 +1052,39 @@
             border-radius: 14px;
             background: rgba(8, 17, 31, .72);
         }
+        .wallet-form[hidden] { display: none !important; }
+        .wallet-action-dialog {
+            width: min(520px, calc(100vw - 24px));
+            max-height: min(90vh, 760px);
+            overflow: auto;
+            margin: auto;
+            padding: 18px;
+            border: 1px solid #365172;
+            border-radius: 18px;
+            background: #0b1728;
+            color: var(--text-main);
+            box-shadow: 0 24px 80px rgba(0, 0, 0, .55);
+        }
+        .wallet-action-dialog::backdrop { background: rgba(2, 8, 18, .78); }
+        .wallet-dialog-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .wallet-dialog-heading h2 { margin: 0; font-size: 20px; }
+        .wallet-dialog-close {
+            min-width: 42px;
+            min-height: 42px;
+            border: 1px solid #405574;
+            border-radius: 10px;
+            background: #13243a;
+            color: var(--text-main);
+            font: inherit;
+            font-size: 22px;
+            cursor: pointer;
+        }
         .wallet-form label {
             display: block;
             margin-top: 3px;
@@ -1675,44 +1708,50 @@
                 </div>
                 <p id="pixDisabledNote" class="games-copy" style="font-size: 12px; margin-top: 10px;">Preparando conexión segura con Asaas.</p>
                 <button id="walletConnectPix" type="button" class="btn-gen" hidden>Conectar Asaas como administrador</button>
-                <form id="walletDepositForm" class="wallet-form" hidden style="margin-top:16px;">
-                    <label for="walletDepositName">Nombre completo del pagador</label>
-                    <input id="walletDepositName" type="text" autocomplete="name" maxlength="120" required>
-                    <label for="walletDepositDocument">CPF o CNPJ del pagador</label>
-                    <input id="walletDepositDocument" type="text" inputmode="numeric" autocomplete="off" maxlength="18" required>
-                    <p class="games-copy" style="font-size:12px;">Asaas requiere estos datos para crear el cobro Pix. No se publican en tu perfil.</p>
-                    <label for="walletDepositAmount">Monto en reales (mínimo R$10)</label>
-                    <input id="walletDepositAmount" type="number" min="10" step="0.01" required>
-                    <button class="btn-auth" type="submit">Generar Pix</button>
-                    <p id="walletDepositResult" class="games-copy" role="status"></p>
-                    <img id="walletDepositQr" alt="Código QR Pix" style="display:none;max-width:220px;background:white;padding:8px;border-radius:8px;">
-                    <button type="button" class="btn-gen" onclick="toggleWalletForm('')">Cerrar</button>
-                </form>
+                <dialog id="walletActionDialog" class="wallet-action-dialog" aria-labelledby="walletActionDialogTitle">
+                    <div class="wallet-dialog-heading">
+                        <h2 id="walletActionDialogTitle">Cartera</h2>
+                        <button type="button" class="wallet-dialog-close" aria-label="Cerrar" onclick="toggleWalletForm('')">×</button>
+                    </div>
+                    <form id="walletDepositForm" class="wallet-form" hidden>
+                        <label for="walletDepositName">Nombre completo del pagador</label>
+                        <input id="walletDepositName" type="text" autocomplete="name" maxlength="120" required>
+                        <label for="walletDepositDocument">CPF o CNPJ del pagador</label>
+                        <input id="walletDepositDocument" type="text" inputmode="numeric" autocomplete="off" maxlength="18" required>
+                        <p class="games-copy" style="font-size:12px;">Asaas requiere estos datos para crear el cobro Pix. No se publican en tu perfil.</p>
+                        <label for="walletDepositAmount">Monto en reales (mínimo R$10)</label>
+                        <input id="walletDepositAmount" type="number" min="10" step="0.01" required>
+                        <button class="btn-auth" type="submit">Generar Pix</button>
+                        <p id="walletDepositResult" class="games-copy" role="status"></p>
+                        <img id="walletDepositQr" alt="Código QR Pix" style="display:none;max-width:220px;background:white;padding:8px;border-radius:8px;">
+                        <button type="button" class="btn-gen" onclick="toggleWalletForm('')">Cerrar</button>
+                    </form>
+                    <form id="walletWithdrawForm" class="wallet-form" hidden>
+                        <label for="walletWithdrawAmount">Monto para retirar (mínimo R$20; máximo R$5.000 al día)</label>
+                        <input id="walletWithdrawAmount" type="number" min="20" max="5000" step="0.01" required>
+                        <label for="walletLegalName">Nombre completo legal</label>
+                        <input id="walletLegalName" type="text" autocomplete="name" maxlength="120" required>
+                        <label for="walletPixType">Tipo de llave Pix</label>
+                        <select id="walletPixType" required>
+                            <option value="">Selecciona</option>
+                            <option value="CPF">CPF</option>
+                            <option value="CNPJ">CNPJ</option>
+                            <option value="EMAIL">Correo</option>
+                            <option value="PHONE">Teléfono</option>
+                            <option value="EVP">Llave aleatoria</option>
+                        </select>
+                        <label for="walletPixKey">Llave Pix</label>
+                        <input id="walletPixKey" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="120" required>
+                        <p class="wallet-form-hint">Guardamos el nombre y la llave Pix cifrados para tu cuenta. Puedes volver aquí, editarlos y guardar los cambios. El CPF/CNPJ del depósito no se guarda.</p>
+                        <button id="walletSavePayoutProfile" type="button" class="btn-gen">Guardar datos de retiro</button>
+                        <p id="walletPayoutProfileStatus" class="wallet-form-status" role="status" aria-live="polite"></p>
+                        <button class="btn-auth" type="submit">Solicitar retiro</button>
+                        <p id="walletWithdrawResult" class="games-copy" role="status"></p>
+                        <button type="button" class="btn-gen" onclick="toggleWalletForm('')">Cerrar</button>
+                    </form>
+                </dialog>
                 <h2 style="margin-top:24px;font-size:18px;">Historial de movimientos</h2>
                 <div id="walletTransactionHistory" class="games-copy" role="status">Inicia sesión para consultar tus movimientos.</div>
-                <form id="walletWithdrawForm" class="wallet-form" hidden style="margin-top:16px;">
-                    <label for="walletWithdrawAmount">Monto para retirar (mínimo R$20; máximo R$5.000 al día)</label>
-                    <input id="walletWithdrawAmount" type="number" min="20" max="5000" step="0.01" required>
-                    <label for="walletLegalName">Nombre completo legal</label>
-                    <input id="walletLegalName" type="text" autocomplete="name" maxlength="120" required>
-                    <label for="walletPixType">Tipo de llave Pix</label>
-                    <select id="walletPixType" required>
-                        <option value="">Selecciona</option>
-                        <option value="CPF">CPF</option>
-                        <option value="CNPJ">CNPJ</option>
-                        <option value="EMAIL">Correo</option>
-                        <option value="PHONE">Teléfono</option>
-                        <option value="EVP">Llave aleatoria</option>
-                    </select>
-                    <label for="walletPixKey">Llave Pix</label>
-                    <input id="walletPixKey" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="120" required>
-                    <p class="wallet-form-hint">Guardamos el nombre y la llave Pix cifrados para tu cuenta. Puedes volver aquí, editarlos y guardar los cambios. El CPF/CNPJ del depósito no se guarda.</p>
-                    <button id="walletSavePayoutProfile" type="button" class="btn-gen">Guardar datos de retiro</button>
-                    <p id="walletPayoutProfileStatus" class="wallet-form-status" role="status" aria-live="polite"></p>
-                    <button class="btn-auth" type="submit">Solicitar retiro</button>
-                    <p id="walletWithdrawResult" class="games-copy" role="status"></p>
-                    <button type="button" class="btn-gen" onclick="toggleWalletForm('')">Cerrar</button>
-                </form>
             </div>
         </section>
     </div>
@@ -2522,6 +2561,15 @@
       });
 
       window.toggleWalletForm = async function(form) {
+          const dialog = document.getElementById('walletActionDialog');
+          const depositForm = document.getElementById('walletDepositForm');
+          const withdrawForm = document.getElementById('walletWithdrawForm');
+          if (!form) {
+              depositForm.hidden = true;
+              withdrawForm.hidden = true;
+              if (dialog.open) dialog.close();
+              return;
+          }
           if (!['deposit', 'withdraw'].includes(form)) return;
           if (!auth.currentUser) {
               await window.abrirSeccionPortal('wallet');
@@ -2532,9 +2580,15 @@
               form === 'deposit' ? 'walletDepositButton' : 'walletWithdrawButton'
           );
           if (!actionButton || actionButton.disabled) return;
-          document.getElementById('walletDepositForm').hidden = form !== 'deposit';
-          document.getElementById('walletWithdrawForm').hidden = form !== 'withdraw';
+          depositForm.hidden = form !== 'deposit';
+          withdrawForm.hidden = form !== 'withdraw';
+          document.getElementById('walletActionDialogTitle').textContent =
+              form === 'deposit' ? 'Recibir dinero' : 'Enviar dinero';
+          if (!dialog.open) dialog.showModal();
       };
+      document.getElementById('walletActionDialog').addEventListener('click', (event) => {
+          if (event.target === event.currentTarget) window.toggleWalletForm('');
+      });
 
       function sincronizarSaldoRealEnJuegos() {
           const balance = document.getElementById('walletGameBalance')?.textContent?.trim() || 'No disponible';
@@ -2647,6 +2701,55 @@
           walletOperationKeys[kind] = null;
           try { sessionStorage.removeItem(`nex_wallet_request_${auth.currentUser?.uid}_${kind}`); } catch {}
       }
+      async function cancelarMovimiento(item, button) {
+          const uid = auth.currentUser?.uid;
+          if (!uid || button.disabled) return;
+          const isDeposit = item.kind === 'deposit';
+          const confirmation = isDeposit
+              ? '¿Cancelar este Pix pendiente? Si ya fue pagado, no se cancelará ni se devolverá dinero automáticamente.'
+              : '¿Cancelar este retiro pendiente? Asaas debe confirmar la cancelación antes de liberar el saldo.';
+          if (!window.confirm(confirmation)) return;
+
+          button.disabled = true;
+          button.textContent = 'Cancelando…';
+          let noticeText = '';
+          try {
+              const result = await walletApiRequest('/api/wallet/cancel', { id: item.id }, item.id);
+              if (auth.currentUser?.uid !== uid) return;
+              if (result.status === 'cancelled') {
+                  noticeText = isDeposit
+                      ? 'Pix cancelado. No se acreditó dinero por este cobro.'
+                      : 'Retiro cancelado y saldo liberado tras la confirmación de Asaas.';
+                  const operationKind = isDeposit ? 'deposit' : 'withdraw';
+                  let savedKey = walletOperationKeys[operationKind];
+                  try { savedKey ||= sessionStorage.getItem(`nex_wallet_request_${uid}_${operationKind}`); } catch {}
+                  if (savedKey === item.id) clearWalletOperationKey(operationKind);
+              } else if (result.status === 'review') {
+                  noticeText = 'La cancelación requiere revisión del administrador; el saldo permanece protegido.';
+              } else if (result.status === 'completed') {
+                  noticeText = 'Asaas confirmó que el movimiento ya se completó y no se canceló.';
+              } else if (result.status === 'failed') {
+                  noticeText = 'Asaas ya marcó el retiro como fallido; revisa el saldo actualizado.';
+              } else {
+                  noticeText = 'Cancelación enviada. Asaas aún no la confirma; revisa el historial en unos momentos.';
+              }
+          } catch (error) {
+              if (auth.currentUser?.uid !== uid) return;
+              noticeText = error.message;
+          } finally {
+              button.disabled = false;
+          }
+
+          await actualizarHistorialPix();
+          if (auth.currentUser?.uid !== uid) return;
+          await actualizarCarteraPix();
+          const notice = document.createElement('p');
+          notice.className = 'wallet-form-status';
+          notice.setAttribute('role', 'status');
+          notice.textContent = noticeText;
+          document.getElementById('walletTransactionHistory').prepend(notice);
+      }
+
       async function actualizarHistorialPix() {
           const uid = auth.currentUser?.uid;
           const output = document.getElementById('walletTransactionHistory');
@@ -2656,7 +2759,7 @@
               if (auth.currentUser?.uid !== uid) return;
               output.replaceChildren();
               if (!history.items?.length) output.textContent = 'Aún no tienes movimientos.';
-              const labels = { pending: 'Pendiente', creating: 'Creando', processing: 'Procesando', completed: 'Completado', failed: 'Rechazado', unknown: 'Sin confirmar', review: 'En revisión', retryable: 'Puedes reintentar el formulario' };
+              const labels = { pending: 'Pendiente', creating: 'Creando', processing: 'Procesando', completed: 'Completado', failed: 'Rechazado', cancelled: 'Cancelado', unknown: 'Sin confirmar', review: 'En revisión', retryable: 'Puedes reintentar el formulario' };
               for (const item of history.items || []) {
                   const line = document.createElement('p');
                   line.textContent = `${item.kind === 'deposit' ? 'Depósito' : 'Retiro'} · ${walletMoneyFormatter.format(item.amountCents / 100)} · ${labels[item.status] || item.status} · Ref. ${item.id}`;
@@ -2690,6 +2793,14 @@
                           }
                       };
                       output.appendChild(recover);
+                  }
+                  if (item.canCancel) {
+                      const cancel = document.createElement('button');
+                      cancel.type = 'button';
+                      cancel.className = 'btn-gen';
+                      cancel.textContent = `Cancelar ${item.kind === 'deposit' ? 'Pix pendiente' : 'retiro pendiente'}`;
+                      cancel.onclick = () => cancelarMovimiento(item, cancel);
+                      output.appendChild(cancel);
                   }
               }
           } catch (error) {
@@ -4111,6 +4222,8 @@
           document.getElementById('walletDepositQr').style.display = 'none';
           document.getElementById('walletDepositForm').hidden = true;
           document.getElementById('walletWithdrawForm').hidden = true;
+          const walletActionDialog = document.getElementById('walletActionDialog');
+          if (walletActionDialog.open) walletActionDialog.close();
           document.getElementById('walletDepositButton').disabled = true;
           document.getElementById('walletWithdrawButton').disabled = true;
         }
