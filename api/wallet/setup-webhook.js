@@ -20,6 +20,13 @@ export default async function handler(req, res) {
     if (!user.email) throw new HttpError(403, "La cuenta debe tener correo verificado.");
     const db = getDb();
     const settingRef = db.collection("walletSettings").doc("asaasWebhook");
+    const initial = await settingRef.get();
+    if (initial.exists && initial.data().status === "active") {
+      return sendJson(res, 200, { ready: true });
+    }
+    if (user.uid !== "ejd0cPQ5Lgd3Fhpzl6hvj6hLlXi2") {
+      throw new HttpError(503, "El administrador todavía debe configurar la confirmación de Asaas.");
+    }
     if (!process.env.ASAAS_WEBHOOK_TOKEN) {
       throw new HttpError(503, "Falta terminar la configuración segura de Asaas.");
     }

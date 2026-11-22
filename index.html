@@ -798,8 +798,7 @@
     <div id="adminAuthModal" class="modal">
         <div class="modal-content">
             <h3>Acceso Administrativo</h3>
-            <div class="field"><label>Usuario</label><input type="text" id="adminUserInput" placeholder="Escribe tu usuario"></div>
-            <div class="field"><label>Contraseña</label><input type="password" id="adminPassInput" placeholder="Escribe tu contraseña"></div>
+            <p>Acceso exclusivo mediante la cuenta de Google del propietario.</p>
             <button class="btn-auth" style="width:100%; margin-top:10px;" onclick="validarCredencialesAdmin()">Ingresar a Panel</button>
             <button class="btn-gen" style="width:100%; margin-top:10px; border:none;" onclick="cerrarModal('adminAuthModal')">Cancelar</button>
         </div>
@@ -951,6 +950,40 @@
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const db = getFirestore(app);
+      const NEX_ADMIN_UID = 'ejd0cPQ5Lgd3Fhpzl6hvj6hLlXi2';
+
+      function escucharSoloAdmin(reference, onData) {
+          let stop = null;
+          onAuthStateChanged(auth, (user) => {
+              if (stop) stop();
+              stop = null;
+              if (user?.uid === NEX_ADMIN_UID) {
+                  stop = onSnapshot(reference, onData, (error) => {
+                      console.warn('No se pudo consultar el panel administrativo:', error.code);
+                  });
+              } else {
+                  document.getElementById('adminModal')?.classList.remove('show');
+                  for (const id of ['listaUsuariosAdmin', 'adminChatUsersList', 'listaVisitasAdmin', 'adminChatBox']) {
+                      document.getElementById(id)?.replaceChildren();
+                  }
+              }
+          });
+      }
+
+      window.validarCredencialesAdmin = async function() {
+          try {
+              let user = auth.currentUser;
+              if (!user) user = (await signInWithPopup(auth, new GoogleAuthProvider())).user;
+              if (user.uid !== NEX_ADMIN_UID) {
+                  alert('Esta cuenta no tiene acceso al administrador.');
+                  return;
+              }
+              document.getElementById('adminAuthModal').classList.remove('show');
+              document.getElementById('adminModal').classList.add('show');
+          } catch (error) {
+              alert('No se pudo verificar tu cuenta de administrador.');
+          }
+      };
       
       const googleProvider = new GoogleAuthProvider();
       const appleProvider = new OAuthProvider('apple.com');
@@ -1028,14 +1061,14 @@
       }
       registrarVisitaPagina();
 
-      onSnapshot(doc(db, "estadisticas", "general"), (snap) => {
+      escucharSoloAdmin(doc(db, "estadisticas", "general"), (snap) => {
           if (snap.exists() && snap.data().visitas !== undefined) {
               const countElem = document.getElementById('adminVisitasCount');
               if (countElem) countElem.innerText = snap.data().visitas;
           }
       });
 
-      onSnapshot(query(collection(db, "visitas_log"), orderBy("fecha", "desc"), limit(50)), (snap) => {
+      escucharSoloAdmin(query(collection(db, "visitas_log"), orderBy("fecha", "desc"), limit(50)), (snap) => {
           const listaDiv = document.getElementById('listaVisitasAdmin');
           if(!listaDiv) return;
           listaDiv.innerHTML = '';
@@ -1044,7 +1077,7 @@
               const fecha = data.fecha ? data.fecha.toDate().toLocaleString() : 'Justo ahora...';
               const d = document.createElement('div');
               d.style.cssText = "border-bottom: 1px solid var(--border-color); padding: 5px 0; font-size: 11px; color: #fff; display: flex; justify-content: space-between;";
-              d.innerHTML = `<span>🟢 Nueva entrada</span> <span style="color:var(--text-muted);">${fecha} - ${data.dispositivo} (${data.plataforma})</span>`;
+              d.textContent = `Nueva entrada: ${fecha} - ${data.dispositivo} (${data.plataforma})`;
               listaDiv.appendChild(d);
           });
       });
@@ -1500,7 +1533,7 @@
           }
       };
 
-      onSnapshot(collection(db, "usuarios"), (snap) => {
+      escucharSoloAdmin(collection(db, "usuarios"), (snap) => {
           const listaDiv = document.getElementById('listaUsuariosAdmin');
           const chatListContainer = document.getElementById('adminChatUsersList');
           if(listaDiv) listaDiv.innerHTML = '';
@@ -1513,18 +1546,13 @@
               if (listaDiv) {
                   const d = document.createElement('div');
                   d.className = 'admin-user-card';
-                  d.innerHTML = `
-                      <div>
-                          <strong style="font-size:12px; color:var(--primary-cyan);">${data.nombre || 'Usuario'}</strong>
-                          <div style="font-size:11px; color:var(--text-muted);">${data.email || 'Sin Correo'} | ${data.proveedor || 'Red'}</div>
-                          <div style="font-size:10px; color:${data.banned ? 'var(--red-down)' : 'var(--green-up)'};">${data.banned ? '⛔ SUSPENDIDO' : '✅ ACTIVO'}</div>
-                      </div>
-                      <div>
-                          <button class="btn-gen" style="background:var(--red-down); color:white; border:none; padding:5px 8px; font-weight:bold;" onclick="expulsarUsuarioAdmin('${data.uid}', ${!data.banned})">
-                              ${data.banned ? 'Reactivar' : '🔴 Expulsar'}
-                          </button>
-                      </div>
-                  `;
+                  const info = document.createElement('div');
+                  info.textContent = `${data.nombre || 'Usuario'} · ${data.email || 'Sin Correo'} · ${data.banned ? 'SUSPENDIDO' : 'ACTIVO'}`;
+                  const action = document.createElement('button');
+                  action.className = 'btn-gen';
+                  action.textContent = data.banned ? 'Reactivar' : 'Expulsar';
+                  action.onclick = () => window.expulsarUsuarioAdmin(documento.id, !data.banned);
+                  d.append(info, action);
                   listaDiv.appendChild(d);
               }
 
@@ -1547,14 +1575,7 @@
                   div.onmouseout = () => div.style.background = 'var(--bg-dark)';
                   div.onclick = () => window.abrirChatUsuarioAdmin(data.uid, data.nombre || data.email);
                   
-                  const dot = data.unreadAdmin ? '<span style="color: #10b981; font-size: 16px;" title="Nuevo mensaje">🟢</span>' : '';
-                  div.innerHTML = `
-                      <div style="display: flex; flex-direction: column;">
-                          <strong style="color: var(--text-main); font-size: 13px;">${data.nombre || data.email}</strong>
-                          <span style="font-size: 11px; color: var(--text-muted);">${data.email || ''}</span>
-                      </div>
-                      <div>${dot}</div>
-                  `;
+                  div.textContent = `${data.nombre || 'Usuario'} · ${data.email || ''}${data.unreadAdmin ? ' · Nuevo mensaje' : ''}`;
                   chatListContainer.appendChild(div);
               });
           }
@@ -2329,6 +2350,8 @@
           resolveNexAuthReady(user || null);
         }
         if (user) {
+          await registrarOActualizarUsuarioDB(user, user.providerData?.[0]?.providerId || 'email');
+          if (auth.currentUser?.uid !== user.uid) return;
           if (window.nexPortalMode === 'games-pending') return;
           if (window.nexPortalMode === 'games') {
             window.usuarioActual = user;
@@ -2417,19 +2440,6 @@
           document.getElementById('modalCanjear').classList.add('show');
           
           window.actualizarSaldosSwap();
-      };
-
-      window.validarCredencialesAdmin = function() {
-        const u = document.getElementById('adminUserInput').value;
-        const p = document.getElementById('adminPassInput').value;
-        if(u === "admin" && p === "200832") {
-            cerrarModal('adminAuthModal');
-            document.getElementById('adminModal').classList.add('show');
-            document.getElementById('adminUserInput').value = '';
-            document.getElementById('adminPassInput').value = '';
-        } else {
-            alert("Credenciales incorrectas");
-        }
       };
 
       window.cambiarPestañaAdmin = function(tabId, btn) {
