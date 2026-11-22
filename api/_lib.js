@@ -1,6 +1,6 @@
 import { randomUUID, timingSafeEqual } from "node:crypto";
 import { cert, getApps, initializeApp } from "firebase-admin/app";
-import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { getFirestore } from "firebase-admin/firestore";
 import { createRemoteJWKSet, jwtVerify } from "jose";
 
 const FIREBASE_PROJECT_ID = "nexk-131a4";
@@ -87,10 +87,6 @@ export async function assertWebhookReady(db) {
   }
 }
 
-export function getFieldValue() {
-  return FieldValue;
-}
-
 export function makeIdempotencyKey(value) {
   const supplied = String(value || "");
   if (!/^[a-zA-Z0-9_-]{16,80}$/.test(supplied)) {
@@ -104,7 +100,11 @@ export function parseMoneyCents(value) {
   if (!Number.isFinite(amount) || amount <= 0 || amount > 1_000_000) {
     throw new HttpError(400, "El monto no es válido.");
   }
-  return Math.round(amount * 100);
+  const cents = Math.round(amount * 100);
+  if (cents <= 0 || Math.abs(amount * 100 - cents) > 0.00001) {
+    throw new HttpError(400, "El monto debe tener como máximo dos decimales.");
+  }
+  return cents;
 }
 
 export function centsToReais(cents) {
@@ -115,6 +115,7 @@ export async function asaas(path, { method = "GET", body, idempotencyKey } = {})
   const apiKey = process.env.ASAAS_API_KEY;
   if (!apiKey) throw new HttpError(503, "Pix está temporalmente indisponible.");
   const response = await fetch(`${ASAAS_API}${path}`, {
+    signal: AbortSignal.timeout(15000),
     method,
     headers: {
       "Content-Type": "application/json",
@@ -129,6 +130,7 @@ export async function asaas(path, { method = "GET", body, idempotencyKey } = {})
       response.status >= 500 ? 502 : 400,
       "Asaas não confirmou a operação. Consulte o histórico antes de tentar novamente.",
     );
+    error.providerHttpStatus = response.status;
     error.definitiveProviderRejection = [400, 401, 403, 404, 422].includes(response.status);
     throw error;
   }

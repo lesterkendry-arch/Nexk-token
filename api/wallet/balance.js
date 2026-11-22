@@ -15,8 +15,9 @@ export default async function handler(req, res) {
     const snapshot = await getDb().collection("walletAccounts").doc(user.uid).get();
     const account = snapshot.exists ? snapshot.data() : {};
     return sendJson(res, 200, {
-      availableCents: Number(account.availableCents || 0),
+      availableCents: account.frozen === true ? null : Number(account.availableCents || 0),
       reservedCents: Number(account.reservedCents || 0),
+      frozen: account.frozen === true,
       currency: "BRL",
     });
   } catch (error) {

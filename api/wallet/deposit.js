@@ -5,7 +5,6 @@ import {
   getDb,
   HttpError,
   makeIdempotencyKey,
-  newOperationId,
   parseMoneyCents,
   requireUser,
   sendJson,
@@ -18,6 +17,14 @@ export default async function handler(req, res) {
   }
   try {
     const user = await requireUser(req);
+    const userName = String(req.body?.legalName || "").trim();
+    const cpfCnpj = String(req.body?.cpfCnpj || "").replace(/\D/g, "");
+    if (userName.length < 5 || userName.length > 120 || !/\S+\s+\S+/.test(userName)) {
+      throw new HttpError(400, "Escribe tu nombre completo para el cobro Pix.");
+    }
+    if (![11, 14].includes(cpfCnpj.length)) {
+      throw new HttpError(400, "Asaas requiere un CPF o CNPJ válido para crear el cobro.");
+    }
     const amountCents = parseMoneyCents(req.body?.amount);
     if (amountCents < 1000) {
       throw new HttpError(400, "El depósito mínimo es R$10,00.");
@@ -59,12 +66,35 @@ export default async function handler(req, res) {
       });
     }
 
-    const userName = String(user.name || user.email || "Cliente NEX").slice(0, 100);
-    const customer = await asaas("/customers", {
-      method: "POST",
-      idempotencyKey: `${idempotencyKey}-customer`,
-      body: { name: userName, email: user.email || undefined },
-    });
+    const customerRef = db.collection("walletCustomers").doc(user.uid);
+    const savedCustomer = await customerRef.get();
+    let customer;
+    if (savedCustomer.exists && savedCustomer.data().providerCustomerId) {
+      customer = await asaas(`/customers/${encodeURIComponent(savedCustomer.data().providerCustomerId)}`);
+      if (String(customer.cpfCnpj || "").replace(/\D/g, "") !== cpfCnpj) {
+        throw new HttpError(400, "El CPF/CNPJ no coincide con el cliente ya vinculado a esta cuenta.");
+      }
+    } else {
+      const existing = await asaas(`/customers?externalReference=${encodeURIComponent(`nex-wallet-${user.uid}`)}&limit=1`);
+      customer = existing.data?.[0];
+      if (customer && String(customer.cpfCnpj || "").replace(/\D/g, "") !== cpfCnpj) {
+        throw new HttpError(400, "El CPF/CNPJ no coincide con el cliente vinculado.");
+      }
+      if (!customer) {
+        customer = await asaas("/customers", {
+          method: "POST",
+          idempotencyKey: `${idempotencyKey}-customer`,
+          body: {
+            name: userName,
+            cpfCnpj,
+            email: user.email || undefined,
+            externalReference: `nex-wallet-${user.uid}`,
+            notificationDisabled: true,
+          },
+        });
+      }
+      await customerRef.set({ providerCustomerId: customer.id, updatedAt: new Date() });
+    }
     await opRef.set({ providerCustomerId: customer.id, updatedAt: new Date() }, { merge: true });
     const payment = await asaas("/payments", {
       method: "POST",

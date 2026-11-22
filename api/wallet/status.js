@@ -1,20 +1,26 @@
-import { requiredEnvironment, sendJson } from "../_lib.js";
+import { getDb, requiredEnvironment, sendJson } from "../_lib.js";
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
     return sendJson(res, 405, { error: "Método no permitido." });
   }
-  const missing = requiredEnvironment();
-  let firebaseValid = false;
+  let configurationReady = false;
+  let webhookReady = false;
   try {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON || "{}");
-    firebaseValid = serviceAccount.project_id === "nexk-131a4";
-  } catch (error) {
-    firebaseValid = false;
+    const account = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON || "{}");
+    configurationReady = requiredEnvironment().length === 0 && account.project_id === "nexk-131a4";
+    if (configurationReady) {
+      const setting = await getDb().collection("walletSettings").doc("asaasWebhook").get();
+      webhookReady = setting.exists && setting.data().status === "active";
+    }
+  } catch {
+    configurationReady = false;
   }
   return sendJson(res, 200, {
-    enabled: missing.length === 0 && firebaseValid && process.env.PIX_ENABLED === "true",
+    enabled: configurationReady && webhookReady && process.env.PIX_ENABLED === "true",
+    configurationReady,
+    webhookReady,
     mode: "production",
   });
 }

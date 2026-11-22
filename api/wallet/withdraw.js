@@ -4,7 +4,6 @@ import {
   centsToReais,
   dateInSaoPaulo,
   getDb,
-  getFieldValue,
   HttpError,
   makeIdempotencyKey,
   parseMoneyCents,
@@ -46,6 +45,14 @@ export default async function handler(req, res) {
     const db = getDb();
     await assertWebhookReady(db);
     const txRef = db.collection("walletTransactions").doc(idempotencyKey);
+    const replay = await txRef.get();
+    if (replay.exists) {
+      const data = replay.data();
+      if (data.uid !== user.uid || data.kind !== "withdrawal" || data.amountCents !== amountCents) {
+        throw new HttpError(409, "La referencia ya fue utilizada para otra solicitud.");
+      }
+      return sendJson(res, 200, { id: txRef.id, status: data.status, amountCents: data.amountCents });
+    }
     const accountRef = db.collection("walletAccounts").doc(user.uid);
     const today = dateInSaoPaulo();
     const now = new Date();
@@ -59,6 +66,12 @@ export default async function handler(req, res) {
       }
       const account = accountSnap.exists ? accountSnap.data() : {};
       const available = Number(account.availableCents || 0);
+      if (account.frozen === true) {
+        throw new HttpError(409, "La cuenta requiere revisión del administrador antes de retirar.");
+      }
+      if (!Number.isSafeInteger(available) || !Number.isSafeInteger(Number(account.reservedCents || 0))) {
+        throw new HttpError(503, "No se pudo verificar el saldo.");
+      }
       const withdrawnToday =
         account.withdrawalDate === today
           ? Number(account.withdrawnTodayCents || 0)
@@ -90,6 +103,8 @@ export default async function handler(req, res) {
         createdAt: now,
         updatedAt: now,
         destinationLastFour: pixKey.slice(-4),
+        withdrawalDate: today,
+        beneficiaryName: legalName,
       });
     });
     reserved = true;
@@ -126,7 +141,6 @@ export default async function handler(req, res) {
         const db = getDb();
         const accountRef = db.collection("walletAccounts").doc(user.uid);
         const txRef = db.collection("walletTransactions").doc(idempotencyKey);
-        const FieldValue = getFieldValue();
         await db.runTransaction(async (transaction) => {
           const [txSnap, accountSnap] = await Promise.all([
             transaction.get(txRef),
@@ -137,7 +151,9 @@ export default async function handler(req, res) {
           transaction.set(accountRef, {
             availableCents: Number(account.availableCents || 0) + amountCents,
             reservedCents: Math.max(0, Number(account.reservedCents || 0) - amountCents),
-            withdrawnTodayCents: Math.max(0, Number(account.withdrawnTodayCents || 0) - amountCents),
+            ...(account.withdrawalDate === txSnap.data().withdrawalDate
+              ? { withdrawnTodayCents: Math.max(0, Number(account.withdrawnTodayCents || 0) - amountCents) }
+              : {}),
             updatedAt: new Date(),
           }, { merge: true });
           transaction.set(txRef, {status:"failed", updatedAt:new Date()}, {merge:true});

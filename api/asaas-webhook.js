@@ -1,9 +1,10 @@
-import {
-  getDb,
-  HttpError,
-  sendJson,
-  verifyAsaasWebhook,
-} from "./_lib.js";
+import { createHash } from "node:crypto";
+import { asaas, getDb, HttpError, sendJson, verifyAsaasWebhook } from "./_lib.js";
+
+const EVENTS = new Set([
+  "PAYMENT_RECEIVED", "PAYMENT_REFUNDED", "PAYMENT_PARTIALLY_REFUNDED",
+  "TRANSFER_DONE", "TRANSFER_FAILED", "TRANSFER_CANCELLED",
+]);
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -14,62 +15,88 @@ export default async function handler(req, res) {
     return sendJson(res, 401, { error: "No autorizado." });
   }
   try {
-    const { event, payment, transfer } = req.body || {};
-    const item = payment || transfer;
-    if (!event || !item?.id) return sendJson(res, 400, { error: "Evento inválido." });
-
-    const isPayment = Boolean(payment);
-    const reference = isPayment ? "providerPaymentId" : "providerTransferId";
-    const db = getDb();
-    let query = await db
-      .collection("walletTransactions")
-      .where(reference, "==", item.id)
-      .limit(1)
-      .get();
-    if (query.empty && item.externalReference) {
-      const byReference = await db.collection("walletTransactions").doc(String(item.externalReference)).get();
-      if (byReference.exists) {
-        query = { empty: false, docs: [{ ref: byReference.ref }] };
-      }
+    const { id, event, payment, transfer } = req.body || {};
+    if (!EVENTS.has(event)) return sendJson(res, 200, { received: true });
+    const isPayment = event.startsWith("PAYMENT_");
+    const item = isPayment ? payment : transfer;
+    if (typeof id !== "string" || id.length > 256 || typeof item?.id !== "string") {
+      return sendJson(res, 400, { error: "Evento inválido." });
     }
-    if (query.empty) return sendJson(res, 200, { received: true });
+    const db = getDb();
+    const eventRef = db.collection("walletWebhookEvents").doc(createHash("sha256").update(id).digest("hex"));
+    if ((await eventRef.get()).exists) return sendJson(res, 200, { received: true });
+    const providerField = isPayment ? "providerPaymentId" : "providerTransferId";
+    const matching = await db.collection("walletTransactions").where(providerField, "==", item.id).limit(1).get();
+    let txRef = matching.empty ? null : matching.docs[0].ref;
+    if (!txRef && /^[a-zA-Z0-9_-]{16,80}$/.test(String(item.externalReference || ""))) {
+      const referenced = db.collection("walletTransactions").doc(item.externalReference);
+      if ((await referenced.get()).exists) txRef = referenced;
+    }
+    if (!txRef) return sendJson(res, 200, { received: true });
 
-    const txRef = query.docs[0].ref;
+    // Never credit or release funds using the event body alone.
+    const remote = await asaas(`/${isPayment ? "payments" : "transfers"}/${encodeURIComponent(item.id)}`);
+    const amountCents = Math.round(Number(remote.value) * 100);
+    if (remote.id !== item.id || remote.externalReference !== txRef.id || !Number.isSafeInteger(amountCents)) {
+      throw new HttpError(409, "La referencia del proveedor no coincide.");
+    }
     await db.runTransaction(async (transaction) => {
-      const txSnap = await transaction.get(txRef);
-      if (!txSnap.exists) return;
+      const [txSnap, eventSnap] = await Promise.all([transaction.get(txRef), transaction.get(eventRef)]);
+      if (eventSnap.exists || !txSnap.exists) return;
       const data = txSnap.data();
-      if (data.status === "completed" || data.status === "failed") return;
+      if (
+        data.provider !== "asaas" || data.kind !== (isPayment ? "deposit" : "withdrawal")
+        || data.amountCents !== amountCents || (data[providerField] && data[providerField] !== remote.id)
+      ) {
+        throw new HttpError(409, "El monto o tipo de operación no coincide.");
+      }
       const accountRef = db.collection("walletAccounts").doc(data.uid);
       const accountSnap = await transaction.get(accountRef);
       const account = accountSnap.exists ? accountSnap.data() : {};
-      const now = new Date();
-
-      if (isPayment && ["PAYMENT_CONFIRMED", "PAYMENT_RECEIVED"].includes(event)) {
-        transaction.set(accountRef, {
-          availableCents: Number(account.availableCents || 0) + Number(data.amountCents),
-          updatedAt: now,
-        }, {merge:true});
-        transaction.set(txRef, {status:"completed", updatedAt:now}, {merge:true});
-      } else if (!isPayment && event === "TRANSFER_DONE") {
-        transaction.set(accountRef, {
-          reservedCents: Math.max(0, Number(account.reservedCents || 0) - Number(data.amountCents)),
-          updatedAt: now,
-        }, {merge:true});
-        transaction.set(txRef, {status:"completed", updatedAt:now}, {merge:true});
-      } else if (!isPayment && ["TRANSFER_FAILED", "TRANSFER_CANCELLED"].includes(event)) {
-        transaction.set(accountRef, {
-          availableCents: Number(account.availableCents || 0) + Number(data.amountCents),
-          reservedCents: Math.max(0, Number(account.reservedCents || 0) - Number(data.amountCents)),
-          withdrawnTodayCents: Math.max(0, Number(account.withdrawnTodayCents || 0) - Number(data.amountCents)),
-          updatedAt: now,
-        }, {merge:true});
-        transaction.set(txRef, {status:"failed", updatedAt:now}, {merge:true});
+      const available = Number(account.availableCents || 0);
+      const reserved = Number(account.reservedCents || 0);
+      if (!Number.isSafeInteger(available) || !Number.isSafeInteger(reserved)) {
+        throw new HttpError(503, "La cuenta requiere revisión.");
       }
+      const now = new Date();
+      const metadata = { [providerField]: remote.id, providerStatus: remote.status, updatedAt: now };
+      const refund = isPayment && (
+        event !== "PAYMENT_RECEIVED" || ["REFUNDED", "REFUND_REQUESTED", "REFUND_IN_PROGRESS"].includes(remote.status)
+      );
+      if (refund) {
+        // Partial refunds/chargebacks require reconciliation; don't expose a spendable estimate.
+        transaction.set(accountRef, { frozen: true, updatedAt: now }, { merge: true });
+        transaction.set(txRef, { ...metadata, status: "review" }, { merge: true });
+      } else if (isPayment && data.status !== "completed" && data.status !== "review") {
+        if (remote.status !== "RECEIVED" || remote.billingType !== "PIX") {
+          throw new HttpError(503, "El pago aún no está disponible.");
+        }
+        transaction.set(accountRef, { availableCents: available + amountCents, updatedAt: now }, { merge: true });
+        transaction.set(txRef, { ...metadata, status: "completed" }, { merge: true });
+      } else if (!isPayment && !["completed", "failed"].includes(data.status)) {
+        if (reserved < amountCents) throw new HttpError(503, "La reserva requiere revisión.");
+        if (remote.status === "DONE") {
+          transaction.set(accountRef, { reservedCents: reserved - amountCents, updatedAt: now }, { merge: true });
+          transaction.set(txRef, { ...metadata, status: "completed" }, { merge: true });
+        } else if (["FAILED", "CANCELLED"].includes(remote.status)) {
+          transaction.set(accountRef, {
+            availableCents: available + amountCents,
+            reservedCents: reserved - amountCents,
+            ...(account.withdrawalDate === data.withdrawalDate
+              ? { withdrawnTodayCents: Math.max(0, Number(account.withdrawnTodayCents || 0) - amountCents) }
+              : {}),
+            updatedAt: now,
+          }, { merge: true });
+          transaction.set(txRef, { ...metadata, status: "failed" }, { merge: true });
+        } else {
+          throw new HttpError(503, "La transferencia aún no tiene resultado definitivo.");
+        }
+      }
+      transaction.create(eventRef, { providerEventId: id, transactionId: txRef.id, event, processedAt: now });
     });
     return sendJson(res, 200, { received: true });
   } catch (error) {
     const status = error instanceof HttpError ? error.status : 500;
-    return sendJson(res, status, { error: status === 500 ? "No se pudo procesar el evento." : error.message });
+    return sendJson(res, status, { error: "No se pudo confirmar el evento." });
   }
 }
