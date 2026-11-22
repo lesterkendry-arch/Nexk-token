@@ -54,19 +54,19 @@ async function submit(amountCents) {
   return { ...response, databaseReads };
 }
 
-for (const amount of [1, 1999, 2000]) {
+for (const amount of [1, 1999]) {
   test(`rejects ${amount} cents before reading balances or requesting a payout`, async () => {
     const response = await submit(amount);
     assert.equal(response.status, 400);
-    assert.match(response.body.error, /mayor de R\$20,00/);
+    assert.match(response.body.error, /mínimo es R\$20,00/);
     assert.equal(response.databaseReads, 0);
   });
 }
 
-test("2001 cents is the first permitted amount", async () => {
-  const response = await submit(2001);
+test("2000 cents is the first permitted amount", async () => {
+  const response = await submit(2000);
   assert.equal(response.status, 200);
-  assert.equal(response.body.amountCents, 2001);
+  assert.equal(response.body.amountCents, 2000);
   assert.equal(response.databaseReads, 1);
 });
 
@@ -74,7 +74,7 @@ test("the form matches the server minimum and preserves the daily ceiling", asyn
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
   const input = html.match(/<input[^>]*id="walletWithdrawAmount"[^>]*>/)?.[0];
   assert.ok(input);
-  assert.match(input, /\bmin="20\.01"/);
+  assert.match(input, /\bmin="20"/);
   assert.match(input, /\bmax="5000"/);
   assert.match(input, /\bstep="0\.01"/);
 });

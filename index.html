@@ -578,7 +578,7 @@
                 </div>
                 <div class="wallet-action-row">
                     <button id="walletDepositButton" type="button" class="wallet-action-disabled" disabled onclick="toggleWalletForm('deposit')" aria-describedby="pixDisabledNote">Depositar dinheiro · mínimo R$10</button>
-                    <button id="walletWithdrawButton" type="button" class="wallet-action-disabled" disabled onclick="toggleWalletForm('withdraw')" aria-describedby="pixDisabledNote">Sacar dinheiro · mayor de R$20</button>
+                    <button id="walletWithdrawButton" type="button" class="wallet-action-disabled" disabled onclick="toggleWalletForm('withdraw')" aria-describedby="pixDisabledNote">Sacar dinheiro · mínimo R$20</button>
                 </div>
                 <p id="pixDisabledNote" class="games-copy" style="font-size: 12px; margin-top: 10px;">Preparando conexión segura con Asaas.</p>
                 <button id="walletConnectPix" type="button" class="btn-gen" hidden>Conectar Asaas como administrador</button>
@@ -598,8 +598,8 @@
                 <h2 style="margin-top:24px;font-size:18px;">Historial de movimientos</h2>
                 <div id="walletTransactionHistory" class="games-copy" role="status">Inicia sesión para consultar tus movimientos.</div>
                 <form id="walletWithdrawForm" hidden style="margin-top:16px;">
-                    <label for="walletWithdrawAmount">Monto para retirar (mínimo R$20,01; máximo R$5.000 al día)</label>
-                    <input id="walletWithdrawAmount" type="number" min="20.01" max="5000" step="0.01" required>
+                    <label for="walletWithdrawAmount">Monto para retirar (mínimo R$20; máximo R$5.000 al día)</label>
+                    <input id="walletWithdrawAmount" type="number" min="20" max="5000" step="0.01" required>
                     <label for="walletLegalName">Nombre completo legal</label>
                     <input id="walletLegalName" type="text" autocomplete="name" maxlength="120" required>
                     <label for="walletPixType">Tipo de llave Pix</label>
