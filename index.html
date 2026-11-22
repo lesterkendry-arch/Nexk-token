@@ -536,12 +536,13 @@
     <div id="entryGate" class="entry-gate" aria-label="Selecciona una opción">
         <div class="entry-gate-actions">
             <button class="entry-choice entry-choice-primary" type="button" onclick="mostrarAccesoNormal()">Invertir en NEX Token</button>
-            <button class="entry-choice entry-choice-secondary" type="button" onclick="entrarJuegosProximamente()">Juegos próximamente</button>
+            <button class="entry-choice entry-choice-secondary" type="button" onclick="entrarJuegosProximamente()">Juegos para ganar dinero</button>
+            <p id="entryGateError" class="games-copy" role="alert" hidden></p>
         </div>
     </div>
     <div id="gamesPlaceholder" aria-hidden="true">
         <section id="gamesHomeView" class="games-panel" aria-labelledby="gamesHomeTitle">
-            <h1 id="gamesHomeTitle" class="games-heading">Juegos próximamente</h1>
+            <h1 id="gamesHomeTitle" class="games-heading">Juegos para ganar dinero</h1>
             <p class="games-copy">Esta sección todavía no tiene juegos disponibles.</p>
         </section>
         <section id="walletView" class="games-panel" aria-labelledby="walletTitle" style="display: none;">
@@ -620,7 +621,7 @@
         </section>
     </div>
     <nav id="gamesBottomNav" class="games-bottom-nav" aria-label="Navegación principal">
-        <button type="button" class="games-nav-button" data-portal-section="game" onclick="abrirSeccionPortal('game')" aria-current="page">Juego</button>
+        <button type="button" class="games-nav-button" data-portal-section="game" onclick="abrirSeccionPortal('game')" aria-current="page">Juegos para ganar dinero</button>
         <button type="button" class="games-nav-button" data-portal-section="tokens" onclick="mostrarAccesoNormal()">Invertir en NEX Token</button>
         <button type="button" class="games-nav-button" data-portal-section="wallet" onclick="abrirSeccionPortal('wallet')">Cartera</button>
     </nav>
@@ -960,6 +961,19 @@
       const db = getFirestore(app);
       const NEX_ADMIN_UID = 'ejd0cPQ5Lgd3Fhpzl6hvj6hLlXi2';
 
+      function mensajeErrorAcceso(error) {
+          if (error?.code === 'auth/unauthorized-domain') {
+              return `Falta autorizar ${location.hostname} en Firebase: Authentication → Configuración → Dominios autorizados. El propietario debe agregar ese dominio para habilitar el acceso con Google.`;
+          }
+          if (error?.code === 'auth/popup-blocked') {
+              return 'El navegador bloqueó la ventana de Google. Abre esta página directamente en Chrome y permite la ventana de inicio de sesión.';
+          }
+          if (error?.code === 'auth/popup-closed-by-user') {
+              return 'El inicio de sesión no se completó. Puedes volver a intentarlo.';
+          }
+          return 'No se pudo iniciar sesión. Comprueba tu conexión y vuelve a intentarlo.';
+      }
+
       function escucharSoloAdmin(reference, onData) {
           let stop = null;
           onAuthStateChanged(auth, (user) => {
@@ -989,7 +1003,7 @@
               document.getElementById('adminAuthModal').classList.remove('show');
               document.getElementById('adminModal').classList.add('show');
           } catch (error) {
-              alert('No se pudo verificar tu cuenta de administrador.');
+              alert(mensajeErrorAcceso(error));
           }
       };
       
@@ -1540,6 +1554,7 @@
       window.abrirSeccionPortal = async function(section) {
           if (!['game', 'wallet'].includes(section)) return;
           if (section === 'tokens') return window.mostrarAccesoNormal();
+          document.getElementById('entryGateError').hidden = true;
           const currentUser = auth.currentUser || (!nexAuthReadyResolved ? await nexAuthReady : null);
           if (currentUser) {
               window.usuarioActual = currentUser;
@@ -1554,7 +1569,9 @@
           } catch(e) {
               window.nexPortalMode = null;
               mostrarPuertaEntrada();
-              alert("No se pudo verificar con Google: " + e.message);
+              const notice = document.getElementById('entryGateError');
+              notice.textContent = mensajeErrorAcceso(e);
+              notice.hidden = false;
           }
       };
       window.entrarJuegosProximamente = () => window.abrirSeccionPortal('game');
