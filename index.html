@@ -192,6 +192,69 @@
             color: #b8c7dc;
             line-height: 1.55;
         }
+        .game-practice-card {
+            display: grid;
+            gap: 14px;
+            width: min(100%, 460px);
+            margin: 22px auto;
+            padding: 20px;
+            border: 1px solid #365172;
+            border-radius: 16px;
+            background: linear-gradient(145deg, rgba(14, 39, 70, .98), rgba(9, 24, 44, .98));
+            box-shadow: 0 16px 42px rgba(0, 0, 0, .2);
+        }
+        .game-practice-card h2 {
+            margin: 0;
+            color: #f2f7ff;
+            font-size: 20px;
+        }
+        .game-practice-label {
+            color: #b8c7dc;
+            font-size: 13px;
+        }
+        .game-practice-balance {
+            color: #8be9c5;
+            font-size: clamp(24px, 7vw, 34px);
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            overflow-wrap: anywhere;
+        }
+        .game-practice-card label {
+            color: #e4edf8;
+            font-size: 14px;
+            font-weight: 650;
+        }
+        .game-practice-card select,
+        .game-practice-card button {
+            width: 100%;
+            min-height: 48px;
+            padding: 11px 14px;
+            border: 1px solid #405574;
+            border-radius: 10px;
+            background: #091321;
+            color: #f9fafb;
+            font: inherit;
+            font-size: 16px;
+        }
+        .game-practice-card button {
+            border-color: var(--primary-cyan);
+            background: var(--primary-cyan);
+            color: #07111f;
+            font-weight: 750;
+            cursor: pointer;
+        }
+        .game-practice-card select:focus-visible,
+        .game-practice-card button:focus-visible {
+            outline: 3px solid #fff;
+            outline-offset: 2px;
+        }
+        .game-practice-status {
+            min-height: 1.5em;
+            margin: 0;
+            color: #b8c7dc;
+            font-size: 13px;
+            line-height: 1.5;
+        }
         .wallet-form {
             display: grid;
             gap: 10px;
@@ -586,14 +649,27 @@
     <div id="entryGate" class="entry-gate" aria-label="Selecciona una opción">
         <div class="entry-gate-actions">
             <button class="entry-choice entry-choice-primary" type="button" onclick="mostrarAccesoNormal()">Invertir en NEX Token</button>
-            <button class="entry-choice entry-choice-secondary" type="button" onclick="entrarJuegosProximamente()">Juegos para ganar dinero</button>
+            <button class="entry-choice entry-choice-secondary" type="button" onclick="entrarJuegosProximamente()">Juegos de práctica</button>
             <p id="entryGateError" class="games-copy" role="alert" hidden></p>
         </div>
     </div>
     <div id="gamesPlaceholder" aria-hidden="true">
         <section id="gamesHomeView" class="games-panel" aria-labelledby="gamesHomeTitle">
-            <h1 id="gamesHomeTitle" class="games-heading">Juegos para ganar dinero</h1>
-            <p class="games-copy">Esta sección todavía no tiene juegos disponibles.</p>
+            <h1 id="gamesHomeTitle" class="games-heading">Juegos de práctica</h1>
+            <p class="games-copy">Modo de práctica y demostración. Este marcador no usa tu saldo de la cartera.</p>
+            <div class="game-practice-card" aria-labelledby="gamePracticeTitle">
+                <h2 id="gamePracticeTitle">Marcador de práctica</h2>
+                <span class="game-practice-label">Saldo de demostración</span>
+                <strong id="gamePracticeBalance" class="game-practice-balance" aria-live="polite">20 pesos del juego</strong>
+                <p class="games-copy" style="margin:0;">No es dinero real, no se puede convertir ni retirar. Se conserva al cambiar de sección en este dispositivo.</p>
+                <label for="gamePracticeAmount">Elegir saldo de demostración</label>
+                <select id="gamePracticeAmount">
+                    <option value="20">20 pesos del juego</option>
+                    <option value="50">50 pesos del juego</option>
+                </select>
+                <button id="gamePracticeApply" type="button">Actualizar marcador</button>
+                <p id="gamePracticeStatus" class="game-practice-status" role="status" aria-live="polite"></p>
+            </div>
         </section>
         <section id="walletView" class="games-panel" aria-labelledby="walletTitle" style="display: none;">
             <div class="card">
@@ -674,7 +750,7 @@
         </section>
     </div>
     <nav id="gamesBottomNav" class="games-bottom-nav" aria-label="Navegación principal">
-        <button type="button" class="games-nav-button" data-portal-section="game" onclick="abrirSeccionPortal('game')" aria-current="page">Juegos para ganar dinero</button>
+        <button type="button" class="games-nav-button" data-portal-section="game" onclick="abrirSeccionPortal('game')" aria-current="page">Juegos de práctica</button>
         <button type="button" class="games-nav-button" data-portal-section="tokens" onclick="mostrarAccesoNormal()">Invertir en NEX Token</button>
         <button type="button" class="games-nav-button" data-portal-section="wallet" onclick="abrirSeccionPortal('wallet')">Cartera</button>
     </nav>
@@ -1703,6 +1779,52 @@
           }
       });
 
+      const gamePracticeBalances = new Set([20, 50]);
+      const gamePracticeMemory = new Map();
+
+      function gamePracticeStorageKey(uid) {
+          return `nex_game_practice_balance_${uid}`;
+      }
+
+      function getGamePracticeBalance(uid) {
+          if (!uid) return 20;
+          if (gamePracticeMemory.has(uid)) return gamePracticeMemory.get(uid);
+          let balance = 20;
+          try {
+              const saved = Number(sessionStorage.getItem(gamePracticeStorageKey(uid)));
+              if (gamePracticeBalances.has(saved)) balance = saved;
+          } catch (error) {}
+          gamePracticeMemory.set(uid, balance);
+          return balance;
+      }
+
+      function renderGamePracticeBalance(user = auth.currentUser) {
+          const balance = getGamePracticeBalance(user?.uid);
+          document.getElementById('gamePracticeBalance').textContent = `${balance} pesos del juego`;
+          document.getElementById('gamePracticeAmount').value = String(balance);
+          document.getElementById('gamePracticeStatus').textContent = '';
+      }
+
+      document.getElementById('gamePracticeApply').addEventListener('click', () => {
+          const uid = auth.currentUser?.uid;
+          const balance = Number(document.getElementById('gamePracticeAmount').value);
+          const status = document.getElementById('gamePracticeStatus');
+          if (!uid) {
+              status.textContent = 'Inicia sesión para guardar tu marcador de práctica.';
+              return;
+          }
+          if (!gamePracticeBalances.has(balance)) {
+              status.textContent = 'Selecciona 20 o 50 pesos del juego.';
+              return;
+          }
+          gamePracticeMemory.set(uid, balance);
+          try {
+              sessionStorage.setItem(gamePracticeStorageKey(uid), String(balance));
+          } catch (error) {}
+          renderGamePracticeBalance(auth.currentUser);
+          status.textContent = 'Marcador de práctica actualizado.';
+      });
+
       function mostrarPantallaJuegos(section = 'game') {
           window.nexPortalMode = 'games';
           window.nexPortalSection = section;
@@ -1716,6 +1838,7 @@
           document.getElementById('gamesHomeView').style.display = section === 'game' ? 'block' : 'none';
           document.getElementById('walletView').style.display = section === 'wallet' ? 'block' : 'none';
           actualizarNavegacionPortal(section);
+          if (section === 'game') renderGamePracticeBalance(window.usuarioActual || auth.currentUser);
           if (section === 'wallet') {
               actualizarPerfilCartera(window.usuarioActual || auth.currentUser);
               cargarPerfilRetiroPix();
