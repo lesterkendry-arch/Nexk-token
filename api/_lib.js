@@ -1,4 +1,4 @@
-import { randomUUID, timingSafeEqual } from "node:crypto";
+import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { createRemoteJWKSet, jwtVerify } from "jose";
@@ -82,9 +82,13 @@ export function getDb() {
 export async function assertWebhookReady(db) {
   requirePixEnabled();
   const config = await db.collection("walletSettings").doc("asaasWebhook").get();
-  if (!config.exists || config.data().status !== "active") {
+  if (!config.exists || config.data().status !== "active" || config.data().keyFingerprint !== asaasKeyFingerprint()) {
     throw new HttpError(503, "La confirmación segura de Asaas aún no está disponible.");
   }
+}
+
+export function asaasKeyFingerprint() {
+  return createHash("sha256").update(process.env.ASAAS_API_KEY || "").digest("hex");
 }
 
 export function makeIdempotencyKey(value) {

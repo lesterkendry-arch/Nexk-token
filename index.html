@@ -1359,7 +1359,9 @@
               ? 'Inicia sesión con Google para usar la cartera.'
               : enabled
                   ? 'Pix funciona en producción. Los retiros se confirman mediante Asaas.'
-                  : 'Pix permanece desactivado. La cuenta administradora debe completar la conexión segura con Asaas.';
+                  : webhookReady
+                      ? 'La conexión de Asaas está lista. Los movimientos Pix aún no están habilitados.'
+                      : 'Pix permanece desactivado. La cuenta administradora debe completar la conexión segura con Asaas.';
 
           if (!signedIn || !enabled) {
               document.getElementById('walletGameBalance').textContent = 'No disponible';

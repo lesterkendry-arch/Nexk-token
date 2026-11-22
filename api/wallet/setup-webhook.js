@@ -1,5 +1,6 @@
 import {
   asaas,
+  asaasKeyFingerprint,
   getDb,
   HttpError,
   requireUser,
@@ -19,7 +20,8 @@ export default async function handler(req, res) {
     const db = getDb();
     const settingRef = db.collection("walletSettings").doc("asaasWebhook");
     const initial = await settingRef.get();
-    if (initial.exists && initial.data().status === "active") {
+    const keyFingerprint = asaasKeyFingerprint();
+    if (initial.exists && initial.data().status === "active" && initial.data().keyFingerprint === keyFingerprint) {
       return sendJson(res, 200, { ready: true });
     }
     if (user.uid !== "ejd0cPQ5Lgd3Fhpzl6hvj6hLlXi2") {
@@ -31,7 +33,7 @@ export default async function handler(req, res) {
     const claimed = await db.runTransaction(async (transaction) => {
       const existing = await transaction.get(settingRef);
       const config = existing.exists ? existing.data() : {};
-      if (config.status === "active") return "active";
+      if (config.status === "active" && config.keyFingerprint === keyFingerprint) return "active";
       if (
         config.status === "creating" &&
         config.updatedAt?.toDate &&
@@ -48,12 +50,8 @@ export default async function handler(req, res) {
       const list = await asaas("/webhooks");
       const webhooks = Array.isArray(list.data) ? list.data : [];
       const conflict = webhooks.find((item) => item.url === WEBHOOK_URL);
-      if (conflict) {
-        await settingRef.set({ status: "manual_review", updatedAt: new Date() }, { merge: true });
-        throw new HttpError(409, "Ya existe una configuración de webhook que requiere revisión.");
-      }
-      const created = await asaas("/webhooks", {
-        method: "POST",
+      const created = await asaas(conflict ? `/webhooks/${encodeURIComponent(conflict.id)}` : "/webhooks", {
+        method: conflict ? "PUT" : "POST",
         idempotencyKey: `nex-wallet-webhook-${user.uid.slice(0, 40)}`,
         body: {
           name: "NEX Token Pix",
@@ -77,6 +75,7 @@ export default async function handler(req, res) {
       await settingRef.set({
         status: "active",
         providerWebhookId: created.id,
+        keyFingerprint,
         updatedAt: new Date(),
       });
       return sendJson(res, 200, { ready: true });

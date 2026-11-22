@@ -1,4 +1,4 @@
-import { getDb, requiredEnvironment, sendJson } from "../_lib.js";
+import { asaasKeyFingerprint, getDb, requiredEnvironment, sendJson } from "../_lib.js";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     configurationReady = requiredEnvironment().length === 0 && account.project_id === "nexk-131a4";
     if (configurationReady) {
       const setting = await getDb().collection("walletSettings").doc("asaasWebhook").get();
-      webhookReady = setting.exists && setting.data().status === "active";
+      webhookReady = setting.exists && setting.data().status === "active" && setting.data().keyFingerprint === asaasKeyFingerprint();
     }
   } catch {
     configurationReady = false;
